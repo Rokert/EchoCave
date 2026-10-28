@@ -37,8 +37,12 @@ namespace EchoCave.Core
 
         public bool TryGetBat(int id, out Bat bat) => _byId.TryGetValue(id, out bat);
 
-        public void Add(Bat bat)
+        public void Add(Bat bat) => Insert(_bats.Count, bat);
+
+        // Inserts at a position in Bats, so a removed bat can be restored exactly where it was.
+        public void Insert(int index, Bat bat)
         {
+            if (index < 0 || index > _bats.Count) throw new ArgumentOutOfRangeException(nameof(index), index, null);
             if (bat == null) throw new ArgumentNullException(nameof(bat));
             if (!IsInside(bat.Cell))
                 throw new ArgumentException($"Bat {bat.Id} is outside the {Width}x{Height} board at {bat.Cell}.", nameof(bat));
@@ -47,7 +51,7 @@ namespace EchoCave.Core
             if (_byCell.ContainsKey(bat.Cell))
                 throw new ArgumentException($"Cell {bat.Cell} is already occupied.", nameof(bat));
 
-            _bats.Add(bat);
+            _bats.Insert(index, bat);
             _byId.Add(bat.Id, bat);
             _byCell.Add(bat.Cell, bat);
         }
