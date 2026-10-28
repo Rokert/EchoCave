@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "com.rokert.core": "https://github.com/Rokert/RokertCore.git#v0.1.1",
     "com.unity.2d.animation": "16.0.1",
     "com.unity.2d.aseprite": "6.0.0",
     "com.unity.2d.psdimporter": "15.0.1",
@@ -55,5 +56,8 @@
     "com.unity.modules.video": "1.0.0",
     "com.unity.modules.wind": "1.0.0",
     "com.unity.modules.xr": "1.0.0"
-  }
+  },
+  "testables": [
+    "com.rokert.core"
+  ]
 }

@@ -1,0 +1,17 @@
+{
+    "name": "EchoCave.Ads",
+    "rootNamespace": "EchoCave.Ads",
+    "references": [
+        "EchoCave.Core",
+        "Rokert.Core"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
