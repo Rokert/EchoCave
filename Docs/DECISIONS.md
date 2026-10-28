@@ -35,6 +35,11 @@ Reuse bat, `bg_night`, UI, popups, `gomarice_rocks`. Do not use fruit assets. An
 ## D-009 — Monetisation (Accepted, provider open)
 Free with ads: rewarded (pings, undo), moderate interstitials, IAP remove-ads and ping packs. Mediation: AdMob or AppLovin MAX, decided in the ads ticket behind `IAdService`.
 
+## D-010 — A bounce leaves the board unchanged (Accepted)
+`MoveResolver` returns `Exited` or `Bounced`. On a bounce the bat returns to its own cell and only a move is spent; `StopCell` is the furthest cell it reached, for animation. Any bat in the path blocks, hidden or not.
+**Why:** keeps the puzzle about ordering (free the path first) and makes undo a counter restore.
+**Consequence:** the solver can treat a bounce as a wasted move that never changes the position.
+
 ## Open questions
 - Level format: ScriptableObject vs JSON.
 - Check the "EchoCave" name against Play Store before publishing.
