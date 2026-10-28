@@ -117,6 +117,28 @@ namespace EchoCave.Tests
         }
 
         [Test]
+        public void Insert_PlacesBatAtGivenPosition()
+        {
+            var board = new Board(3, 3);
+            board.Add(BatAt(1, 0, 0));
+            board.Add(BatAt(3, 2, 2));
+
+            board.Insert(1, BatAt(2, 1, 1));
+
+            Assert.AreEqual(new[] { 1, 2, 3 }, new[] { board.Bats[0].Id, board.Bats[1].Id, board.Bats[2].Id });
+        }
+
+        [Test]
+        public void Insert_RejectsInvalidIndex()
+        {
+            var board = new Board(3, 3);
+
+            Assert.Throws<ArgumentOutOfRangeException>(() => board.Insert(1, BatAt(1, 0, 0)));
+            Assert.Throws<ArgumentOutOfRangeException>(() => board.Insert(-1, BatAt(1, 0, 0)));
+            Assert.AreEqual(0, board.Count);
+        }
+
+        [Test]
         public void TryGetBat_EmptyCellReturnsFalse()
         {
             Assert.IsFalse(new Board(3, 3).TryGetBat(new Cell(1, 1), out Bat bat));

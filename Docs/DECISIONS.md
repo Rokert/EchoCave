@@ -40,6 +40,11 @@ Free with ads: rewarded (pings, undo), moderate interstitials, IAP remove-ads an
 **Why:** keeps the puzzle about ordering (free the path first) and makes undo a counter restore.
 **Consequence:** the solver can treat a bounce as a wasted move that never changes the position.
 
+## D-011 — Every tap spends one move (Accepted)
+`MoveCommand` spends a move on any tap, exit or bounce. Only an exit changes the board. Undo restores the bat at its original index in `Board.Bats` and refunds the move.
+**Why:** a bounce is simply a wasted tap; the move limit and the star thresholds count taps.
+**Consequence:** the rewarded undo can revert a bounce and give the move back.
+
 ## Open questions
 - Level format: ScriptableObject vs JSON.
 - Check the "EchoCave" name against Play Store before publishing.
