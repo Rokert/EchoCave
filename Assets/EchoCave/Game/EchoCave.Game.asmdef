@@ -1,0 +1,19 @@
+{
+    "name": "EchoCave.Game",
+    "rootNamespace": "EchoCave.Game",
+    "references": [
+        "EchoCave.Core",
+        "Rokert.Core",
+        "Rokert.Core.Bindings",
+        "Unity.InputSystem"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -1,0 +1,20 @@
+{
+    "name": "EchoCave.UI",
+    "rootNamespace": "EchoCave.UI",
+    "references": [
+        "EchoCave.Core",
+        "EchoCave.Game",
+        "Rokert.Core",
+        "UnityEngine.UI",
+        "Unity.TextMeshPro"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
