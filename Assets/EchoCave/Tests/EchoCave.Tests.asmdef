@@ -3,6 +3,7 @@
     "rootNamespace": "EchoCave.Tests",
     "references": [
         "EchoCave.Core",
+        "EchoCave.Game",
         "Rokert.Core",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
