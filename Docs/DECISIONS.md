@@ -45,7 +45,11 @@ Free with ads: rewarded (pings, undo), moderate interstitials, IAP remove-ads an
 **Why:** a bounce is simply a wasted tap; the move limit and the star thresholds count taps.
 **Consequence:** the rewarded undo can revert a bounce and give the move back.
 
+## D-012 — Levels: ScriptableObject for authoring, pure definition in Core (Accepted)
+`LevelData` (ScriptableObject, `EchoCave.Game`) is edited in the inspector and converts to `LevelDefinition` (plain C#, `EchoCave.Core`). `LevelValidator` lists every structural error; `LevelBuilder` builds a `LevelSession` or throws `InvalidLevelException`. Bat ids are indices in the bat list. Stars: three at or under `ThreeStarMoves`, two at or under `TwoStarMoves`, otherwise one. `MoveLimit` 0 means unlimited.
+**Why:** designers get inspector editing; the solver and tests use the Core types without Unity. JSON is not needed yet.
+**Consequence:** a JSON export can be added later by writing a second adapter to `LevelDefinition`. Supersedes D-006's open choice.
+
 ## Open questions
-- Level format: ScriptableObject vs JSON.
 - Check the "EchoCave" name against Play Store before publishing.
 - Play Store closed-testing requirement for new personal accounts.
