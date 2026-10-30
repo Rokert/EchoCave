@@ -1,0 +1,110 @@
+/* Controls shared by every screen: the pill button and the switch. Colours come from Theme.uss. */
+
+/* The default button theme paints a grey box on hover, press and focus, and those rules are more specific
+   than the transparent background below. None of our buttons wants that box: they draw their own face. */
+.pill-button:hover,
+.pill-button:active,
+.pill-button:focus,
+.toggle:hover,
+.toggle:active,
+.toggle:focus {
+    background-color: rgba(0, 0, 0, 0);
+    border-color: rgba(0, 0, 0, 0);
+}
+
+/* --- pill button: a face and a darker lip under it --- */
+
+.pill-button {
+    width: 240px;
+    height: 92px;
+    margin: 0 14px;
+    padding: 0;
+    border-width: 0;
+    background-color: rgba(0, 0, 0, 0);
+}
+
+.pill-button__lip,
+.pill-button__face {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 82px;
+    border-radius: 41px;
+}
+
+.pill-button__lip {
+    top: 10px;
+    background-color: var(--bat-ear);
+}
+
+.pill-button__face {
+    top: 0;
+    background-color: var(--bat-body);
+    align-items: center;
+    justify-content: center;
+}
+
+.pill-button__label {
+    margin: 0;
+    padding: 0;
+    font-size: 34px;
+    color: var(--ui-cream);
+    -unity-text-align: middle-center;
+}
+
+.pill-button:active .pill-button__face {
+    translate: 0 6px;
+}
+
+.pill-button--secondary .pill-button__lip {
+    background-color: var(--bat-body);
+}
+
+.pill-button--secondary .pill-button__face {
+    background-color: var(--bat-belly);
+}
+
+.pill-button--secondary .pill-button__label {
+    color: var(--ui-text);
+}
+
+/* --- switch --- */
+
+.toggle {
+    width: 160px;
+    height: 80px;
+    margin: 0;
+    padding: 0;
+    border-width: 0;
+    background-color: rgba(0, 0, 0, 0);
+}
+
+.toggle__track {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 160px;
+    height: 80px;
+    border-radius: 40px;
+    background-color: var(--bg-rock);
+    transition: background-color 0.15s;
+}
+
+.toggle__knob {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    width: 64px;
+    height: 64px;
+    border-radius: 32px;
+    background-color: var(--ui-cream);
+    transition: left 0.15s ease-out;
+}
+
+.toggle--on .toggle__track {
+    background-color: var(--echo-cyan);
+}
+
+.toggle--on .toggle__knob {
+    left: 88px;
+}

@@ -217,6 +217,23 @@ namespace EchoCave.Tests
             Assert.IsFalse(_pauses[_pauses.Count - 1].IsPaused);
         }
 
+        // --- Next ---
+
+        [Test]
+        public void Next_PressedTwiceBeforeTheTick_MovesOnlyOneLevel()
+        {
+            StartLevel(0);
+            TapAndSettle(1, 0);
+            Assert.AreEqual(GameState.Won, _flow.State);
+
+            _flow.RequestNext();
+            _flow.RequestNext();
+            _flow.Tick(0f);
+
+            Assert.AreEqual(GameState.Playing, _flow.State);
+            Assert.AreEqual(1, _flow.LevelIndex, "a double tap on Next must not skip a level");
+        }
+
         // --- MoveSpent ---
 
         [Test]

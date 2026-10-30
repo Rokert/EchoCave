@@ -47,6 +47,26 @@ namespace EchoCave.Game
         }
     }
 
+    public enum AudioChannel
+    {
+        Sound,
+        Music
+    }
+
+    // The player flipped the sound or the music switch. Nothing plays yet; the audio service of ROK-145
+    // will listen to this and keep the setting.
+    public readonly struct AudioToggled
+    {
+        public AudioChannel Channel { get; }
+        public bool Enabled { get; }
+
+        public AudioToggled(AudioChannel channel, bool enabled)
+        {
+            Channel = channel;
+            Enabled = enabled;
+        }
+    }
+
     // The flow went back to the menu, so there is no level on screen.
     public readonly struct MenuOpened { }
 

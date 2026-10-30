@@ -1,0 +1,82 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="../Styles/Theme.uss" />
+    <Style src="../Styles/Controls.uss" />
+    <Style src="../Styles/Popups.uss" />
+
+    <!-- The scrim catches every pointer; each popup sits centred on it. All three start hidden. -->
+    <ui:VisualElement name="popup-layer" class="popup-layer popup-hidden font-medium">
+
+        <!-- Level complete -->
+        <ui:VisualElement name="complete-popup" class="popup popup-hidden">
+            <ui:VisualElement class="popup__bat" picking-mode="Ignore" />
+            <ui:Label text="Level complete" class="popup__title font-bold" picking-mode="Ignore" />
+            <ui:VisualElement class="stars" picking-mode="Ignore">
+                <ui:VisualElement class="star" picking-mode="Ignore"><ui:VisualElement name="complete-star-0" class="star__fill" picking-mode="Ignore" /></ui:VisualElement>
+                <ui:VisualElement class="star" picking-mode="Ignore"><ui:VisualElement name="complete-star-1" class="star__fill" picking-mode="Ignore" /></ui:VisualElement>
+                <ui:VisualElement class="star" picking-mode="Ignore"><ui:VisualElement name="complete-star-2" class="star__fill" picking-mode="Ignore" /></ui:VisualElement>
+            </ui:VisualElement>
+            <ui:Label name="complete-moves" text="Moves" class="popup__text font-medium" picking-mode="Ignore" />
+            <ui:VisualElement class="popup__buttons">
+                <ui:Button name="complete-replay" class="pill-button pill-button--secondary">
+                    <ui:VisualElement class="pill-button__lip" picking-mode="Ignore" />
+                    <ui:VisualElement class="pill-button__face" picking-mode="Ignore"><ui:Label text="Replay" class="pill-button__label font-semibold" picking-mode="Ignore" /></ui:VisualElement>
+                </ui:Button>
+                <ui:Button name="complete-next" class="pill-button">
+                    <ui:VisualElement class="pill-button__lip" picking-mode="Ignore" />
+                    <ui:VisualElement class="pill-button__face" picking-mode="Ignore"><ui:Label name="complete-next-label" text="Next" class="pill-button__label font-semibold" picking-mode="Ignore" /></ui:VisualElement>
+                </ui:Button>
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!-- Out of moves -->
+        <ui:VisualElement name="lost-popup" class="popup popup-hidden">
+            <ui:VisualElement class="popup__bat" picking-mode="Ignore" />
+            <ui:Label text="Out of moves" class="popup__title font-bold" picking-mode="Ignore" />
+            <ui:Label name="lost-moves" text="Moves" class="popup__text font-medium" picking-mode="Ignore" />
+            <ui:VisualElement class="popup__buttons">
+                <ui:Button name="lost-retry" class="pill-button">
+                    <ui:VisualElement class="pill-button__lip" picking-mode="Ignore" />
+                    <ui:VisualElement class="pill-button__face" picking-mode="Ignore"><ui:Label text="Retry" class="pill-button__label font-semibold" picking-mode="Ignore" /></ui:VisualElement>
+                </ui:Button>
+                <ui:Button name="lost-menu" class="pill-button pill-button--secondary">
+                    <ui:VisualElement class="pill-button__lip" picking-mode="Ignore" />
+                    <ui:VisualElement class="pill-button__face" picking-mode="Ignore"><ui:Label text="Menu" class="pill-button__label font-semibold" picking-mode="Ignore" /></ui:VisualElement>
+                </ui:Button>
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!-- Paused -->
+        <ui:VisualElement name="pause-popup" class="popup popup-hidden">
+            <ui:Label text="Paused" class="popup__title font-bold" picking-mode="Ignore" />
+            <ui:VisualElement class="setting-row" picking-mode="Ignore">
+                <ui:Label text="Sound" class="setting-row__label font-semibold" picking-mode="Ignore" />
+                <ui:Button name="sound-toggle" class="toggle toggle--on">
+                    <ui:VisualElement class="toggle__track" picking-mode="Ignore" />
+                    <ui:VisualElement class="toggle__knob" picking-mode="Ignore" />
+                </ui:Button>
+            </ui:VisualElement>
+            <ui:VisualElement class="setting-row" picking-mode="Ignore">
+                <ui:Label text="Music" class="setting-row__label font-semibold" picking-mode="Ignore" />
+                <ui:Button name="music-toggle" class="toggle toggle--on">
+                    <ui:VisualElement class="toggle__track" picking-mode="Ignore" />
+                    <ui:VisualElement class="toggle__knob" picking-mode="Ignore" />
+                </ui:Button>
+            </ui:VisualElement>
+            <ui:VisualElement class="popup__buttons popup__buttons--column">
+                <ui:Button name="pause-resume" class="pill-button">
+                    <ui:VisualElement class="pill-button__lip" picking-mode="Ignore" />
+                    <ui:VisualElement class="pill-button__face" picking-mode="Ignore"><ui:Label text="Resume" class="pill-button__label font-semibold" picking-mode="Ignore" /></ui:VisualElement>
+                </ui:Button>
+                <ui:Button name="pause-restart" class="pill-button pill-button--secondary">
+                    <ui:VisualElement class="pill-button__lip" picking-mode="Ignore" />
+                    <ui:VisualElement class="pill-button__face" picking-mode="Ignore"><ui:Label text="Restart" class="pill-button__label font-semibold" picking-mode="Ignore" /></ui:VisualElement>
+                </ui:Button>
+                <ui:Button name="pause-menu" class="pill-button pill-button--secondary">
+                    <ui:VisualElement class="pill-button__lip" picking-mode="Ignore" />
+                    <ui:VisualElement class="pill-button__face" picking-mode="Ignore"><ui:Label text="Menu" class="pill-button__label font-semibold" picking-mode="Ignore" /></ui:VisualElement>
+                </ui:Button>
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+    </ui:VisualElement>
+</ui:UXML>

@@ -1,5 +1,9 @@
 /* The in-game HUD. Sizes are in panel units on the 1080x1920 (portrait) or 1920x1080 (landscape) canvas. */
 
+/* Pulled in from here as well as from the UXML: the UXML links alone did not reach the popups in the editor. */
+@import url("Controls.uss");
+@import url("Popups.uss");
+
 /* --- layout --- */
 
 .hud-root {
@@ -52,6 +56,17 @@
 /* Landscape keeps the ping button at the lower edge, on the side a thumb reaches. */
 .landscape .hud-bottom {
     align-items: flex-end;
+}
+
+/* The default button theme paints a grey box on hover, press and focus; the HUD buttons draw their own face. */
+.round-button:hover,
+.round-button:active,
+.round-button:focus,
+.ping-button:hover,
+.ping-button:active,
+.ping-button:focus {
+    background-color: rgba(0, 0, 0, 0);
+    border-color: rgba(0, 0, 0, 0);
 }
 
 /* --- round button (pause) --- */

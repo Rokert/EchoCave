@@ -1,0 +1,151 @@
+/* The Complete, Lost and Pause popups and the dim layer behind them. Sizes are in panel units. */
+
+/* The template container Unity wraps around an included UXML has no size of its own. */
+.template-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.popup-hidden {
+    display: none;
+}
+
+/* --- the scrim: it catches every pointer, so nothing behind a popup can be tapped --- */
+
+.popup-layer {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(20, 16, 43, 0.72);
+    opacity: 0;
+    transition: opacity 0.25s;
+}
+
+.popup-layer--shown {
+    opacity: 1;
+}
+
+/* --- the card: cream face, lighter lip underneath --- */
+
+.popup {
+    width: 88%;
+    max-width: 720px;
+    padding: 36px 32px 28px 32px;
+    align-items: center;
+    background-color: var(--ui-cream);
+    border-radius: 64px;
+    border-bottom-width: 26px;
+    border-bottom-color: var(--bat-belly);
+    scale: 0.92 0.92;
+    transition: scale 0.3s ease-out-back;
+}
+
+.popup-layer--shown .popup {
+    scale: 1 1;
+}
+
+/* Landscape has less height to spare, so the card is smaller. */
+.landscape .popup {
+    scale: 0.75 0.75;
+}
+
+.landscape .popup-layer--shown .popup {
+    scale: 0.82 0.82;
+}
+
+.popup__bat {
+    width: 200px;
+    height: 200px;
+    -unity-background-scale-mode: scale-to-fit;
+    background-image: url("/Assets/EchoCave/Art/Characters/Bat.png");
+}
+
+.popup__title {
+    margin: 8px 0 0 0;
+    padding: 0;
+    font-size: 60px;
+    color: var(--ui-text);
+    -unity-text-align: middle-center;
+}
+
+.popup__text {
+    margin: 12px 0 0 0;
+    padding: 0;
+    font-size: 30px;
+    color: var(--ui-text);
+    -unity-text-align: middle-center;
+}
+
+.popup__buttons {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 24px;
+}
+
+.popup__buttons--column {
+    flex-direction: column;
+    align-items: center;
+}
+
+.popup__buttons--column .pill-button {
+    margin: 8px 0;
+}
+
+/* --- stars: the empty one is always there, the filled one pops in on top --- */
+
+.stars {
+    flex-direction: row;
+    justify-content: center;
+    margin-top: 12px;
+}
+
+.star {
+    width: 140px;
+    height: 148px;
+    margin: 0 6px;
+    -unity-background-scale-mode: scale-to-fit;
+    background-image: url("/Assets/EchoCave/Art/UI/Star Empty.png");
+}
+
+.star__fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    -unity-background-scale-mode: scale-to-fit;
+    background-image: url("/Assets/EchoCave/Art/UI/Star Filled.png");
+    scale: 0 0;
+    opacity: 0;
+    transition: scale 0.35s ease-out-back, opacity 0.2s;
+}
+
+.star__fill--on {
+    scale: 1 1;
+    opacity: 1;
+}
+
+/* --- pause: one row per switch --- */
+
+.setting-row {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 12px 24px;
+}
+
+.setting-row__label {
+    margin: 0;
+    padding: 0;
+    font-size: 40px;
+    color: var(--ui-text);
+}
