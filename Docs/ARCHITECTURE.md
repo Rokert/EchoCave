@@ -32,6 +32,10 @@ Dependency direction: `Game`, `UI`, `Ads` → `Core` → `Rokert.Core`. Core nev
 - `GridLayout2D` (`EchoCave.Game`): maps cells to world positions and back. Board centered on the origin, Y up like `Direction`. Views and input share it so no view does coordinate math.
 - `BatView`: bat sprite + arrow overlay, or a dark "?" silhouette when hidden. Animations use DOTween (D-014). `ResetForPool` kills its tweens and restores the prefab pose.
 - `BatFactory`: plain C# over `ObjectPool<BatView>`. `Get(Bat)` returns an active, bound view; `Release` and `ReleaseAll` recycle them. It tracks active views because the pool accepts a double release. Views are children of a container, which is what frees them: the pool drops items it cannot keep without destroying them. The board view builds it from a serialized prefab and container.
+- `BoardView`: draws the core board and plays move animations with DOTween. `Build(Board)` replaces the scene, `Play(MoveResult, onComplete)` animates one tap (fly-out and recycle, or fly, bump, knock the blocker and return). It decides nothing; the presenter passes it the result the core already produced. Positions are local to its transform.
+- `MovePathPlanner`: pure function from `MoveResult` + `GridLayout2D` to a `MovePlan` (start, target, bump point, travel in cells). All the animation geometry lives here so it is testable; the view only tweens between the points.
+- `BoardCamera` + `CameraFraming`: orthographic framing of the board plus margin, and a background sprite scaled to cover the view. Refits when the screen aspect changes (rotation, WebGL resize). The math is in `CameraFraming` for EditMode tests.
+- `BoardViewSettings` (ScriptableObject): cell size, camera margin, fly speed, overshoot, bump/return timings, eases. Distances are in cells.
 - Cross-system notifications (level won, ping used, move spent) go through `EventBus` with readonly struct events.
 
 ## Patterns in use
