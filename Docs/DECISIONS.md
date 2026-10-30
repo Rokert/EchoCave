@@ -70,6 +70,11 @@ HUD, popups and menus are built with UI Toolkit (UXML + USS, `UIDocument`), not 
 **Why:** USS variables map one to one to the Penpot palette (`bg/deep`, `star/gold-dark`, ...), styling lives in text files that diff well in git, and layout adapts to portrait and landscape without per-screen prefab work. The art for the UI is original (Penpot), so the Hungry Bat uGUI prefabs have nothing left to reuse.
 **Consequence:** `EchoCave.UI` drops its `UnityEngine.UI` and `Unity.TextMeshPro` references; UI Toolkit is a built-in engine module, so it needs no asmdef reference. Needs a `PanelSettings` asset (scale with screen size, 1080x1920 reference), Fredoka as a font asset, and sprites used through `background-image` with USS slicing. The MVP rule is unchanged: views draw and forward events, presenters decide. A tap on a panel must not reach the board: `TapInput` has to ignore pointers over UI (`panel.Pick`) once the first panel exists, which is part of the HUD ticket. Sprite PPU only matters for world sprites.
 
+## D-017 — Win and lose rules, and when the flow reacts (Accepted)
+Won = the board is empty. Lost = the move limit is used up while bats remain (only when the level has a limit). Won is checked first, so clearing the board on the last allowed move wins. `GameFlow` only moves from Playing to Won or Lost once the presenter is idle, so the result appears after the last animation, not while a bat is still flying. Retry builds a fresh session and presenter from the level definition.
+**Why:** a lost move is only known once it is resolved, but showing the popup mid-flight looks broken, and tying the check to the animation callback would couple the rules to the view. Polling a stateless rule on `Tick` keeps the rules in Core and testable.
+**Consequence:** the rewarded undo (after a loss) will need its own state or a kept history, since a retry discards it. Edge services (save, audio, analytics, ads) are not wired by the composition root yet: ROK-145 and ROK-146.
+
 ## Open questions
 - Check the "EchoCave" name against Play Store before publishing.
 - Play Store closed-testing requirement for new personal accounts.
