@@ -22,7 +22,8 @@ Dependency direction: `Game`, `UI`, `Ads` → `Core` → `Rokert.Core`. Core nev
 - `Board`: width/height, bats by cell. No rendering concepts.
 - `Bat`: id, cell, `Direction`, `IsHidden`.
 - `MoveResolver`: given board + tapped bat, returns a `MoveResult` (Exited / Bounced with the blocking bat and stop cell). Deterministic; no side effects until applied.
-- `EchoService`: ping budget, revealing hidden arrows. Echo behaviour (duration, reveal scope) is a Strategy (`IEchoStrategy`) so variants can be tested without touching the service.
+- `EchoService`: ping budget and the temporary reveal of hidden bats (D-018). `TryPing(board)` returns a `PingResult` and spends a ping only when it starts a reveal; `Tick(deltaSeconds)` runs the reveal timer, so the core owns no clock; `GrantPings` adds pings (rewarded ads). The board is never mutated: a revealed bat is only listed in the service (`IsRevealed(id)`), so undo and the solver are unaffected. A view shows a bat's arrow when `!bat.IsHidden || echo.IsRevealed(bat.Id)`. Notifies through C# events `Pinged` and `Expired`; the adapter to the `EventBus` lives in `Game` (ROK-147).
+- `IEchoStrategy` / `EchoPulse`: what a ping reveals (bat ids) and for how long. `RevealAllHiddenStrategy` is the default; its duration is a constructor argument, supplied from a ScriptableObject by the composition root.
 - Level data model: plain classes loaded from ScriptableObject/JSON by an adapter in `Game`.
 
 ## Presentation (MVP)

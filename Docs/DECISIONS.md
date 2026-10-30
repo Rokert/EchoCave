@@ -75,6 +75,11 @@ Won = the board is empty. Lost = the move limit is used up while bats remain (on
 **Why:** a lost move is only known once it is resolved, but showing the popup mid-flight looks broken, and tying the check to the animation callback would couple the rules to the view. Polling a stateless rule on `Tick` keeps the rules in Core and testable.
 **Consequence:** the rewarded undo (after a loss) will need its own state or a kept history, since a retry discards it. Edge services (save, audio, analytics, ads) are not wired by the composition root yet: ROK-145 and ROK-146.
 
+## D-018 — Echo: the reveal is service state, and a useless ping is free (Accepted)
+`EchoService` keeps the set of revealed bat ids and a timer; the `Board` and its immutable `Bat`s are never changed. A ping costs no move (D-011 counts taps on bats; pings have their own budget). A ping that cannot do anything spends nothing and returns the reason: no pings left, a reveal already running, or no hidden bat on the board. Time enters through `Tick(deltaSeconds)`. The reveal duration has no default in Core: the strategy takes it in its constructor and the composition root reads it from a ScriptableObject. Notifications are plain C# events (`Pinged`, `Expired`) so Core stays free of the `EventBus`.
+**Why:** a reveal is temporary, so mutating bats would need a matching re-hide and would leak into undo and the solver; keeping it beside the board makes both untouched. Refusing a ping while one runs avoids burning a paid resource by accident.
+**Consequence:** views decide visibility as `!bat.IsHidden || echo.IsRevealed(id)`. A new `EchoService` is created per attempt, so a retry restores the pings. `Bat.WithHidden` stays in the model but the echo does not use it. Granting pings from a rewarded ad calls `GrantPings` (ROK-146). Wiring into the flow and views is ROK-147.
+
 ## Open questions
 - Check the "EchoCave" name against Play Store before publishing.
 - Play Store closed-testing requirement for new personal accounts.
