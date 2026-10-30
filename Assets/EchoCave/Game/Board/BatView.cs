@@ -1,3 +1,4 @@
+using DG.Tweening;
 using EchoCave.Core;
 using UnityEngine;
 
@@ -11,10 +12,15 @@ namespace EchoCave.Game
         [SerializeField] private Transform arrow;
         [SerializeField] private GameObject silhouette;
 
+        private bool _restCaptured;
+        private Vector3 _restScale;
+        private Quaternion _restRotation;
+
         public int BatId { get; private set; }
 
         public void Bind(int batId, Direction direction, bool isHidden)
         {
+            CaptureRest();
             BatId = batId;
             arrow.localRotation = Quaternion.Euler(0f, 0f, AngleFor(direction));
             SetHidden(isHidden);
@@ -25,6 +31,26 @@ namespace EchoCave.Game
             body.SetActive(!isHidden);
             arrow.gameObject.SetActive(!isHidden);
             silhouette.SetActive(isHidden);
+        }
+
+        // Stops animations and restores the prefab pose, because fly-out and bounce tweens change both.
+        // Position is left alone: the board view sets it every time a bat is spawned.
+        internal void ResetForPool()
+        {
+            CaptureRest();
+            transform.DOKill();
+            transform.localScale = _restScale;
+            transform.localRotation = _restRotation;
+        }
+
+        // Lazy because the first call can come before Awake when the container is inactive.
+        private void CaptureRest()
+        {
+            if (_restCaptured) return;
+
+            _restScale = transform.localScale;
+            _restRotation = transform.localRotation;
+            _restCaptured = true;
         }
 
         // Counter-clockwise degrees around Z for an arrow that points up at zero.
