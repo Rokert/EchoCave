@@ -60,6 +60,16 @@ Fly-out, bounce and later reveal animations use DOTween, imported as the precomp
 **Why:** tweens with easing, sequences and kill-on-recycle are what the pooled bat views need; hand-written coroutines would re-implement them. Supersedes the coroutine-based plan.
 **Consequence:** the precompiled DLL is auto-referenced by our asmdefs. DOTween's module shortcuts (sprite, UI) need its Utility Panel to create `DOTween.Modules.asmdef`; do that only when a view needs them. Pooled views must kill their tweens on release.
 
+## D-015 — Taps are ignored while a move animates (Accepted)
+`BoardPresenter` sets a busy flag when it starts a move animation and clears it in the view's `onComplete`; taps in between are dropped, not queued.
+**Why:** a bounce returns the bat to its cell and an exit recycles its view, so a second tap mid-animation could hit a bat that is still flying. Dropping is the simplest rule that keeps view and core in step.
+**Consequence:** a rebuild (`Start`) clears the flag because killed tweens never call back. Animations are short (fly speed 12 cells/s), so this should not feel unresponsive; if playtests say otherwise, queue the taps instead.
+
+## D-016 — UI Toolkit for HUD and popups (Accepted)
+HUD, popups and menus are built with UI Toolkit (UXML + USS, `UIDocument`), not uGUI. The board itself stays in world space with `SpriteRenderer`. Supersedes the uGUI plan in CLAUDE.md and ROK-135.
+**Why:** USS variables map one to one to the Penpot palette (`bg/deep`, `star/gold-dark`, ...), styling lives in text files that diff well in git, and layout adapts to portrait and landscape without per-screen prefab work. The art for the UI is original (Penpot), so the Hungry Bat uGUI prefabs have nothing left to reuse.
+**Consequence:** `EchoCave.UI` references `UnityEngine.UIElementsModule` instead of uGUI. Needs a `PanelSettings` asset (scale with screen size, 1080x1920 reference), Fredoka as a font asset, and sprites used through `background-image` with USS slicing. The MVP rule is unchanged: views draw and forward events, presenters decide. A tap on a panel must not reach the board: `TapInput` has to ignore pointers over UI (`panel.Pick`) once the first panel exists, which is part of the HUD ticket. Sprite PPU only matters for world sprites.
+
 ## Open questions
 - Check the "EchoCave" name against Play Store before publishing.
 - Play Store closed-testing requirement for new personal accounts.

@@ -9,7 +9,7 @@ namespace EchoCave.Game
     // Draws the board and plays move animations. It decides nothing: the presenter calls Play with the
     // result the core already produced. Positions are local to this transform, so the board can be moved
     // or scaled in the scene.
-    public sealed class BoardView : MonoBehaviour
+    public sealed class BoardView : MonoBehaviour, IBoardView
     {
         [SerializeField] private BatView batPrefab;
         [SerializeField] private Transform batContainer;
@@ -30,6 +30,17 @@ namespace EchoCave.Game
             _factory ??= new BatFactory(batPrefab, batContainer, board.Count);
 
             foreach (Bat bat in board.Bats) Spawn(bat);
+        }
+
+        public bool TryGetCell(Vector2 world, out Cell cell)
+        {
+            if (Layout == null)
+            {
+                cell = default;
+                return false;
+            }
+
+            return Layout.TryWorldToCell(transform.InverseTransformPoint(world), out cell);
         }
 
         public void Spawn(Bat bat)
