@@ -1,6 +1,6 @@
 # CLAUDE.md — EchoCave
 
-Unity 6 (6000.6.3f1) grid puzzle for WebGL and Android — URP 17.6, Input System 1.20, uGUI 2.6. Solo project (Julian / Rokert). Namespace `EchoCave`, English-only code and comments.
+Unity 6 (6000.6.3f1) grid puzzle for WebGL and Android — URP 17.6, Input System 1.20, UI Toolkit for HUD and popups (D-016). Solo project (Julian / Rokert). Namespace `EchoCave`, English-only code and comments.
 
 Concept: tap a bat and it flies in a straight line off the board; if another bat blocks it, it bounces back and costs a move. Move limit per level, 3 stars. Twist: some bats are "in the shadow" (arrow hidden) and a limited number of echo pings reveal them. Free with ads.
 

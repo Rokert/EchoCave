@@ -9,7 +9,7 @@ Grid puzzle. Tap a bat: it flies in its arrow direction until it leaves the boar
 ```
 EchoCave.Core    pure C# (noEngineReferences)   Board, Bat, MoveResolver, EchoService, level model, solver
 EchoCave.Game    MonoBehaviours + presenters     bat views, board view, input, game flow states, composition root
-EchoCave.UI      uGUI views + presenters         HUD, popups (Complete/Pause), stars, ping button
+EchoCave.UI      UI Toolkit views + presenters   HUD, popups (Complete/Pause), stars, ping button (D-016)
 EchoCave.Ads     ad edge                         IAdService, providers (AdMob/MAX/null), rewarded flows
 EchoCave.Tests   EditMode tests                  core logic, solver, services
 Rokert.Core      external package (UPM)          ServiceLocator, EventBus, StateMachine, CommandHistory, ObjectPool
@@ -29,6 +29,17 @@ Dependency direction: `Game`, `UI`, `Ads` → `Core` → `Rokert.Core`. Core nev
 
 - **View** (MonoBehaviour): draws and forwards input events. No decisions.
 - **Presenter**: subscribes to the view, calls the core, updates the view. Plain C# class where possible.
+- `GridLayout2D` (`EchoCave.Game`): maps cells to world positions and back. Board centered on the origin, Y up like `Direction`. Views and input share it so no view does coordinate math.
+- `BatView`: bat sprite + arrow overlay, or a dark "?" silhouette when hidden. Animations use DOTween (D-014). `ResetForPool` kills its tweens and restores the prefab pose.
+- `BatFactory`: plain C# over `ObjectPool<BatView>`. `Get(Bat)` returns an active, bound view; `Release` and `ReleaseAll` recycle them. It tracks active views because the pool accepts a double release. Views are children of a container, which is what frees them: the pool drops items it cannot keep without destroying them. The board view builds it from a serialized prefab and container.
+- `BoardView`: draws the core board and plays move animations with DOTween. `Build(Board)` replaces the scene, `Play(MoveResult, onComplete)` animates one tap (fly-out and recycle, or fly, bump, knock the blocker and return). It decides nothing; the presenter passes it the result the core already produced. Positions are local to its transform.
+- `IBoardView`: the slice of the board view the presenter uses (`Build`, `TryGetCell`, `Play`), so presenter tests run against a fake.
+- `BoardPresenter`: plain C#. `HandleTap(world)` maps the point to a cell through the view, and a tap on a bat becomes a `MoveCommand` run through `CommandHistory`; the view then animates `command.Result`. Taps are ignored while an animation plays (D-015). `Start()` builds the view and clears the busy flag.
+- `TapInput`: MonoBehaviour with a code-defined `<Pointer>/press` action (mouse, pen, touch; no input actions asset). Raises `Tapped(worldPoint)` and nothing else.
+- `BoardSandbox`: temporary entry point that wires level, view, camera, input and presenter in the Game scene. ROK-133's composition root replaces it.
+- `MovePathPlanner`: pure function from `MoveResult` + `GridLayout2D` to a `MovePlan` (start, target, bump point, travel in cells). All the animation geometry lives here so it is testable; the view only tweens between the points.
+- `BoardCamera` + `CameraFraming`: orthographic framing of the board plus margin, and a background sprite scaled to cover the view. Refits when the screen aspect changes (rotation, WebGL resize). The math is in `CameraFraming` for EditMode tests.
+- `BoardViewSettings` (ScriptableObject): cell size, camera margin, fly speed, overshoot, bump/return timings, eases. Distances are in cells.
 - Cross-system notifications (level won, ping used, move spent) go through `EventBus` with readonly struct events.
 
 ## Patterns in use

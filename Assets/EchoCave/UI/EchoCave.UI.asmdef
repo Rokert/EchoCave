@@ -4,9 +4,7 @@
     "references": [
         "EchoCave.Core",
         "EchoCave.Game",
-        "Rokert.Core",
-        "UnityEngine.UI",
-        "Unity.TextMeshPro"
+        "Rokert.Core"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
