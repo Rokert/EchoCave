@@ -4,6 +4,7 @@
     "references": [
         "EchoCave.Core",
         "EchoCave.Game",
+        "EchoCave.UI",
         "Rokert.Core",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"

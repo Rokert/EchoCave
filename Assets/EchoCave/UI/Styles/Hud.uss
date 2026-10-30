@@ -1,0 +1,209 @@
+/* The in-game HUD. Sizes are in panel units on the 1080x1920 (portrait) or 1920x1080 (landscape) canvas. */
+
+/* --- layout --- */
+
+.hud-root {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.hud-hidden {
+    display: none;
+}
+
+/* The safe-area padding is set from code; the margin the art wants is on the content inside it. */
+.safe-area {
+    flex-grow: 1;
+}
+
+.hud-content {
+    flex-grow: 1;
+    justify-content: space-between;
+    padding: 28px 32px;
+}
+
+.hud-top {
+    flex-direction: row;
+    align-items: flex-start;
+}
+
+.hud-top__side {
+    flex-grow: 1;
+    flex-basis: 0;
+    flex-direction: row;
+}
+
+.hud-top__side--end {
+    justify-content: flex-end;
+}
+
+.hud-bottom {
+    align-items: center;
+    padding-bottom: 12px;
+}
+
+.landscape .hud-content {
+    padding: 20px 40px;
+}
+
+/* Landscape keeps the ping button at the lower edge, on the side a thumb reaches. */
+.landscape .hud-bottom {
+    align-items: flex-end;
+}
+
+/* --- round button (pause) --- */
+
+.round-button {
+    width: 128px;
+    height: 140px;
+    margin: 0;
+    padding: 0;
+    border-width: 0;
+    background-color: rgba(0, 0, 0, 0);
+}
+
+.round-button__lip,
+.round-button__face {
+    position: absolute;
+    left: 0;
+    width: 128px;
+    height: 128px;
+    border-radius: 64px;
+}
+
+.round-button__lip {
+    top: 12px;
+    background-color: var(--bat-ear);
+}
+
+.round-button__face {
+    top: 0;
+    background-color: var(--bat-body);
+    align-items: center;
+    justify-content: center;
+}
+
+.round-button:active .round-button__face {
+    translate: 0 8px;
+}
+
+.round-button__icon {
+    width: 128px;
+    height: 128px;
+    -unity-background-scale-mode: scale-to-fit;
+    background-image: url("/Assets/EchoCave/Art/Icons/Icon Pause.png");
+}
+
+.round-button__icon--play {
+    background-image: url("/Assets/EchoCave/Art/Icons/Icon Play.png");
+}
+
+/* --- moves sign --- */
+
+.moves-sign {
+    align-items: center;
+    min-width: 220px;
+    padding: 6px 36px 2px 36px;
+    background-color: var(--ui-cream);
+    border-radius: 32px;
+    border-bottom-width: 12px;
+    border-bottom-color: var(--bat-belly);
+}
+
+.moves-sign__caption {
+    margin: 0;
+    padding: 0;
+    font-size: 22px;
+    letter-spacing: 3px;
+    color: var(--ui-text);
+    -unity-text-align: middle-center;
+}
+
+.moves-sign__value {
+    margin: -6px 0 0 0;
+    padding: 0;
+    font-size: 60px;
+    color: var(--ui-text);
+    -unity-text-align: middle-center;
+}
+
+/* --- ping button --- */
+
+.ping-button {
+    width: 212px;
+    height: 212px;
+    margin: 0;
+    padding: 0;
+    border-width: 0;
+    background-color: rgba(0, 0, 0, 0);
+}
+
+.ping-button__disc {
+    position: absolute;
+    left: 6px;
+    top: 12px;
+    width: 200px;
+    height: 200px;
+    border-radius: 100px;
+    border-width: 10px;
+    border-color: var(--echo-cyan);
+    background-color: var(--bg-mid);
+    align-items: center;
+    justify-content: center;
+}
+
+.ping-button__icon {
+    width: 132px;
+    height: 132px;
+    -unity-background-scale-mode: scale-to-fit;
+    background-image: url("/Assets/EchoCave/Art/Icons/Echo Icon Ready.png");
+}
+
+.ping-button__badge {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 64px;
+    height: 64px;
+    border-radius: 32px;
+    background-color: var(--star-gold);
+    align-items: center;
+    justify-content: center;
+}
+
+.ping-button__count {
+    margin: 0;
+    padding: 0;
+    font-size: 34px;
+    color: var(--ui-text);
+    -unity-text-align: middle-center;
+}
+
+.ping-button:active .ping-button__disc {
+    translate: 0 6px;
+}
+
+/* A reveal is running: the ring turns pale. */
+.ping-button--active .ping-button__disc {
+    border-color: var(--echo-glow);
+}
+
+/* No pings left: everything goes dim. */
+.ping-button--empty .ping-button__disc {
+    border-color: var(--bg-rock);
+}
+
+.ping-button--empty .ping-button__icon {
+    background-image: url("/Assets/EchoCave/Art/Icons/Echo Icon Empty.png");
+}
+
+.ping-button--empty .ping-button__badge {
+    background-color: var(--bg-mid);
+}
+
+.ping-button--empty .ping-button__count {
+    color: var(--ui-cream);
+}

@@ -16,6 +16,10 @@ namespace EchoCave.Game
 
         private bool _busy;
 
+        // Raised once per executed move, right after the core resolved it and before the animation starts,
+        // so counters can update at the moment of the tap.
+        public event Action<MoveResult> MoveExecuted;
+
         public BoardPresenter(LevelSession session, MoveResolver resolver, CommandHistory history, IBoardView view)
         {
             _session = session ?? throw new ArgumentNullException(nameof(session));
@@ -41,6 +45,7 @@ namespace EchoCave.Game
 
             var command = new MoveCommand(_session, _resolver, bat.Id);
             _history.Execute(command);
+            MoveExecuted?.Invoke(command.Result);
 
             // Set before Play: a view may call back synchronously.
             _busy = true;

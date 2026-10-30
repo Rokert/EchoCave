@@ -21,6 +21,35 @@ namespace EchoCave.Game
         }
     }
 
+    // A tap was resolved and spent a move. MoveLimit is 0 when the level has none.
+    public readonly struct MoveSpent
+    {
+        public int MovesUsed { get; }
+        public int MoveLimit { get; }
+        public MoveOutcome Outcome { get; }
+
+        public MoveSpent(int movesUsed, int moveLimit, MoveOutcome outcome)
+        {
+            MovesUsed = movesUsed;
+            MoveLimit = moveLimit;
+            Outcome = outcome;
+        }
+    }
+
+    // The game was paused or resumed.
+    public readonly struct PauseChanged
+    {
+        public bool IsPaused { get; }
+
+        public PauseChanged(bool isPaused)
+        {
+            IsPaused = isPaused;
+        }
+    }
+
+    // The flow went back to the menu, so there is no level on screen.
+    public readonly struct MenuOpened { }
+
     public readonly struct LevelWon
     {
         public int LevelIndex { get; }

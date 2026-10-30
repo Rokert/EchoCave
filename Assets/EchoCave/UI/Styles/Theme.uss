@@ -1,0 +1,38 @@
+/* The Penpot palette as variables, and the Fredoka weights as classes. Every other stylesheet uses these. */
+
+:root {
+    --bg-deep: #14102B;
+    --bg-mid: #231B4A;
+    --bg-rock: #3A2D6B;
+    --silhouette-dark: #0B0818;
+
+    --bat-body: #7B5CD6;
+    --bat-belly: #B9A4F2;
+    --bat-ear: #5A3FB0;
+    --white: #FFFFFF;
+
+    --echo-cyan: #4FE3FF;
+    --echo-glow: #A8F3FF;
+
+    --star-gold: #FFC94A;
+    --star-gold-dark: #D99A1E;
+    --danger-red: #FF6B6B;
+    --ui-cream: #FFF4DC;
+    --ui-text: #2A1F55;
+}
+
+.font-regular {
+    -unity-font-definition: url("/Assets/EchoCave/Art/Fonts/Fredoka-Regular.ttf");
+}
+
+.font-medium {
+    -unity-font-definition: url("/Assets/EchoCave/Art/Fonts/Fredoka-Medium.ttf");
+}
+
+.font-semibold {
+    -unity-font-definition: url("/Assets/EchoCave/Art/Fonts/Fredoka-SemiBold.ttf");
+}
+
+.font-bold {
+    -unity-font-definition: url("/Assets/EchoCave/Art/Fonts/Fredoka-Bold.ttf");
+}

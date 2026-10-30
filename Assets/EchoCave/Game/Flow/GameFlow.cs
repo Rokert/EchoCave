@@ -41,6 +41,10 @@ namespace EchoCave.Game
         // Null in the menu.
         public EchoService Echo => _echo;
 
+        // Paused: no taps, no pings, the echo clock stands still, and Won or Lost wait for the resume.
+        // Only a level in play can be paused, and retry or the menu end the pause.
+        public bool IsPaused { get; private set; }
+
         public GameState State => _machine.CurrentState.Id;
 
         public GameFlow(
@@ -91,12 +95,12 @@ namespace EchoCave.Game
             _machine.Tick();
 
             // After the transitions, so a level that was just won or lost stops its clock this frame.
-            if (State == GameState.Playing) _echo.Tick(deltaSeconds);
+            if (State == GameState.Playing && !IsPaused) _echo.Tick(deltaSeconds);
         }
 
         public void HandleTap(Vector2 world)
         {
-            if (State == GameState.Playing) _presenter.HandleTap(world);
+            if (State == GameState.Playing && !IsPaused) _presenter.HandleTap(world);
         }
 
         // Menu only.
@@ -151,7 +155,7 @@ namespace EchoCave.Game
         // player: the HUD gets PingRefused with the reason and the bats shake.
         public void RequestPing()
         {
-            if (State != GameState.Playing) return;
+            if (State != GameState.Playing || IsPaused) return;
 
             PingResult result = _echo.TryPing(Session.Board);
             if (result == PingResult.Pinged) return;
@@ -160,21 +164,37 @@ namespace EchoCave.Game
             _view.ShowRejected();
         }
 
+        // Playing only.
+        public void RequestPause()
+        {
+            if (State == GameState.Playing) SetPaused(true);
+        }
+
+        public void RequestResume()
+        {
+            SetPaused(false);
+        }
+
         internal void ShowMenu()
         {
             DetachEcho();
-            _presenter = null;
+            DetachPresenter();
+            SetPaused(false);
             Session = null;
             _view.Clear();
+            _events.Publish(new MenuOpened());
         }
 
         internal void BeginLevel()
         {
             DetachEcho();
+            DetachPresenter();
+            SetPaused(false);
 
             LevelDefinition level = CurrentLevel;
             Session = LevelBuilder.Build(level);
             _presenter = new BoardPresenter(Session, _resolver, new CommandHistory(), _view);
+            _presenter.MoveExecuted += OnMoveExecuted;
             _presenter.Start();
 
             _echo = new EchoService(_echoStrategy, level.PingBudget);
@@ -203,6 +223,27 @@ namespace EchoCave.Game
             _events.Publish(new LevelLost(LevelIndex, Session.MovesUsed));
         }
 
+        private void OnMoveExecuted(MoveResult result)
+        {
+            _events.Publish(new MoveSpent(Session.MovesUsed, CurrentLevel.MoveLimit, result.Outcome));
+        }
+
+        private void SetPaused(bool paused)
+        {
+            if (IsPaused == paused) return;
+
+            IsPaused = paused;
+            _events.Publish(new PauseChanged(paused));
+        }
+
+        private void DetachPresenter()
+        {
+            if (_presenter == null) return;
+
+            _presenter.MoveExecuted -= OnMoveExecuted;
+            _presenter = null;
+        }
+
         private void OnPinged(EchoPulse pulse)
         {
             _view.SetRevealed(_echo.RevealedBatIds);
@@ -228,7 +269,7 @@ namespace EchoCave.Game
         // True once the level has reached this status and no move is still animating.
         private bool Settled(LevelStatus status)
         {
-            return !_presenter.IsBusy && LevelRules.Evaluate(Session, CurrentLevel) == status;
+            return !IsPaused && !_presenter.IsBusy && LevelRules.Evaluate(Session, CurrentLevel) == status;
         }
 
         private void ClearIntents()

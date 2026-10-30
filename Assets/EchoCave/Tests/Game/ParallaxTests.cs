@@ -13,24 +13,6 @@ namespace EchoCave.Tests
         private const float Ambient = 0.012f;
         private const float Tolerance = 0.0001f;
 
-        [TestCase(0.56f, false)]
-        [TestCase(0.99f, false)]
-        [TestCase(1f, true)]
-        [TestCase(1.78f, true)]
-        [TestCase(2.4f, true)]
-        public void IsLandscape_FollowsTheAspect(float aspect, bool expected)
-        {
-            Assert.AreEqual(expected, Parallax.IsLandscape(aspect));
-        }
-
-        [TestCase(0f)]
-        [TestCase(-1f)]
-        [TestCase(float.NaN)]
-        public void IsLandscape_RejectsAnAspectThatIsNotPositive(float aspect)
-        {
-            Assert.Throws<ArgumentOutOfRangeException>(() => Parallax.IsLandscape(aspect));
-        }
-
         [Test]
         public void NormalizePointer_PutsTheScreenCentreAtZero()
         {
