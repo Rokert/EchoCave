@@ -55,6 +55,11 @@ Because a bounce changes nothing (D-010) and removing a bat never blocks another
 **Why:** exact and linear-ish; BFS would explore states that cannot differ.
 **Consequence:** stars are lost only through wasted taps (bounces), which makes hidden bats and pings the real difficulty lever. If a future rule makes bounces move bats, this solver must become a search. Suggested thresholds: three stars at the minimum, two with a configurable slack in the editor window.
 
+## D-014 — DOTween for view animations (Accepted)
+Fly-out, bounce and later reveal animations use DOTween, imported as the precompiled `DOTween.dll` under `Assets/Plugins`. Only `EchoCave.Game` and `EchoCave.UI` may use it; `EchoCave.Core` never does.
+**Why:** tweens with easing, sequences and kill-on-recycle are what the pooled bat views need; hand-written coroutines would re-implement them. Supersedes the coroutine-based plan.
+**Consequence:** the precompiled DLL is auto-referenced by our asmdefs. DOTween's module shortcuts (sprite, UI) need its Utility Panel to create `DOTween.Modules.asmdef`; do that only when a view needs them. Pooled views must kill their tweens on release.
+
 ## Open questions
 - Check the "EchoCave" name against Play Store before publishing.
 - Play Store closed-testing requirement for new personal accounts.

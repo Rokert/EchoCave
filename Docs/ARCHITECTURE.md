@@ -29,6 +29,8 @@ Dependency direction: `Game`, `UI`, `Ads` → `Core` → `Rokert.Core`. Core nev
 
 - **View** (MonoBehaviour): draws and forwards input events. No decisions.
 - **Presenter**: subscribes to the view, calls the core, updates the view. Plain C# class where possible.
+- `GridLayout2D` (`EchoCave.Game`): maps cells to world positions and back. Board centered on the origin, Y up like `Direction`. Views and input share it so no view does coordinate math.
+- `BatView`: bat sprite + arrow overlay, or a dark "?" silhouette when hidden. Animations use DOTween (D-014).
 - Cross-system notifications (level won, ping used, move spent) go through `EventBus` with readonly struct events.
 
 ## Patterns in use
