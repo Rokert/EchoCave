@@ -2,14 +2,12 @@ using UnityEngine;
 
 namespace EchoCave.Game
 {
-    // Frames the board with an orthographic camera and keeps a background sprite covering the view.
-    // It refits when the screen aspect changes, which happens on rotation and on WebGL window resizes.
+    // Frames the board with an orthographic camera. It refits when the screen aspect changes, which happens
+    // on rotation and on WebGL window resizes. The background is BoardBackdrop's job.
     [RequireComponent(typeof(Camera))]
     public sealed class BoardCamera : MonoBehaviour
     {
         [SerializeField] private BoardViewSettings settings;
-        [Tooltip("Optional. Scaled to cover the whole view and centered on the board.")]
-        [SerializeField] private SpriteRenderer background;
 
         private Camera _camera;
         private BoardView _board;
@@ -41,12 +39,6 @@ namespace EchoCave.Game
             _camera.orthographicSize = CameraFraming.OrthographicSize(layout.Size, _camera.aspect, margin);
             transform.position = new Vector3(center.x, center.y, transform.position.z);
             _framedAspect = _camera.aspect;
-
-            if (background == null || background.sprite == null) return;
-
-            var view = new Vector2(_camera.orthographicSize * 2f * _camera.aspect, _camera.orthographicSize * 2f);
-            background.transform.position = new Vector3(center.x, center.y, background.transform.position.z);
-            background.transform.localScale = Vector3.one * CameraFraming.CoverScale(background.sprite.bounds.size, view);
         }
     }
 }

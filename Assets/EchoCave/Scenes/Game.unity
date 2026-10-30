@@ -119,6 +119,64 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &102982044
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 102982046}
+  - component: {fileID: 102982045}
+  m_Layer: 0
+  m_Name: Backdrop
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &102982045
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 102982044}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 97f3e20f6ca2847c8baa951c05b85748, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: EchoCave.Game::EchoCave.Game.BoardBackdrop
+  targetCamera: {fileID: 1907140415}
+  settings: {fileID: 11400000, guid: 78964d23814a741968cac7a79823e69f, type: 2}
+  portraitLayers:
+  - {fileID: 2800000, guid: feca8f8675e63454791b441b330a31c9, type: 3}
+  - {fileID: 2800000, guid: 305daa35162da4bf3a5a2361272f41b5, type: 3}
+  - {fileID: 2800000, guid: bded3d3dadcb849f6904c7c4ff41786e, type: 3}
+  - {fileID: 2800000, guid: 6fde609a955144bb8ba16b8438ec3bcb, type: 3}
+  - {fileID: 2800000, guid: c409e5b9a7b6a4d8c9450b4f78baee4d, type: 3}
+  landscapeLayers:
+  - {fileID: 2800000, guid: 7a2f73f34b65f46f8ba6b62c2fb5a836, type: 3}
+  - {fileID: 2800000, guid: 260ec96ca124144bd90af6063a9948d1, type: 3}
+  - {fileID: 2800000, guid: 3ee9ffe2f401341359cb93a635dab79f, type: 3}
+  - {fileID: 2800000, guid: 00e466ce2856d4662833d86cc82ef25c, type: 3}
+  - {fileID: 2800000, guid: 93c5749e1844e4223a9414baba38bbb5, type: 3}
+--- !u!4 &102982046
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 102982044}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &731728627
 GameObject:
   m_ObjectHideFlags: 0
@@ -261,6 +319,7 @@ MonoBehaviour:
   batPrefab: {fileID: 1822893147596783698, guid: 94a352b23a599425f85950ae14020411, type: 3}
   batContainer: {fileID: 2102626714}
   settings: {fileID: 11400000, guid: e5ae06147674c4b66ba973baec3c8608, type: 2}
+  cellSprite: {fileID: 779293467229747183, guid: 8dba19dc772c14e9aaa3c7c70aa12717, type: 3}
 --- !u!4 &1851453773
 Transform:
   m_ObjectHideFlags: 0
@@ -384,7 +443,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: EchoCave.Game::EchoCave.Game.BoardCamera
   settings: {fileID: 11400000, guid: e5ae06147674c4b66ba973baec3c8608, type: 2}
-  background: {fileID: 0}
 --- !u!114 &1907140418
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -468,3 +526,4 @@ SceneRoots:
   - {fileID: 1851453773}
   - {fileID: 930681445}
   - {fileID: 731728629}
+  - {fileID: 102982046}

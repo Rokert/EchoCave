@@ -45,7 +45,9 @@ Dependency direction: `Game`, `UI`, `Ads` → `Core` → `Rokert.Core`. Core nev
 - `GameRoot` (composition root of the Game scene): builds the flow from the catalog and the scene views, forwards `TapInput` taps, ticks the flow in `Update`, and re-frames the camera on `LevelStarted`. No edge services are registered yet; save, audio, analytics and ads have their own tickets (ROK-145, ROK-146).
 - `GameDebugOverlay`: temporary IMGUI panel to drive the flow until the UI Toolkit HUD exists (ROK-135).
 - `MovePathPlanner`: pure function from `MoveResult` + `GridLayout2D` to a `MovePlan` (start, target, bump point, travel in cells). All the animation geometry lives here so it is testable; the view only tweens between the points.
-- `BoardCamera` + `CameraFraming`: orthographic framing of the board plus margin, and a background sprite scaled to cover the view. Refits when the screen aspect changes (rotation, WebGL resize). The math is in `CameraFraming` for EditMode tests.
+- `BoardCamera` + `CameraFraming`: orthographic framing of the board plus margin. Refits when the screen aspect changes (rotation, WebGL resize). The math is in `CameraFraming` for EditMode tests.
+- `BoardBackdrop` (D-020): the layered night-cave background. It only reads the camera, so it also works in the menu. It owns a portrait set and a landscape set of five layers (base, far, motes, near, crystals) and shows the set that matches the camera aspect, not the platform. Each layer covers the view plus the margin its drift needs, and moves by depth from the pointer and a slow idle wander (mouse always; touch and pen only while pressed). The math lives in `Parallax` (pure, EditMode tests); tunables in `BackdropSettings`.
+- Cell tiles: `BoardView` draws one tile sprite under every cell, reused between levels; scale and sorting order come from `BoardViewSettings`.
 - `BoardViewSettings` (ScriptableObject): cell size, camera margin, fly speed, overshoot, bump/return timings, eases. Distances are in cells.
 - Cross-system notifications (level won, ping used, move spent) go through `EventBus` with readonly struct events.
 
