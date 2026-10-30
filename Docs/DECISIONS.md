@@ -80,6 +80,11 @@ Won = the board is empty. Lost = the move limit is used up while bats remain (on
 **Why:** a reveal is temporary, so mutating bats would need a matching re-hide and would leak into undo and the solver; keeping it beside the board makes both untouched. Refusing a ping while one runs avoids burning a paid resource by accident.
 **Consequence:** views decide visibility as `!bat.IsHidden || echo.IsRevealed(id)`. A new `EchoService` is created per attempt, so a retry restores the pings. `Bat.WithHidden` stays in the model but the echo does not use it. Granting pings from a rewarded ad calls `GrantPings` (ROK-146). Wiring into the flow and views is ROK-147.
 
+## D-019 — Echo in the game flow, and every refusal is visible (Accepted)
+`GameFlow` creates one `EchoService` per attempt and ticks it only while Playing. A ping acts at once, only while Playing, and is allowed while a move animates (the reveal does not depend on moves). The player must always see an answer: a refused ping publishes `PingRefused` (for the HUD) and shakes the bats; losing reveals every hidden bat so the mistake is visible. The reveal duration lives in `EchoSettings`, not in code.
+**Why:** a silent refusal reads as a broken button, and a loss that hides what went wrong teaches nothing. Ticking only while Playing means a paused or finished level never changes under the player.
+**Consequence:** `IBoardView` gained `SetRevealed` and `ShowRejected`, and `GameFlow.Tick` takes the frame time. The shake and the plain show or hide are placeholders: the fine reveal and expiry animation, the ping wave and the sound belong to ROK-136. `PingRefused` carries the reason so the HUD can word it. The shake settings live in `BoardViewSettings`.
+
 ## Open questions
 - Check the "EchoCave" name against Play Store before publishing.
 - Play Store closed-testing requirement for new personal accounts.

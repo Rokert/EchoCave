@@ -9,6 +9,7 @@ namespace EchoCave.Game
     public sealed class GameRoot : MonoBehaviour
     {
         [SerializeField] private LevelCatalog catalog;
+        [SerializeField] private EchoSettings echoSettings;
         [SerializeField] private BoardView boardView;
         [SerializeField] private BoardCamera boardCamera;
         [SerializeField] private TapInput tapInput;
@@ -19,7 +20,8 @@ namespace EchoCave.Game
 
         private void Awake()
         {
-            Flow = new GameFlow(boardView, catalog.ToDefinitions(), new MoveResolver(), EventBus.Global);
+            var echoStrategy = new RevealAllHiddenStrategy(echoSettings.RevealSeconds);
+            Flow = new GameFlow(boardView, catalog.ToDefinitions(), new MoveResolver(), EventBus.Global, echoStrategy);
         }
 
         private void OnEnable()
@@ -41,7 +43,7 @@ namespace EchoCave.Game
 
         private void Update()
         {
-            Flow.Tick();
+            Flow.Tick(Time.deltaTime);
         }
 
         private void OnTapped(Vector2 world)
