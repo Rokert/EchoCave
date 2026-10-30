@@ -28,6 +28,9 @@ namespace EchoCave.Tests
         private EventBus _bus;
         private GameFlow _flow;
 
+        // These levels have no hidden bats and no pings; the echo has its own tests.
+        private readonly IEchoStrategy _echoStrategy = new RevealAllHiddenStrategy(2f);
+
         private readonly List<LevelStarted> _started = new List<LevelStarted>();
         private readonly List<LevelWon> _won = new List<LevelWon>();
         private readonly List<LevelLost> _lost = new List<LevelLost>();
@@ -44,7 +47,7 @@ namespace EchoCave.Tests
             _bus.Subscribe<LevelStarted>(e => _started.Add(e));
             _bus.Subscribe<LevelWon>(e => _won.Add(e));
             _bus.Subscribe<LevelLost>(e => _lost.Add(e));
-            _flow = new GameFlow(_view, new[] { Easy, Tight }, new MoveResolver(), _bus);
+            _flow = new GameFlow(_view, new[] { Easy, Tight }, new MoveResolver(), _bus, _echoStrategy);
         }
 
         private static Vector2 Center(int x, int y) => new Vector2(x + 0.5f, y + 0.5f);
@@ -52,7 +55,7 @@ namespace EchoCave.Tests
         private void StartLevel(int index)
         {
             _flow.RequestPlay(index);
-            _flow.Tick();
+            _flow.Tick(0f);
         }
 
         // One tap, its animation, and the frame after it.
@@ -60,7 +63,7 @@ namespace EchoCave.Tests
         {
             _flow.HandleTap(Center(x, y));
             _view.FinishAnimation();
-            _flow.Tick();
+            _flow.Tick(0f);
         }
 
         private void WinEasy()
@@ -103,12 +106,12 @@ namespace EchoCave.Tests
             StartLevel(0);
 
             _flow.HandleTap(Center(1, 0));
-            _flow.Tick();
+            _flow.Tick(0f);
             Assert.AreEqual(GameState.Playing, _flow.State, "the bat is still flying");
             Assert.AreEqual(0, _won.Count);
 
             _view.FinishAnimation();
-            _flow.Tick();
+            _flow.Tick(0f);
 
             Assert.AreEqual(GameState.Won, _flow.State);
             Assert.AreEqual(1, _won.Count);
@@ -138,11 +141,11 @@ namespace EchoCave.Tests
             TapAndSettle(0, 0);
 
             _flow.HandleTap(Center(1, 0));
-            _flow.Tick();
+            _flow.Tick(0f);
             Assert.AreEqual(GameState.Playing, _flow.State, "the last move is still animating");
 
             _view.FinishAnimation();
-            _flow.Tick();
+            _flow.Tick(0f);
 
             Assert.AreEqual(GameState.Lost, _flow.State);
             Assert.AreEqual(1, _lost.Count);
@@ -156,7 +159,7 @@ namespace EchoCave.Tests
             WinEasy();
 
             _flow.RequestRetry();
-            _flow.Tick();
+            _flow.Tick(0f);
 
             Assert.AreEqual(GameState.Playing, _flow.State);
             Assert.AreEqual(0, _flow.Session.MovesUsed);
@@ -171,7 +174,7 @@ namespace EchoCave.Tests
             LoseTight();
 
             _flow.RequestRetry();
-            _flow.Tick();
+            _flow.Tick(0f);
 
             Assert.AreEqual(GameState.Playing, _flow.State);
             Assert.AreEqual(1, _flow.LevelIndex);
@@ -185,7 +188,7 @@ namespace EchoCave.Tests
             WinEasy();
 
             _flow.RequestNext();
-            _flow.Tick();
+            _flow.Tick(0f);
 
             Assert.AreEqual(GameState.Playing, _flow.State);
             Assert.AreEqual(1, _flow.LevelIndex);
@@ -201,7 +204,7 @@ namespace EchoCave.Tests
             Assert.AreEqual(GameState.Won, _flow.State);
 
             _flow.RequestNext();
-            _flow.Tick();
+            _flow.Tick(0f);
 
             Assert.AreEqual(GameState.Menu, _flow.State);
         }
@@ -212,7 +215,7 @@ namespace EchoCave.Tests
             LoseTight();
 
             _flow.RequestNext();
-            _flow.Tick();
+            _flow.Tick(0f);
 
             Assert.AreEqual(GameState.Lost, _flow.State);
             Assert.AreEqual(1, _flow.LevelIndex);
@@ -240,7 +243,7 @@ namespace EchoCave.Tests
         {
             StartLevel(0);
             _flow.RequestMenu();
-            _flow.Tick();
+            _flow.Tick(0f);
 
             Assert.AreEqual(GameState.Menu, _flow.State);
             Assert.IsNull(_flow.Session);
@@ -248,7 +251,7 @@ namespace EchoCave.Tests
 
             WinEasy();
             _flow.RequestMenu();
-            _flow.Tick();
+            _flow.Tick(0f);
 
             Assert.AreEqual(GameState.Menu, _flow.State);
         }
@@ -259,12 +262,12 @@ namespace EchoCave.Tests
             _flow.RequestRetry();
             _flow.RequestNext();
             _flow.RequestMenu();
-            _flow.Tick();
+            _flow.Tick(0f);
             Assert.AreEqual(GameState.Menu, _flow.State);
 
             StartLevel(0);
             _flow.RequestNext();
-            _flow.Tick();
+            _flow.Tick(0f);
             Assert.AreEqual(GameState.Playing, _flow.State);
             Assert.AreEqual(0, _flow.LevelIndex);
         }
@@ -278,11 +281,11 @@ namespace EchoCave.Tests
 
             _flow.RequestRetry();
             _flow.RequestMenu();
-            _flow.Tick();
+            _flow.Tick(0f);
             Assert.AreEqual(GameState.Playing, _flow.State);
 
-            _flow.Tick();
-            _flow.Tick();
+            _flow.Tick(0f);
+            _flow.Tick(0f);
 
             Assert.AreEqual(GameState.Playing, _flow.State);
         }
@@ -314,7 +317,7 @@ namespace EchoCave.Tests
                 3, 1, new[] { new BatDefinition(new Cell(1, 0), Direction.Right, false) }, 5, 0, 5, 7);
 
             var thrown = Assert.Throws<ArgumentException>(
-                () => new GameFlow(_view, new[] { Easy, invalid }, new MoveResolver(), _bus));
+                () => new GameFlow(_view, new[] { Easy, invalid }, new MoveResolver(), _bus, _echoStrategy));
 
             StringAssert.Contains("Level 2", thrown.Message);
         }
@@ -325,11 +328,12 @@ namespace EchoCave.Tests
             var resolver = new MoveResolver();
             var levels = new[] { Easy };
 
-            Assert.Throws<ArgumentNullException>(() => new GameFlow(null, levels, resolver, _bus));
-            Assert.Throws<ArgumentNullException>(() => new GameFlow(_view, null, resolver, _bus));
-            Assert.Throws<ArgumentNullException>(() => new GameFlow(_view, levels, null, _bus));
-            Assert.Throws<ArgumentNullException>(() => new GameFlow(_view, levels, resolver, null));
-            Assert.Throws<ArgumentException>(() => new GameFlow(_view, new LevelDefinition[0], resolver, _bus));
+            Assert.Throws<ArgumentNullException>(() => new GameFlow(null, levels, resolver, _bus, _echoStrategy));
+            Assert.Throws<ArgumentNullException>(() => new GameFlow(_view, null, resolver, _bus, _echoStrategy));
+            Assert.Throws<ArgumentNullException>(() => new GameFlow(_view, levels, null, _bus, _echoStrategy));
+            Assert.Throws<ArgumentNullException>(() => new GameFlow(_view, levels, resolver, null, _echoStrategy));
+            Assert.Throws<ArgumentNullException>(() => new GameFlow(_view, levels, resolver, _bus, null));
+            Assert.Throws<ArgumentException>(() => new GameFlow(_view, new LevelDefinition[0], resolver, _bus, _echoStrategy));
         }
     }
 }

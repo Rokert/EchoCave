@@ -20,17 +20,17 @@ MonoBehaviour:
     hidden: 0
   - cell: {x: 2, y: 1}
     direction: 3
-    hidden: 0
+    hidden: 1
   - cell: {x: 4, y: 1}
     direction: 1
     hidden: 0
   - cell: {x: 2, y: 3}
     direction: 2
-    hidden: 0
+    hidden: 1
   - cell: {x: 2, y: 4}
     direction: 1
     hidden: 0
   moveLimit: 5
-  pingBudget: 0
+  pingBudget: 2
   threeStarMoves: 5
   twoStarMoves: 5

@@ -1,13 +1,14 @@
 using System;
+using System.Collections.Generic;
 using EchoCave.Core;
 using UnityEngine;
 
 namespace EchoCave.Game
 {
-    // What the presenter needs from the board view, so tests can drive it with a fake.
+    // What the presenter and the game flow need from the board view, so tests can drive them with a fake.
     public interface IBoardView
     {
-        // Replaces whatever is on screen with the bats of this board.
+        // Replaces whatever is on screen with the bats of this board. Every bat starts unrevealed.
         void Build(Board board);
 
         // Removes every bat from the screen.
@@ -18,5 +19,11 @@ namespace EchoCave.Game
 
         // Animates one move the core already resolved. onComplete runs when the animation ends.
         void Play(MoveResult result, Action onComplete);
+
+        // Shows exactly these bats as revealed; every other hidden bat goes dark again.
+        void SetRevealed(IReadOnlyCollection<int> batIds);
+
+        // Tells the player that what they just asked for was refused.
+        void ShowRejected();
     }
 }

@@ -15,6 +15,7 @@ namespace EchoCave.Game
         private bool _restCaptured;
         private Vector3 _restScale;
         private Quaternion _restRotation;
+        private bool _hiddenByDefault;
 
         public int BatId { get; private set; }
 
@@ -22,8 +23,15 @@ namespace EchoCave.Game
         {
             CaptureRest();
             BatId = batId;
+            _hiddenByDefault = isHidden;
             arrow.localRotation = Quaternion.Euler(0f, 0f, AngleFor(direction));
             SetHidden(isHidden);
+        }
+
+        // A bat that is hidden by default shows itself while revealed and goes dark again afterwards.
+        public void SetRevealed(bool revealed)
+        {
+            SetHidden(_hiddenByDefault && !revealed);
         }
 
         public void SetHidden(bool isHidden)

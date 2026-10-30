@@ -12,15 +12,20 @@ namespace EchoCave.Game
     // The player's intents (RequestPlay, RequestRetry, ...) only set a flag when they make sense in the
     // current state; the state machine consumes the flag on the next Tick. Won and Lost wait for the move
     // animation to finish, so a popup never shows while a bat is still flying (D-017).
+    //
+    // Each attempt gets its own EchoService, so a retry restores the pings. The echo clock only runs while
+    // Playing, and a ping acts at once instead of waiting for a Tick (D-019).
     public sealed class GameFlow
     {
         private readonly IBoardView _view;
         private readonly IReadOnlyList<LevelDefinition> _levels;
         private readonly MoveResolver _resolver;
         private readonly EventBus _events;
+        private readonly IEchoStrategy _echoStrategy;
         private readonly StateMachine<FlowState> _machine = new StateMachine<FlowState>();
 
         private BoardPresenter _presenter;
+        private EchoService _echo;
         private bool _playRequested;
         private bool _retryRequested;
         private bool _nextRequested;
@@ -33,14 +38,23 @@ namespace EchoCave.Game
         // Null in the menu.
         public LevelSession Session { get; private set; }
 
+        // Null in the menu.
+        public EchoService Echo => _echo;
+
         public GameState State => _machine.CurrentState.Id;
 
-        public GameFlow(IBoardView view, IReadOnlyList<LevelDefinition> levels, MoveResolver resolver, EventBus events)
+        public GameFlow(
+            IBoardView view,
+            IReadOnlyList<LevelDefinition> levels,
+            MoveResolver resolver,
+            EventBus events,
+            IEchoStrategy echoStrategy)
         {
             _view = view ?? throw new ArgumentNullException(nameof(view));
             _levels = levels ?? throw new ArgumentNullException(nameof(levels));
             _resolver = resolver ?? throw new ArgumentNullException(nameof(resolver));
             _events = events ?? throw new ArgumentNullException(nameof(events));
+            _echoStrategy = echoStrategy ?? throw new ArgumentNullException(nameof(echoStrategy));
 
             if (levels.Count == 0) throw new ArgumentException("The game needs at least one level.", nameof(levels));
 
@@ -72,7 +86,13 @@ namespace EchoCave.Game
             _machine.Start(menu);
         }
 
-        public void Tick() => _machine.Tick();
+        public void Tick(float deltaSeconds)
+        {
+            _machine.Tick();
+
+            // After the transitions, so a level that was just won or lost stops its clock this frame.
+            if (State == GameState.Playing) _echo.Tick(deltaSeconds);
+        }
 
         public void HandleTap(Vector2 world)
         {
@@ -127,8 +147,22 @@ namespace EchoCave.Game
             if (State != GameState.Menu) _menuRequested = true;
         }
 
+        // Playing only. Works at once, even while a move animates. A ping that cannot do anything tells the
+        // player: the HUD gets PingRefused with the reason and the bats shake.
+        public void RequestPing()
+        {
+            if (State != GameState.Playing) return;
+
+            PingResult result = _echo.TryPing(Session.Board);
+            if (result == PingResult.Pinged) return;
+
+            _events.Publish(new PingRefused(result));
+            _view.ShowRejected();
+        }
+
         internal void ShowMenu()
         {
+            DetachEcho();
             _presenter = null;
             Session = null;
             _view.Clear();
@@ -136,11 +170,18 @@ namespace EchoCave.Game
 
         internal void BeginLevel()
         {
+            DetachEcho();
+
             LevelDefinition level = CurrentLevel;
             Session = LevelBuilder.Build(level);
             _presenter = new BoardPresenter(Session, _resolver, new CommandHistory(), _view);
             _presenter.Start();
-            _events.Publish(new LevelStarted(LevelIndex, level.MoveLimit));
+
+            _echo = new EchoService(_echoStrategy, level.PingBudget);
+            _echo.Pinged += OnPinged;
+            _echo.Expired += OnExpired;
+
+            _events.Publish(new LevelStarted(LevelIndex, level.MoveLimit, level.PingBudget));
         }
 
         internal void ReportWon()
@@ -149,9 +190,39 @@ namespace EchoCave.Game
             _events.Publish(new LevelWon(LevelIndex, moves, CurrentLevel.StarsFor(moves)));
         }
 
+        // Shows where every hidden bat was pointing, so the player sees what went wrong.
         internal void ReportLost()
         {
+            var hidden = new List<int>();
+            foreach (Bat bat in Session.Board.Bats)
+            {
+                if (bat.IsHidden) hidden.Add(bat.Id);
+            }
+
+            _view.SetRevealed(hidden);
             _events.Publish(new LevelLost(LevelIndex, Session.MovesUsed));
+        }
+
+        private void OnPinged(EchoPulse pulse)
+        {
+            _view.SetRevealed(_echo.RevealedBatIds);
+            _events.Publish(new PingUsed(_echo.PingsLeft, pulse.DurationSeconds));
+        }
+
+        // The service has already cleared its set, so this hides every bat again.
+        private void OnExpired()
+        {
+            _view.SetRevealed(_echo.RevealedBatIds);
+            _events.Publish(new EchoExpired());
+        }
+
+        private void DetachEcho()
+        {
+            if (_echo == null) return;
+
+            _echo.Pinged -= OnPinged;
+            _echo.Expired -= OnExpired;
+            _echo = null;
         }
 
         // True once the level has reached this status and no move is still animating.

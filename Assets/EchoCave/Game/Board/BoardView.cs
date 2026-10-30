@@ -58,6 +58,29 @@ namespace EchoCave.Game
             _views.Clear();
         }
 
+        public void SetRevealed(IReadOnlyCollection<int> batIds)
+        {
+            if (batIds == null) throw new ArgumentNullException(nameof(batIds));
+
+            var revealed = new HashSet<int>(batIds);
+            foreach (KeyValuePair<int, BatView> pair in _views) pair.Value.SetRevealed(revealed.Contains(pair.Key));
+        }
+
+        // A short sideways shake of every bat: "no, that did nothing".
+        public void ShowRejected()
+        {
+            if (Layout == null) return;
+
+            // Finish a shake still running, so a second refusal never starts from a displaced container.
+            batContainer.DOComplete();
+            batContainer
+                .DOPunchPosition(
+                    Vector3.right * (settings.RejectShakeCells * Layout.CellSize),
+                    settings.RejectShakeDuration,
+                    settings.RejectShakeVibrato)
+                .SetLink(gameObject);
+        }
+
         // Plays one tap. onComplete runs when the animation ends, after an exited bat has been recycled.
         public void Play(MoveResult result, Action onComplete = null)
         {

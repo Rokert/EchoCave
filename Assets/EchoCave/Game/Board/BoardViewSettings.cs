@@ -29,6 +29,12 @@ namespace EchoCave.Game
         [SerializeField, Min(0f)] private float blockerPunchCells = 0.15f;
         [SerializeField, Min(0.01f)] private float blockerPunchDuration = 0.25f;
 
+        [Header("Refused action")]
+        [Tooltip("How far the bats shake sideways when a ping is refused, in cells.")]
+        [SerializeField, Min(0f)] private float rejectShakeCells = 0.12f;
+        [SerializeField, Min(0.01f)] private float rejectShakeDuration = 0.3f;
+        [SerializeField, Min(1)] private int rejectShakeVibrato = 8;
+
         public float CellSize => cellSize;
         public float CameraMarginCells => cameraMarginCells;
         public float FlySpeed => flySpeed;
@@ -40,5 +46,8 @@ namespace EchoCave.Game
         public Ease ReturnEase => returnEase;
         public float BlockerPunchCells => blockerPunchCells;
         public float BlockerPunchDuration => blockerPunchDuration;
+        public float RejectShakeCells => rejectShakeCells;
+        public float RejectShakeDuration => rejectShakeDuration;
+        public int RejectShakeVibrato => rejectShakeVibrato;
     }
 }
