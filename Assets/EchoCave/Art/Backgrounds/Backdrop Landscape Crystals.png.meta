@@ -1,10 +1,25 @@
 fileFormatVersion: 2
-guid: d71255d2812bb4a3a914adf5261e276c
+guid: 93c5749e1844e4223a9414baba38bbb5
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -3972314497348897313
-    second: Background Night Cave_0
+      213: 3592642147574888895
+    second: Backdrop Landscape Crystals_0
+  - first:
+      213: -5870756086738000058
+    second: Backdrop Landscape Crystals_1
+  - first:
+      213: -9062120663635776753
+    second: Backdrop Landscape Crystals_2
+  - first:
+      213: -1177346664856226436
+    second: Backdrop Landscape Crystals_3
+  - first:
+      213: -8813461636940288107
+    second: Backdrop Landscape Crystals_4
+  - first:
+      213: -8204155574482474537
+    second: Backdrop Landscape Crystals_5
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -128,13 +143,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Background Night Cave_0
+      name: Backdrop Landscape Crystals_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 1080
-        height: 1920
+        x: 273
+        y: 891
+        width: 54
+        height: 93
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -143,8 +158,118 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: fd57269c2018fd8c0800000000000000
-      internalID: -3972314497348897313
+      spriteID: fb93c43aff0abd130800000000000000
+      internalID: 3592642147574888895
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Backdrop Landscape Crystals_1
+      rect:
+        serializedVersion: 2
+        x: 1587
+        y: 856
+        width: 66
+        height: 117
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 647e4079172e68ea0800000000000000
+      internalID: -5870756086738000058
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Backdrop Landscape Crystals_2
+      rect:
+        serializedVersion: 2
+        x: 109
+        y: 118
+        width: 82
+        height: 148
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f0b23440541ec3280800000000000000
+      internalID: -9062120663635776753
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Backdrop Landscape Crystals_3
+      rect:
+        serializedVersion: 2
+        x: 203
+        y: 76
+        width: 54
+        height: 93
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c75f0c7327939afe0800000000000000
+      internalID: -1177346664856226436
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Backdrop Landscape Crystals_4
+      rect:
+        serializedVersion: 2
+        x: 1664
+        y: 57
+        width: 52
+        height: 90
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 59f24a0465b40b580800000000000000
+      internalID: -8813461636940288107
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Backdrop Landscape Crystals_5
+      rect:
+        serializedVersion: 2
+        x: 1724
+        y: 101
+        width: 92
+        height: 165
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7d96ee4f8fbf42e80800000000000000
+      internalID: -8204155574482474537
       vertices: []
       indices: 
       edges: []
@@ -163,7 +288,12 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Background Night Cave_0: -3972314497348897313
+      Backdrop Landscape Crystals_0: 3592642147574888895
+      Backdrop Landscape Crystals_1: -5870756086738000058
+      Backdrop Landscape Crystals_2: -9062120663635776753
+      Backdrop Landscape Crystals_3: -1177346664856226436
+      Backdrop Landscape Crystals_4: -8813461636940288107
+      Backdrop Landscape Crystals_5: -8204155574482474537
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

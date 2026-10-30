@@ -14,9 +14,13 @@ namespace EchoCave.Game
         [SerializeField] private BatView batPrefab;
         [SerializeField] private Transform batContainer;
         [SerializeField] private BoardViewSettings settings;
+        [Tooltip("Drawn under every cell. Leave empty to draw no tiles.")]
+        [SerializeField] private Sprite cellSprite;
 
         private readonly Dictionary<int, BatView> _views = new Dictionary<int, BatView>();
+        private readonly List<SpriteRenderer> _tiles = new List<SpriteRenderer>();
         private BatFactory _factory;
+        private Transform _tileContainer;
 
         public GridLayout2D Layout { get; private set; }
 
@@ -29,6 +33,7 @@ namespace EchoCave.Game
             Layout = new GridLayout2D(board.Width, board.Height, settings.CellSize);
             _factory ??= new BatFactory(batPrefab, batContainer, board.Count);
 
+            BuildTiles();
             foreach (Bat bat in board.Bats) Spawn(bat);
         }
 
@@ -56,6 +61,43 @@ namespace EchoCave.Game
         {
             _factory?.ReleaseAll();
             _views.Clear();
+
+            foreach (SpriteRenderer tile in _tiles) tile.gameObject.SetActive(false);
+        }
+
+        // One tile per cell, reused between levels: Build only moves, scales and shows the ones it needs.
+        private void BuildTiles()
+        {
+            if (cellSprite == null) return;
+
+            if (_tileContainer == null)
+            {
+                _tileContainer = new GameObject("Tiles").transform;
+                _tileContainer.SetParent(transform, false);
+            }
+
+            int count = Layout.Width * Layout.Height;
+            while (_tiles.Count < count) _tiles.Add(CreateTile());
+
+            float scale = Layout.CellSize * settings.TileScale / SpriteMetrics.Size(cellSprite).x;
+            for (int i = 0; i < count; i++)
+            {
+                SpriteRenderer tile = _tiles[i];
+                tile.transform.localPosition = Layout.CellToWorld(new Cell(i % Layout.Width, i / Layout.Width));
+                tile.transform.localScale = Vector3.one * scale;
+                tile.gameObject.SetActive(true);
+            }
+        }
+
+        private SpriteRenderer CreateTile()
+        {
+            var tile = new GameObject("Tile");
+            tile.transform.SetParent(_tileContainer, false);
+
+            SpriteRenderer renderer = tile.AddComponent<SpriteRenderer>();
+            renderer.sprite = cellSprite;
+            renderer.sortingOrder = settings.TileSortingOrder;
+            return renderer;
         }
 
         public void SetRevealed(IReadOnlyCollection<int> batIds)

@@ -12,6 +12,12 @@ namespace EchoCave.Game
         [Tooltip("Empty space around the board, in cells, when the camera frames it.")]
         [SerializeField, Min(0f)] private float cameraMarginCells = 1f;
 
+        [Header("Cell tiles")]
+        [Tooltip("Tile size as a share of the cell: below 1 leaves a thin gap between tiles.")]
+        [SerializeField, Range(0.5f, 1f)] private float tileScale = 0.94f;
+        [Tooltip("Above the background layers, below the bats.")]
+        [SerializeField] private int tileSortingOrder = -50;
+
         [Header("Fly-out")]
         [Tooltip("Cells per second.")]
         [SerializeField, Min(0.1f)] private float flySpeed = 12f;
@@ -37,6 +43,8 @@ namespace EchoCave.Game
 
         public float CellSize => cellSize;
         public float CameraMarginCells => cameraMarginCells;
+        public float TileScale => tileScale;
+        public int TileSortingOrder => tileSortingOrder;
         public float FlySpeed => flySpeed;
         public float ExitOvershootCells => exitOvershootCells;
         public Ease ExitEase => exitEase;
