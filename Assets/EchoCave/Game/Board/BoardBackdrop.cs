@@ -103,7 +103,7 @@ namespace EchoCave.Game
             _appliedSize = targetCamera.orthographicSize;
             _viewSize = new Vector2(_appliedSize * 2f * _appliedAspect, _appliedSize * 2f);
 
-            bool landscape = Parallax.IsLandscape(_appliedAspect);
+            bool landscape = ScreenAspect.IsLandscape(_appliedAspect);
             _portraitRoot.SetActive(!landscape);
             _landscapeRoot.SetActive(landscape);
             _active = landscape ? _landscape : _portrait;

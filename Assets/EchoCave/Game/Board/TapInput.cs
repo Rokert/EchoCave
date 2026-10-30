@@ -11,8 +11,15 @@ namespace EchoCave.Game
         [SerializeField] private Camera worldCamera;
 
         private InputAction _press;
+        private IPointerBlocker _blocker;
 
         public event Action<Vector2> Tapped;
+
+        // Null removes it. A tap that starts on a UI element is dropped here, before anything hears of it.
+        public void SetBlocker(IPointerBlocker blocker)
+        {
+            _blocker = blocker;
+        }
 
         private void Awake()
         {
@@ -42,6 +49,8 @@ namespace EchoCave.Game
             if (pointer == null) return;
 
             Vector2 screen = pointer.position.ReadValue();
+            if (_blocker != null && _blocker.IsOverUi(screen)) return;
+
             Vector3 world = worldCamera.ScreenToWorldPoint(new Vector3(screen.x, screen.y, -worldCamera.transform.position.z));
             Tapped?.Invoke(world);
         }

@@ -143,6 +143,39 @@ namespace EchoCave.Tests
         }
 
         [Test]
+        public void MoveExecuted_IsRaisedOncePerMove_WithTheResolvedResult_BeforeTheAnimation()
+        {
+            var results = new System.Collections.Generic.List<MoveResult>();
+            int playedWhenRaised = -1;
+            _presenter.MoveExecuted += result =>
+            {
+                results.Add(result);
+                playedWhenRaised = _view.Played.Count;
+            };
+
+            _presenter.HandleTap(Center(0, 0));
+
+            Assert.AreEqual(1, results.Count);
+            Assert.AreEqual(MoveOutcome.Exited, results[0].Outcome);
+            Assert.AreEqual(1, results[0].Bat.Id);
+            Assert.AreEqual(0, playedWhenRaised, "the counter must update before the animation starts");
+        }
+
+        [Test]
+        public void MoveExecuted_IsNotRaised_ForTapsThatDoNothing()
+        {
+            int raised = 0;
+            _presenter.MoveExecuted += _ => raised++;
+
+            _presenter.HandleTap(Center(1, 3));      // an empty cell
+            _presenter.HandleTap(new Vector2(-3f, 9f));   // off the board
+            _presenter.HandleTap(Center(0, 0));      // a real move
+            _presenter.HandleTap(Center(4, 2));      // ignored: the first move is still animating
+
+            Assert.AreEqual(1, raised);
+        }
+
+        [Test]
         public void Constructor_RejectsNulls()
         {
             var resolver = new MoveResolver();

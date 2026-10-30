@@ -8,14 +8,6 @@ namespace EchoCave.Game
     // the effect looks the same on any resolution.
     public static class Parallax
     {
-        // Portrait art for tall windows, landscape art for wide ones. A square window counts as landscape.
-        public static bool IsLandscape(float aspect)
-        {
-            if (!(aspect > 0f)) throw new ArgumentOutOfRangeException(nameof(aspect), aspect, "Aspect must be positive.");
-
-            return aspect >= 1f;
-        }
-
         // Screen pixels to -1..1 on both axes, 0 at the centre of the screen. Positions outside are clamped.
         public static Vector2 NormalizePointer(Vector2 screenPosition, Vector2 screenSize)
         {
