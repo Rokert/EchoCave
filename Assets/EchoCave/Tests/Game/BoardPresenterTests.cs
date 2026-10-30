@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using EchoCave.Core;
 using EchoCave.Game;
 using NUnit.Framework;
@@ -10,54 +9,6 @@ namespace EchoCave.Tests
 {
     public class BoardPresenterTests
     {
-        // World == cell: the point (x + 0.5, y + 0.5) is inside cell (x, y). Play only records the call.
-        private sealed class FakeBoardView : IBoardView
-        {
-            private readonly int _width;
-            private readonly int _height;
-
-            public readonly List<MoveResult> Played = new List<MoveResult>();
-            public Action PendingComplete;
-            public Board Built;
-            public int BuildCount;
-
-            // Reports a miss while still handing back a real bat's cell, which is what a careless presenter would act on.
-            public bool ForceMiss;
-
-            public FakeBoardView(int width, int height)
-            {
-                _width = width;
-                _height = height;
-            }
-
-            public void Build(Board board)
-            {
-                Built = board;
-                BuildCount++;
-            }
-
-            public bool TryGetCell(Vector2 world, out Cell cell)
-            {
-                cell = new Cell(Mathf.FloorToInt(world.x), Mathf.FloorToInt(world.y));
-                if (ForceMiss) return false;
-
-                return cell.X >= 0 && cell.X < _width && cell.Y >= 0 && cell.Y < _height;
-            }
-
-            public void Play(MoveResult result, Action onComplete)
-            {
-                Played.Add(result);
-                PendingComplete = onComplete;
-            }
-
-            public void FinishAnimation()
-            {
-                Action complete = PendingComplete;
-                PendingComplete = null;
-                complete?.Invoke();
-            }
-        }
-
         private LevelSession _session;
         private FakeBoardView _view;
         private BoardPresenter _presenter;
@@ -70,7 +21,7 @@ namespace EchoCave.Tests
             board.Add(new Bat(2, new Cell(2, 2), Direction.Right));    // blocked by 3
             board.Add(new Bat(3, new Cell(4, 2), Direction.Up));       // clear path up
             _session = new LevelSession(board);
-            _view = new FakeBoardView(5, 5);
+            _view = new FakeBoardView();
             _presenter = new BoardPresenter(_session, new MoveResolver(), new CommandHistory(), _view);
             _presenter.Start();
         }

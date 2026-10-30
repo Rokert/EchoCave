@@ -10,6 +10,9 @@ namespace EchoCave.Game
         // Replaces whatever is on screen with the bats of this board.
         void Build(Board board);
 
+        // Removes every bat from the screen.
+        void Clear();
+
         // Converts a world point to a board cell. False when the point is off the board.
         bool TryGetCell(Vector2 world, out Cell cell);
 

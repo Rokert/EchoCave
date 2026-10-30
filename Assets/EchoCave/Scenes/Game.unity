@@ -128,7 +128,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 731728629}
-  - component: {fileID: 731728628}
+  - component: {fileID: 731728630}
+  - component: {fileID: 731728631}
   m_Layer: 0
   m_Name: Sandbox
   m_TagString: Untagged
@@ -136,22 +137,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &731728628
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 731728627}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bf0fee7bc124445aca32c06d3d895ff6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: EchoCave.Game::EchoCave.Game.BoardSandbox
-  level: {fileID: 11400000, guid: 08c18422065344579a942c5a621098c6, type: 2}
-  boardView: {fileID: 1851453772}
-  boardCamera: {fileID: 1907140417}
-  tapInput: {fileID: 930681444}
 --- !u!4 &731728629
 Transform:
   m_ObjectHideFlags: 0
@@ -167,6 +152,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &731728630
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 731728627}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 86383ea92d97e4e27a98bcb8b1328440, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: EchoCave.Game::EchoCave.Game.GameRoot
+  catalog: {fileID: 11400000, guid: 99db92963b22f4180bbac618a8b69395, type: 2}
+  boardView: {fileID: 1851453772}
+  boardCamera: {fileID: 1907140417}
+  tapInput: {fileID: 930681444}
+  autoPlay: 1
+--- !u!114 &731728631
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 731728627}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b21835808afa54facb9602928dede3c0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: EchoCave.Game::EchoCave.Game.GameDebugOverlay
+  root: {fileID: 731728630}
+  scale: 2
 --- !u!1 &930681443
 GameObject:
   m_ObjectHideFlags: 0
