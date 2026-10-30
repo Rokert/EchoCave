@@ -24,10 +24,15 @@ namespace EchoCave.UI
         [SerializeField, Min(1)] private int pingShakeCount = 3;
         [SerializeField, Min(50)] private int pingShakeMillis = 320;
 
+        [Header("Popups")]
+        [Tooltip("Milliseconds between one earned star lighting up and the next.")]
+        [SerializeField, Min(0)] private int starStaggerMillis = 280;
+
         private PanelSettings _panel;
         private VisualElement _hud;
         private VisualElement _safeArea;
         private HudPresenter _presenter;
+        private PopupsPresenter _popups;
         private Vector2Int _appliedScreen;
         private bool _started;
 
@@ -79,6 +84,10 @@ namespace EchoCave.UI
             GameFlow flow = gameRoot.Flow;
             var view = new HudView(root, pingShakeAmplitude, pingShakeCount, pingShakeMillis);
             _presenter = new HudPresenter(view, EventBus.Global, flow.RequestPing, () => TogglePause(flow));
+
+            var popupsView = new PopupsView(root, starStaggerMillis);
+            _popups = new PopupsPresenter(popupsView, EventBus.Global, new FlowPopupCommands(flow));
+
             tapInput.SetBlocker(new UiPointerBlocker(document));
 
             ApplyLayout();
@@ -88,6 +97,8 @@ namespace EchoCave.UI
         {
             _presenter?.Dispose();
             _presenter = null;
+            _popups?.Dispose();
+            _popups = null;
 
             if (tapInput != null) tapInput.SetBlocker(null);
         }

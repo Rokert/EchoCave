@@ -132,7 +132,8 @@ namespace EchoCave.Game
         // Won only. After the last level it returns to the menu.
         public void RequestNext()
         {
-            if (State != GameState.Won) return;
+            // A second press before the next Tick must not move on again and skip a level.
+            if (State != GameState.Won || _nextRequested || _menuRequested) return;
 
             if (LevelIndex + 1 < _levels.Count)
             {

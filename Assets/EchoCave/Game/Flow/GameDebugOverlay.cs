@@ -5,12 +5,13 @@ using UnityEngine.InputSystem;
 
 namespace EchoCave.Game
 {
-    // Temporary panel to drive and watch the flow until the UI Toolkit HUD exists (ROK-135).
-    // Buttons are IMGUI; the keys (P play, R retry, N next, M menu, E ping) go through the Input System, in
-    // case IMGUI does not receive the mouse when the project uses only the new input backend.
+    // Temporary debug aid until the main menu exists (ROK-151). The keys (P play, R retry, N next, M menu,
+    // E ping) go through the Input System and always work. The IMGUI panel is off by default because the UI
+    // Toolkit HUD and popups now cover the same buttons; tick Show Panel to bring it back.
     public sealed class GameDebugOverlay : MonoBehaviour
     {
         [SerializeField] private GameRoot root;
+        [SerializeField] private bool showPanel;
         [Tooltip("Multiplies the panel size, for phone screens.")]
         [SerializeField, Min(1f)] private float scale = 2f;
 
@@ -44,7 +45,7 @@ namespace EchoCave.Game
         private void OnGUI()
         {
             GameFlow flow = root.Flow;
-            if (flow == null) return;
+            if (!showPanel || flow == null) return;
 
             GUI.matrix = Matrix4x4.Scale(new Vector3(scale, scale, 1f));
             GUILayout.BeginArea(new Rect(8f, 8f, 260f, 260f));

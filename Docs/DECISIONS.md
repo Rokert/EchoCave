@@ -95,6 +95,11 @@ The HUD is laid out for portrait and landscape from the start. The panel switche
 **Why:** a USS control stays sharp at any size, takes its colour from one place and gets pressed or disabled looks for free; images would need one export per size and state. A flag keeps resume cheap and the machine small.
 **Consequence:** the look is close to Penpot but not pixel-identical (the lip under a button is a border or an offset layer); Penpot stays the reference and the comparison is made on screen. The pressed look, the shake of the ping button and the layout of the ping button in landscape are first versions to refine by eye. Single-sprite art should be imported with Sprite Mode Single, because the project default is Multiple and Unity auto-slices it.
 
+## D-022 — Popups: one document, answer at once, audio switches that only announce (Accepted)
+The Complete, Lost and Pause popups live in `Popups.uxml`, included in `Hud.uxml`, so the UI stays a single `UIDocument`. A dim layer behind them catches every pointer, which blocks the board without extra code. A popup hides the moment a button is pressed and the game follows on the next tick. The earned stars light up one after another with a bounce, and the card fades in. On the last level the Next button reads Menu, because `RequestNext` already returns to the menu there. The Pause popup gets a Menu button the original art did not have, and the Lost popup is new; both were added to Penpot. The sound and music switches keep their state in memory from level to level and publish `AudioToggled`; they play and persist nothing until ROK-145.
+**Why:** a button that waits for the game to react feels dead, and a second tap in that gap is what let a double press on Next skip a level (`RequestNext` now ignores a repeat before the next tick). Letting the scrim block input removes any need for the board to know a popup is open.
+**Consequence:** the fade, the bounce and the star order are first versions to refine by eye. There is no exit animation. Escape or Android back to pause is not wired. The Lost popup has no undo slot yet: the rewarded undo comes with ROK-146.
+
 ## Open questions
 - Check the "EchoCave" name against Play Store before publishing.
 - Play Store closed-testing requirement for new personal accounts.

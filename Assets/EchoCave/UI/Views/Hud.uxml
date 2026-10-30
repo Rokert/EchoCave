@@ -1,6 +1,9 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
     <Style src="../Styles/Theme.uss" />
+    <Style src="../Styles/Controls.uss" />
     <Style src="../Styles/Hud.uss" />
+    <Style src="../Styles/Popups.uss" />
+    <ui:Template name="Popups" src="Popups.uxml" />
 
     <!-- Layout containers ignore the pointer, so only the controls below can catch a tap. -->
     <ui:VisualElement name="hud-root" class="hud-root hud-hidden font-medium" picking-mode="Ignore">
@@ -38,5 +41,8 @@
 
             </ui:VisualElement>
         </ui:VisualElement>
+
+        <!-- Drawn last, so it sits above the HUD. Its scrim catches pointers; the wrapper around it does not. -->
+        <ui:Instance template="Popups" class="template-fill" picking-mode="Ignore" />
     </ui:VisualElement>
 </ui:UXML>
