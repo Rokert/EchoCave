@@ -50,6 +50,11 @@ Free with ads: rewarded (pings, undo), moderate interstitials, IAP remove-ads an
 **Why:** designers get inspector editing; the solver and tests use the Core types without Unity. JSON is not needed yet.
 **Consequence:** a JSON export can be added later by writing a second adapter to `LevelDefinition`. Supersedes D-006's open choice.
 
+## D-013 — Solver by waves, not search (Accepted)
+Because a bounce changes nothing (D-010) and removing a bat never blocks another, `LevelSolver` clears every free bat in waves; the level is solvable when the board empties. Minimum moves with perfect information therefore equals the bat count. The solver also reports waves (blocking-chain depth), a valid order and mutually blocking bats.
+**Why:** exact and linear-ish; BFS would explore states that cannot differ.
+**Consequence:** stars are lost only through wasted taps (bounces), which makes hidden bats and pings the real difficulty lever. If a future rule makes bounces move bats, this solver must become a search. Suggested thresholds: three stars at the minimum, two with a configurable slack in the editor window.
+
 ## Open questions
 - Check the "EchoCave" name against Play Store before publishing.
 - Play Store closed-testing requirement for new personal accounts.
