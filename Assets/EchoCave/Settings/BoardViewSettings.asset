@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f16f56cf8e99b4704a8e9bf55e6a9f7e, type: 3}
+  m_Name: BoardViewSettings
+  m_EditorClassIdentifier: EchoCave.Game::EchoCave.Game.BoardViewSettings
+  cellSize: 1
+  cameraMarginCells: 1
+  flySpeed: 12
+  exitOvershootCells: 1.5
+  exitEase: 2
+  bumpCells: 0.2
+  bumpDuration: 0.08
+  returnDuration: 0.25
+  returnEase: 27
+  blockerPunchCells: 0.15
+  blockerPunchDuration: 0.25
