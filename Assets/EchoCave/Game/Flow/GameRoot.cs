@@ -13,8 +13,6 @@ namespace EchoCave.Game
         [SerializeField] private BoardView boardView;
         [SerializeField] private BoardCamera boardCamera;
         [SerializeField] private TapInput tapInput;
-        [Tooltip("Starts the first level at once. Turn off when a menu exists.")]
-        [SerializeField] private bool autoPlay = true;
 
         public GameFlow Flow { get; private set; }
 
@@ -34,11 +32,6 @@ namespace EchoCave.Game
         {
             tapInput.Tapped -= OnTapped;
             EventBus.Global.Unsubscribe<LevelStarted>(OnLevelStarted);
-        }
-
-        private void Start()
-        {
-            if (autoPlay) Flow.RequestPlay();
         }
 
         private void Update()

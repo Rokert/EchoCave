@@ -56,6 +56,29 @@
     translate: 0 6px;
 }
 
+.pill-button--large {
+    width: 420px;
+    height: 148px;
+}
+
+.pill-button--large .pill-button__lip,
+.pill-button--large .pill-button__face {
+    height: 132px;
+    border-radius: 66px;
+}
+
+.pill-button--large .pill-button__lip {
+    top: 16px;
+}
+
+.pill-button--large .pill-button__label {
+    font-size: 56px;
+}
+
+.pill-button--large:active .pill-button__face {
+    translate: 0 10px;
+}
+
 .pill-button--secondary .pill-button__lip {
     background-color: var(--bat-body);
 }

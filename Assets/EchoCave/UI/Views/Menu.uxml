@@ -1,0 +1,14 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="../Styles/Theme.uss" />
+    <Style src="../Styles/Controls.uss" />
+    <Style src="../Styles/Menu.uss" />
+
+    <!-- The layout ignores the pointer, so only the Play button catches a tap. -->
+    <ui:VisualElement name="menu-layer" class="menu-layer menu-hidden font-medium" picking-mode="Ignore">
+        <ui:VisualElement class="menu__logo" picking-mode="Ignore" />
+        <ui:Button name="play-button" class="pill-button pill-button--large">
+            <ui:VisualElement class="pill-button__lip" picking-mode="Ignore" />
+            <ui:VisualElement class="pill-button__face" picking-mode="Ignore"><ui:Label text="Play" class="pill-button__label font-bold" picking-mode="Ignore" /></ui:VisualElement>
+        </ui:Button>
+    </ui:VisualElement>
+</ui:UXML>

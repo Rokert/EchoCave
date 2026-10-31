@@ -3,7 +3,9 @@
     <Style src="../Styles/Controls.uss" />
     <Style src="../Styles/Hud.uss" />
     <Style src="../Styles/Popups.uss" />
+    <Style src="../Styles/Menu.uss" />
     <ui:Template name="Popups" src="Popups.uxml" />
+    <ui:Template name="Menu" src="Menu.uxml" />
 
     <!-- Layout containers ignore the pointer, so only the controls below can catch a tap. -->
     <ui:VisualElement name="hud-root" class="hud-root hud-hidden font-medium" picking-mode="Ignore">
@@ -45,4 +47,7 @@
         <!-- Drawn last, so it sits above the HUD. Its scrim catches pointers; the wrapper around it does not. -->
         <ui:Instance template="Popups" class="template-fill" picking-mode="Ignore" />
     </ui:VisualElement>
+
+    <!-- A sibling of the HUD, which is hidden while the menu shows. -->
+    <ui:Instance template="Menu" class="template-fill" picking-mode="Ignore" />
 </ui:UXML>
