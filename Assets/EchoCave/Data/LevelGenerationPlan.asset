@@ -1,0 +1,139 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 166810f76271c4211a72eda34efb66d6, type: 3}
+  m_Name: LevelGenerationPlan
+  m_EditorClassIdentifier: EchoCave.Editor::EchoCave.Editor.LevelGenerationPlan
+  catalog: {fileID: 11400000, guid: 99db92963b22f4180bbac618a8b69395, type: 2}
+  folder: Assets/EchoCave/Data/Levels
+  maxDifficultyStep: 8
+  maxAttempts: 100000
+  entries:
+  - levelName: Level_001
+    keepAsIs: 1
+    width: 5
+    height: 5
+    bats: 6
+    hidden: 0
+    pings: 0
+    slack: -1
+    minWaves: 2
+    minBlocked: 2
+    twoStarSlack: 2
+    seed: 1
+  - levelName: Level_002
+    keepAsIs: 0
+    width: 5
+    height: 5
+    bats: 6
+    hidden: 0
+    pings: 0
+    slack: -1
+    minWaves: 2
+    minBlocked: 2
+    twoStarSlack: 2
+    seed: 2
+  - levelName: Level_003
+    keepAsIs: 0
+    width: 5
+    height: 5
+    bats: 8
+    hidden: 0
+    pings: 0
+    slack: -1
+    minWaves: 3
+    minBlocked: 3
+    twoStarSlack: 2
+    seed: 1
+  - levelName: Level_004
+    keepAsIs: 0
+    width: 5
+    height: 5
+    bats: 9
+    hidden: 1
+    pings: 3
+    slack: 4
+    minWaves: 3
+    minBlocked: 4
+    twoStarSlack: 2
+    seed: 1
+  - levelName: Level_005
+    keepAsIs: 0
+    width: 6
+    height: 6
+    bats: 10
+    hidden: 1
+    pings: 3
+    slack: 3
+    minWaves: 3
+    minBlocked: 4
+    twoStarSlack: 2
+    seed: 1
+  - levelName: Level_006
+    keepAsIs: 0
+    width: 6
+    height: 6
+    bats: 11
+    hidden: 2
+    pings: 3
+    slack: 3
+    minWaves: 4
+    minBlocked: 5
+    twoStarSlack: 2
+    seed: 1
+  - levelName: Level_007
+    keepAsIs: 0
+    width: 6
+    height: 6
+    bats: 12
+    hidden: 3
+    pings: 2
+    slack: 3
+    minWaves: 4
+    minBlocked: 5
+    twoStarSlack: 2
+    seed: 1
+  - levelName: Level_008
+    keepAsIs: 0
+    width: 7
+    height: 7
+    bats: 14
+    hidden: 4
+    pings: 2
+    slack: 2
+    minWaves: 4
+    minBlocked: 6
+    twoStarSlack: 2
+    seed: 1
+  - levelName: Level_009
+    keepAsIs: 0
+    width: 7
+    height: 7
+    bats: 15
+    hidden: 5
+    pings: 2
+    slack: 2
+    minWaves: 5
+    minBlocked: 7
+    twoStarSlack: 2
+    seed: 1
+  - levelName: Level_010
+    keepAsIs: 0
+    width: 7
+    height: 7
+    bats: 16
+    hidden: 6
+    pings: 1
+    slack: 1
+    minWaves: 5
+    minBlocked: 8
+    twoStarSlack: 2
+    seed: 1
