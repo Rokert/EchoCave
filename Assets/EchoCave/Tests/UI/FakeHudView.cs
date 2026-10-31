@@ -13,6 +13,8 @@ namespace EchoCave.Tests
         public int MovesUsed = -1;
         public int MoveLimit = -1;
         public int Pings = -1;
+        public int LevelNumber = -1;
+        public int LevelCount = -1;
         public PingButtonState PingState = PingButtonState.Ready;
         public bool Paused;
         public int ShakeCount;
@@ -23,6 +25,12 @@ namespace EchoCave.Tests
         {
             MovesUsed = movesUsed;
             MoveLimit = moveLimit;
+        }
+
+        public void SetLevel(int levelNumber, int levelCount)
+        {
+            LevelNumber = levelNumber;
+            LevelCount = levelCount;
         }
 
         public void SetPings(int pingsLeft) => Pings = pingsLeft;

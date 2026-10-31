@@ -146,6 +146,16 @@
     -unity-text-align: middle-center;
 }
 
+/* The level sign is a smaller twin of the moves sign, on the right of the top row. */
+.level-sign {
+    min-width: 160px;
+    padding: 6px 28px 2px 28px;
+}
+
+.level-sign .moves-sign__value {
+    font-size: 44px;
+}
+
 /* --- ping button --- */
 
 .ping-button {

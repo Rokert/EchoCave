@@ -20,6 +20,7 @@ namespace EchoCave.UI
         private readonly VisualElement _pauseIcon;
         private readonly Button _pingButton;
         private readonly Label _movesValue;
+        private readonly Label _levelValue;
         private readonly Label _pingCount;
 
         private readonly float _shakeAmplitude;
@@ -39,6 +40,7 @@ namespace EchoCave.UI
             _pauseIcon = Require<VisualElement>(root, "pause-icon");
             _pingButton = Require<Button>(root, "ping-button");
             _movesValue = Require<Label>(root, "moves-value");
+            _levelValue = Require<Label>(root, "level-value");
             _pingCount = Require<Label>(root, "ping-count");
 
             _shakeAmplitude = shakeAmplitude;
@@ -57,6 +59,11 @@ namespace EchoCave.UI
         public void SetMoves(int movesUsed, int moveLimit)
         {
             _movesValue.text = moveLimit > 0 ? $"{movesUsed} / {moveLimit}" : movesUsed.ToString();
+        }
+
+        public void SetLevel(int levelNumber, int levelCount)
+        {
+            _levelValue.text = $"{levelNumber} / {levelCount}";
         }
 
         public void SetPings(int pingsLeft)

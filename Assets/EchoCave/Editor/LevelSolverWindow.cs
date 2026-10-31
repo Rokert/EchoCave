@@ -17,12 +17,16 @@ namespace EchoCave.Editor
             public IReadOnlyList<string> Errors;
             public SolveResult Result;
             public StarThresholds Suggested;
+            public LevelMetrics Metrics;
         }
 
         private readonly List<Row> _rows = new List<Row>();
-        private readonly LevelSolver _solver = new LevelSolver(new MoveResolver());
+        private readonly MoveResolver _resolver = new MoveResolver();
         private int _twoStarSlack = 2;
         private Vector2 _scroll;
+        private LevelGenerationPlan _plan;
+        private string _planReport = string.Empty;
+        private bool _showPlan;
 
         [MenuItem("EchoCave/Level Solver")]
         private static void Open()
@@ -54,6 +58,8 @@ namespace EchoCave.Editor
                 GUILayout.FlexibleSpace();
             }
 
+            DrawPlan();
+
             if (_rows.Count == 0)
             {
                 EditorGUILayout.HelpBox("No LevelData assets found. Create one with Assets > Create > EchoCave > Level.", MessageType.Info);
@@ -63,6 +69,64 @@ namespace EchoCave.Editor
             _scroll = EditorGUILayout.BeginScrollView(_scroll);
             foreach (Row row in _rows) DrawRow(row);
             EditorGUILayout.EndScrollView();
+        }
+
+        private void DrawPlan()
+        {
+            _showPlan = EditorGUILayout.Foldout(_showPlan, "Generation plan", true);
+            if (!_showPlan) return;
+
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+            {
+                _plan = (LevelGenerationPlan)EditorGUILayout.ObjectField("Plan", _plan, typeof(LevelGenerationPlan), false);
+                if (_plan == null)
+                {
+                    EditorGUILayout.HelpBox("Create one with Assets > Create > EchoCave > Level Generation Plan, assign the catalog on it, then drop it here.", MessageType.Info);
+                    return;
+                }
+
+                if (_plan.Catalog == null)
+                    EditorGUILayout.HelpBox("The plan has no Level Catalog: levels are generated but the catalog is not filled.", MessageType.Warning);
+
+                if (GUILayout.Button("Generate all (overwrites generated levels)"))
+                {
+                    if (EditorUtility.DisplayDialog("Generate all levels",
+                            "Every entry that is not marked hand-made is rewritten from its seed, and the catalog is replaced with the plan's levels in order.",
+                            "Generate", "Cancel"))
+                    {
+                        _planReport = LevelGenerationRunner.GenerateAll(_plan);
+                        Refresh();
+                    }
+                }
+
+                for (int i = 0; i < _plan.Entries.Count; i++)
+                {
+                    LevelGenerationPlan.Entry entry = _plan.Entries[i];
+                    using (new EditorGUILayout.HorizontalScope())
+                    {
+                        EditorGUILayout.LabelField(entry.levelName, entry.keepAsIs ? "hand-made" : $"{entry.bats} bats, {entry.hidden} hidden", GUILayout.Width(200));
+                        using (new EditorGUI.DisabledScope(entry.keepAsIs))
+                        {
+                            EditorGUILayout.LabelField("Seed", GUILayout.Width(34));
+                            int seed = EditorGUILayout.IntField(entry.seed, GUILayout.Width(60));
+                            if (seed != entry.seed)
+                            {
+                                Undo.RecordObject(_plan, "Change level seed");
+                                entry.seed = seed;
+                                EditorUtility.SetDirty(_plan);
+                            }
+
+                            if (GUILayout.Button("Regenerate", GUILayout.Width(90)))
+                            {
+                                _planReport = LevelGenerationRunner.GenerateOne(_plan, i);
+                                Refresh();
+                            }
+                        }
+                    }
+                }
+
+                if (_planReport.Length > 0) EditorGUILayout.HelpBox(_planReport, MessageType.None);
+            }
         }
 
         private void DrawRow(Row row)
@@ -96,7 +160,8 @@ namespace EchoCave.Editor
                 }
 
                 EditorGUILayout.LabelField(
-                    $"Min moves {result.MinMoves}   |   Waves {result.Waves.Count}   |   Hidden bats {CountHidden(row.Definition)}");
+                    $"Min moves {result.MinMoves}   |   Waves {result.Waves.Count}   |   Hidden bats {CountHidden(row.Definition)}   |   " +
+                    $"Traps {row.Metrics.BlockedAtStart}   |   Difficulty {row.Metrics.Difficulty}");
                 EditorGUILayout.LabelField($"Solution: {string.Join(" > ", result.Solution)}");
 
                 if (!result.FitsMoveLimit)
@@ -168,7 +233,10 @@ namespace EchoCave.Editor
                 var row = new Row { Asset = asset, Definition = definition, Errors = errors };
                 if (errors.Count == 0)
                 {
-                    row.Result = _solver.Solve(definition);
+                    row.Result = new LevelSolver(_resolver).Solve(definition);
+                    if (row.Result.IsSolvable)
+                        LevelMetrics.TryMeasure(definition, _resolver, out row.Metrics);
+
                     if (row.Result.IsSolvable)
                         row.Suggested = StarThresholds.Suggest(row.Result.MinMoves, definition.MoveLimit, _twoStarSlack);
                 }

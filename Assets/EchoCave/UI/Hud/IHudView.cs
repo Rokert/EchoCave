@@ -25,6 +25,9 @@ namespace EchoCave.UI
         // A moveLimit of 0 means the level has none.
         void SetMoves(int movesUsed, int moveLimit);
 
+        // levelNumber counts from 1: the player reads "level 3 / 10".
+        void SetLevel(int levelNumber, int levelCount);
+
         void SetPings(int pingsLeft);
 
         void SetPingState(PingButtonState state);

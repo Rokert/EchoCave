@@ -105,6 +105,11 @@ The game no longer starts a level by itself: it boots into the menu, and the Pla
 **Why:** an autoplaying build cannot show a title or give the player a moment before the first level, and the overlay was a debug aid that hid the real buttons.
 **Consequence:** there is no keyboard way to start or skip levels any more; testing a late level means playing to it until a level-select or debug menu exists. The menu has no settings, level select or version label yet. The logo and the Play button size are first versions to refine by eye.
 
+## D-024 — The first 10 levels are generated from a seeded plan and curated by playing (Accepted)
+Levels 2-10 are produced by `LevelGenerator` from a `LevelGenerationPlan` (one entry per level: board size, bats, hidden bats, pings, move-limit slack, minimum chain depth and traps, a seed). Level 1 stays hand-made and is only listed in the catalog. Each generated level must be solvable, meet its entry, and be at least as hard as the previous one and at most `maxDifficultyStep` harder, so the curve climbs in small steps by construction. The curve follows the project plan: 1-3 no hidden bats and no pings, 4-6 the first hidden bats with generous pings, 7-10 more hidden bats and fewer pings, with the peak at 10. A shipped-levels test checks the tiers and that difficulty never drops from one level to the next.
+**Why:** the solver proves a level can be won but the minimum moves always equal the bat count (D-010), so difficulty has to be measured on traps, chain depth, hidden bats and slack. Placing bats by hand into YAML has already produced an invalid level once (a two-star threshold above the move limit); a generator that validates every level removes that class of mistake.
+**Consequence:** the solver cannot say whether a level is fun. A random valid layout can be dull or ugly, so each level is played and, if it is not good, its seed is changed and it is regenerated. `Difficulty` is a heuristic (`Bats + 2*Hidden + 3*Waves + Traps`), not a promise about feel; the weights are a first guess to refine by playing. Level 1 keeps its generous move limit of 9. Hints (ROK-168) will not change this: a hint is just the next solver step.
+
 ## Open questions
 - Check the "EchoCave" name against Play Store before publishing.
 - Play Store closed-testing requirement for new personal accounts.

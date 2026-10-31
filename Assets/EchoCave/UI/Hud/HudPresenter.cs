@@ -12,16 +12,18 @@ namespace EchoCave.UI
         private readonly EventBus _events;
         private readonly Action _onPing;
         private readonly Action _onTogglePause;
+        private readonly int _levelCount;
 
         private int _pingsLeft;
         private bool _echoActive;
 
-        public HudPresenter(IHudView view, EventBus events, Action onPing, Action onTogglePause)
+        public HudPresenter(IHudView view, EventBus events, Action onPing, Action onTogglePause, int levelCount)
         {
             _view = view ?? throw new ArgumentNullException(nameof(view));
             _events = events ?? throw new ArgumentNullException(nameof(events));
             _onPing = onPing ?? throw new ArgumentNullException(nameof(onPing));
             _onTogglePause = onTogglePause ?? throw new ArgumentNullException(nameof(onTogglePause));
+            _levelCount = levelCount;
 
             _view.PingPressed += _onPing;
             _view.PausePressed += _onTogglePause;
@@ -58,6 +60,7 @@ namespace EchoCave.UI
             _echoActive = false;
 
             _view.SetVisible(true);
+            _view.SetLevel(started.LevelIndex + 1, _levelCount);
             _view.SetMoves(0, started.MoveLimit);
             _view.SetPings(_pingsLeft);
             _view.SetPingState(CurrentPingState());
