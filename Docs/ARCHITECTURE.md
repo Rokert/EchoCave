@@ -79,6 +79,8 @@ Service Locator is not used inside the core: dependencies are constructor-inject
 
 Levels are data assets (bat positions, directions, hidden flags, move limit, ping budget, star thresholds). An editor tool runs a solver over each level to (a) validate it is solvable and (b) compute the minimum move count, which feeds the star thresholds. CI-style EditMode test runs the solver over all shipped levels.
 
+`LevelMetrics` (Core) measures a level's structure: bats, hidden bats, traps (bats blocked on the first move), waves (depth of the blocking chains) and a `Difficulty` heuristic. Since the minimum moves always equal the bat count (D-010), difficulty lives in those four numbers and in the move limit's slack. `LevelGenerator` (Core, with `SeededRandom` and `LevelSpec`) builds a level that matches a spec from a seed, deterministically, and keeps its difficulty in a window above the previous level's. It runs only in the editor: the `LevelGenerationPlan` asset (Editor assembly) holds one entry per level, and the Level Solver window writes the `LevelData` assets and fills the `LevelCatalog` from it (D-024).
+
 ## Platforms
 
 - **WebGL**: no native ad SDK; uses the null/web ad provider. Keep the core allocation-light and avoid threading.

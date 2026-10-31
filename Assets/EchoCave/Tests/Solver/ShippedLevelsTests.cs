@@ -42,5 +42,46 @@ namespace EchoCave.Tests
             Assert.Greater(checkedLevels, 0, "No LevelData assets found, so nothing was validated.");
             Assert.IsEmpty(problems, $"Checked {checkedLevels} level(s):\n" + string.Join("\n", problems));
         }
+
+        // The first ten levels climb in difficulty: the tiers of the project plan, and a curve that never drops.
+        [Test]
+        public void TheCatalog_FollowsTheDifficultyCurve()
+        {
+            string[] guids = AssetDatabase.FindAssets("t:LevelCatalog");
+            Assert.AreEqual(1, guids.Length, "Expected exactly one LevelCatalog asset.");
+            var catalog = AssetDatabase.LoadAssetAtPath<LevelCatalog>(AssetDatabase.GUIDToAssetPath(guids[0]));
+            IReadOnlyList<LevelDefinition> levels = catalog.ToDefinitions();
+            Assert.GreaterOrEqual(levels.Count, 10, "The catalog must hold the first 10 levels.");
+
+            var resolver = new MoveResolver();
+            int previous = 0;
+            var problems = new List<string>();
+
+            for (int i = 0; i < levels.Count; i++)
+            {
+                string name = $"Level {i + 1}";
+                LevelDefinition level = levels[i];
+                if (!LevelMetrics.TryMeasure(level, resolver, out LevelMetrics metrics))
+                {
+                    problems.Add($"{name}: invalid or not solvable");
+                    continue;
+                }
+
+                if (i < 3 && (metrics.Hidden > 0 || level.PingBudget > 0))
+                    problems.Add($"{name}: levels 1-3 have no hidden bats and no pings");
+                if (i >= 3 && metrics.Hidden == 0)
+                    problems.Add($"{name}: from level 4 on there is at least one hidden bat");
+                if (metrics.Hidden > 0 && level.PingBudget == 0)
+                    problems.Add($"{name}: has hidden bats but no pings to reveal them");
+                if (level.ThreeStarMoves < metrics.MinMoves)
+                    problems.Add($"{name}: three stars ({level.ThreeStarMoves}) is below the minimum {metrics.MinMoves}, so it cannot be earned");
+                if (metrics.Difficulty < previous)
+                    problems.Add($"{name}: difficulty {metrics.Difficulty} is below the previous level's {previous}");
+
+                previous = metrics.Difficulty;
+            }
+
+            Assert.IsEmpty(problems, string.Join("\n", problems));
+        }
     }
 }
