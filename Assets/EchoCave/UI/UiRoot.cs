@@ -32,7 +32,9 @@ namespace EchoCave.UI
         private VisualElement _hud;
         private VisualElement _safeArea;
         private HudPresenter _presenter;
+        private VisualElement _menu;
         private PopupsPresenter _popups;
+        private MenuPresenter _menuPresenter;
         private Vector2Int _appliedScreen;
         private bool _started;
 
@@ -78,6 +80,7 @@ namespace EchoCave.UI
             VisualElement root = document.rootVisualElement;
             _hud = root.Q<VisualElement>("hud-root");
             _safeArea = root.Q<VisualElement>("safe-area");
+            _menu = root.Q<VisualElement>("menu-layer");
 
             LetPointerPassThrough(_hud);
 
@@ -87,6 +90,9 @@ namespace EchoCave.UI
 
             var popupsView = new PopupsView(root, starStaggerMillis);
             _popups = new PopupsPresenter(popupsView, EventBus.Global, new FlowPopupCommands(flow));
+
+            var menuView = new MenuView(root);
+            _menuPresenter = new MenuPresenter(menuView, EventBus.Global, () => flow.RequestPlay(), flow.State == GameState.Menu);
 
             tapInput.SetBlocker(new UiPointerBlocker(document));
 
@@ -99,6 +105,8 @@ namespace EchoCave.UI
             _presenter = null;
             _popups?.Dispose();
             _popups = null;
+            _menuPresenter?.Dispose();
+            _menuPresenter = null;
 
             if (tapInput != null) tapInput.SetBlocker(null);
         }
@@ -130,6 +138,8 @@ namespace EchoCave.UI
             bool landscape = ScreenAspect.IsLandscape(screen.x, screen.y);
             _hud.EnableInClassList(LandscapeClass, landscape);
             _hud.EnableInClassList(PortraitClass, !landscape);
+            _menu.EnableInClassList(LandscapeClass, landscape);
+            _menu.EnableInClassList(PortraitClass, !landscape);
 
             ScreenInsets insets = ScreenInsets.FromSafeArea(Screen.safeArea, screen).InPanelUnits(scale.PixelsPerUnit(screen));
             _safeArea.style.paddingLeft = insets.Left;

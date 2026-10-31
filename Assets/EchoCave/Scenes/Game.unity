@@ -187,7 +187,6 @@ GameObject:
   m_Component:
   - component: {fileID: 731728629}
   - component: {fileID: 731728630}
-  - component: {fileID: 731728631}
   m_Layer: 0
   m_Name: Sandbox
   m_TagString: Untagged
@@ -228,20 +227,6 @@ MonoBehaviour:
   boardCamera: {fileID: 1907140417}
   tapInput: {fileID: 930681444}
   autoPlay: 1
---- !u!114 &731728631
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 731728627}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b21835808afa54facb9602928dede3c0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: EchoCave.Game::EchoCave.Game.GameDebugOverlay
-  root: {fileID: 731728630}
-  scale: 2
 --- !u!1 &930681443
 GameObject:
   m_ObjectHideFlags: 0
@@ -402,6 +387,7 @@ MonoBehaviour:
   pingShakeAmplitude: 14
   pingShakeCount: 3
   pingShakeMillis: 320
+  starStaggerMillis: 280
 --- !u!114 &1845697724
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -100,6 +100,11 @@ The Complete, Lost and Pause popups live in `Popups.uxml`, included in `Hud.uxml
 **Why:** a button that waits for the game to react feels dead, and a second tap in that gap is what let a double press on Next skip a level (`RequestNext` now ignores a repeat before the next tick). Letting the scrim block input removes any need for the board to know a popup is open.
 **Consequence:** the fade, the bounce and the star order are first versions to refine by eye. There is no exit animation. Escape or Android back to pause is not wired. The Lost popup has no undo slot yet: the rewarded undo comes with ROK-146.
 
+## D-023 — Main menu: a sibling of the HUD, the game starts in the menu, the debug overlay is gone (Accepted)
+The game no longer starts a level by itself: it boots into the menu, and the Play button of `Menu.uxml` asks the flow to play. The menu is a template in `Hud.uxml` placed next to the HUD root, not inside it, because the HUD hides itself while the menu shows. `MenuPresenter` hides the menu as soon as Play is pressed, like the popups. It is told at construction whether the flow is in the menu, because the flow publishes `MenuOpened` in its constructor before any UI exists. `GameDebugOverlay` and its keyboard shortcuts are deleted; every action now has a real button. The logo (bat, echo arcs and the "EchoCave" wordmark in Fredoka Bold) is an original Penpot drawing on a new `Brand` page, exported as `Art/Brand/Logo.png`.
+**Why:** an autoplaying build cannot show a title or give the player a moment before the first level, and the overlay was a debug aid that hid the real buttons.
+**Consequence:** there is no keyboard way to start or skip levels any more; testing a late level means playing to it until a level-select or debug menu exists. The menu has no settings, level select or version label yet. The logo and the Play button size are first versions to refine by eye.
+
 ## Open questions
 - Check the "EchoCave" name against Play Store before publishing.
 - Play Store closed-testing requirement for new personal accounts.

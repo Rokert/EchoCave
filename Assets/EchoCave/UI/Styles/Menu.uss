@@ -1,0 +1,30 @@
+/* The main menu: the logo and the Play button, centred. Sizes are in panel units. */
+
+.menu-layer {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    align-items: center;
+    justify-content: center;
+}
+
+.menu-hidden {
+    display: none;
+}
+
+.menu__logo {
+    width: 820px;
+    height: 671px;
+    margin-bottom: 40px;
+    -unity-background-scale-mode: scale-to-fit;
+    background-image: url("/Assets/EchoCave/Art/Brand/Logo.png");
+}
+
+/* Landscape has less height, so the logo shrinks and the button sits closer. */
+.landscape .menu__logo {
+    width: 520px;
+    height: 425px;
+    margin-bottom: 20px;
+}
