@@ -86,7 +86,7 @@ namespace EchoCave.UI
 
             GameFlow flow = gameRoot.Flow;
             var view = new HudView(root, pingShakeAmplitude, pingShakeCount, pingShakeMillis);
-            _presenter = new HudPresenter(view, EventBus.Global, flow.RequestPing, () => TogglePause(flow));
+            _presenter = new HudPresenter(view, EventBus.Global, flow.RequestPing, () => TogglePause(flow), flow.LevelCount);
 
             var popupsView = new PopupsView(root, starStaggerMillis);
             _popups = new PopupsPresenter(popupsView, EventBus.Global, new FlowPopupCommands(flow));

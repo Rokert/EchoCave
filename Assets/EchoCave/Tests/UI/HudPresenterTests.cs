@@ -12,6 +12,8 @@ namespace EchoCave.Tests
         private FakeHudView _view;
         private EventBus _bus;
         private HudPresenter _presenter;
+        private const int LevelCount = 10;
+
         private int _pingCalls;
         private int _pauseCalls;
 
@@ -22,12 +24,23 @@ namespace EchoCave.Tests
             _pauseCalls = 0;
             _view = new FakeHudView();
             _bus = new EventBus();
-            _presenter = new HudPresenter(_view, _bus, () => _pingCalls++, () => _pauseCalls++);
+            _presenter = new HudPresenter(_view, _bus, () => _pingCalls++, () => _pauseCalls++, LevelCount);
         }
 
         private void StartLevel(int moveLimit, int pingBudget)
         {
             _bus.Publish(new LevelStarted(0, moveLimit, pingBudget));
+        }
+
+        [TestCase(0, 1)]
+        [TestCase(4, 5)]
+        [TestCase(9, 10)]
+        public void LevelStarted_ShowsTheLevelNumberFromOne_OutOfTheTotal(int levelIndex, int expectedNumber)
+        {
+            _bus.Publish(new LevelStarted(levelIndex, 9, 0));
+
+            Assert.AreEqual(expectedNumber, _view.LevelNumber);
+            Assert.AreEqual(LevelCount, _view.LevelCount);
         }
 
         [Test]
@@ -189,10 +202,10 @@ namespace EchoCave.Tests
         {
             Action noop = () => { };
 
-            Assert.Throws<ArgumentNullException>(() => new HudPresenter(null, _bus, noop, noop));
-            Assert.Throws<ArgumentNullException>(() => new HudPresenter(_view, null, noop, noop));
-            Assert.Throws<ArgumentNullException>(() => new HudPresenter(_view, _bus, null, noop));
-            Assert.Throws<ArgumentNullException>(() => new HudPresenter(_view, _bus, noop, null));
+            Assert.Throws<ArgumentNullException>(() => new HudPresenter(null, _bus, noop, noop, LevelCount));
+            Assert.Throws<ArgumentNullException>(() => new HudPresenter(_view, null, noop, noop, LevelCount));
+            Assert.Throws<ArgumentNullException>(() => new HudPresenter(_view, _bus, null, noop, LevelCount));
+            Assert.Throws<ArgumentNullException>(() => new HudPresenter(_view, _bus, noop, null, LevelCount));
         }
     }
 }

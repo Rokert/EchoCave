@@ -226,7 +226,6 @@ MonoBehaviour:
   boardView: {fileID: 1851453772}
   boardCamera: {fileID: 1907140417}
   tapInput: {fileID: 930681444}
-  autoPlay: 1
 --- !u!1 &930681443
 GameObject:
   m_ObjectHideFlags: 0
@@ -363,7 +362,7 @@ GameObject:
   - component: {fileID: 1845697724}
   - component: {fileID: 1845697723}
   m_Layer: 5
-  m_Name: UIDocument
+  m_Name: UI
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

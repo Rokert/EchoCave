@@ -14,6 +14,7 @@ namespace EchoCave.Tests
         private VisualElement _pauseIcon;
         private Button _pingButton;
         private Label _movesValue;
+        private Label _levelValue;
         private Label _pingCount;
         private HudView _view;
 
@@ -25,6 +26,7 @@ namespace EchoCave.Tests
             _pauseIcon = new VisualElement { name = "pause-icon" };
             _pingButton = new Button { name = "ping-button" };
             _movesValue = new Label { name = "moves-value" };
+            _levelValue = new Label { name = "level-value" };
             _pingCount = new Label { name = "ping-count" };
 
             var pauseButton = new Button { name = "pause-button" };
@@ -32,10 +34,19 @@ namespace EchoCave.Tests
             _hud.Add(pauseButton);
             _hud.Add(_pingButton);
             _hud.Add(_movesValue);
+            _hud.Add(_levelValue);
             _hud.Add(_pingCount);
             _root.Add(_hud);
 
             _view = new HudView(_root, 14f, 3, 320);
+        }
+
+        [Test]
+        public void SetLevel_ShowsTheNumberOverTheTotal()
+        {
+            _view.SetLevel(3, 10);
+
+            Assert.AreEqual("3 / 10", _levelValue.text);
         }
 
         [Test]

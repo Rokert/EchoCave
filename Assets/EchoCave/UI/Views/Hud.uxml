@@ -27,7 +27,12 @@
                         <ui:Label name="moves-value" text="0" class="moves-sign__value font-bold" picking-mode="Ignore" />
                     </ui:VisualElement>
 
-                    <ui:VisualElement class="hud-top__side hud-top__side--end" picking-mode="Ignore" />
+                    <ui:VisualElement class="hud-top__side hud-top__side--end" picking-mode="Ignore">
+                        <ui:VisualElement class="moves-sign level-sign" picking-mode="Ignore">
+                            <ui:Label text="LEVEL" class="moves-sign__caption font-medium" picking-mode="Ignore" />
+                            <ui:Label name="level-value" text="1" class="moves-sign__value font-bold" picking-mode="Ignore" />
+                        </ui:VisualElement>
+                    </ui:VisualElement>
                 </ui:VisualElement>
 
                 <ui:VisualElement class="hud-bottom" picking-mode="Ignore">
