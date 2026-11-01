@@ -22,6 +22,8 @@ namespace EchoCave.Game
         private readonly MoveResolver _resolver;
         private readonly EventBus _events;
         private readonly IEchoStrategy _echoStrategy;
+        private readonly IHintStock _hints;
+        private readonly HintPicker _hintPicker;
         private readonly StateMachine<FlowState> _machine = new StateMachine<FlowState>();
 
         private BoardPresenter _presenter;
@@ -52,13 +54,16 @@ namespace EchoCave.Game
             IReadOnlyList<LevelDefinition> levels,
             MoveResolver resolver,
             EventBus events,
-            IEchoStrategy echoStrategy)
+            IEchoStrategy echoStrategy,
+            IHintStock hints = null)
         {
             _view = view ?? throw new ArgumentNullException(nameof(view));
             _levels = levels ?? throw new ArgumentNullException(nameof(levels));
             _resolver = resolver ?? throw new ArgumentNullException(nameof(resolver));
             _events = events ?? throw new ArgumentNullException(nameof(events));
             _echoStrategy = echoStrategy ?? throw new ArgumentNullException(nameof(echoStrategy));
+            _hints = hints ?? new NoHintStock();
+            _hintPicker = new HintPicker(_resolver);
 
             if (levels.Count == 0) throw new ArgumentException("The game needs at least one level.", nameof(levels));
 
@@ -162,6 +167,54 @@ namespace EchoCave.Game
             if (result == PingResult.Pinged) return;
 
             _events.Publish(new PingRefused(result));
+            _view.ShowRejected();
+        }
+
+        // Playing only. Spends one hint to point at a bat that can leave now; the bat pulses until it is tapped, and
+        // a hidden one is revealed for the rest of the attempt. It costs no move. A hint that cannot be given
+        // spends nothing and tells the player: the HUD gets HintRefused with the reason and the bats shake.
+        public void RequestHint()
+        {
+            if (State != GameState.Playing || IsPaused) return;
+
+            if (_presenter.IsBusy)
+            {
+                RefuseHint(HintRefusal.Busy);
+                return;
+            }
+
+            if (_hints.Count <= 0)
+            {
+                RefuseHint(HintRefusal.NoHintsLeft);
+                return;
+            }
+
+            HintPick? pick = _hintPicker.Pick(Session.Board);
+            if (!pick.HasValue)
+            {
+                RefuseHint(HintRefusal.NothingToHint);
+                return;
+            }
+
+            if (!_hints.TrySpend())
+            {
+                RefuseHint(HintRefusal.NoHintsLeft);
+                return;
+            }
+
+            if (pick.Value.IsHidden)
+            {
+                _echo.Pin(pick.Value.BatId);
+                _view.SetRevealed(_echo.RevealedBatIds);
+            }
+
+            _view.ShowHint(pick.Value.BatId);
+            _events.Publish(new HintUsed(_hints.Count, pick.Value.BatId));
+        }
+
+        private void RefuseHint(HintRefusal reason)
+        {
+            _events.Publish(new HintRefused(reason));
             _view.ShowRejected();
         }
 

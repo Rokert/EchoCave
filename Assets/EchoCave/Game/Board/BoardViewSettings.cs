@@ -49,6 +49,12 @@ namespace EchoCave.Game
         [Tooltip("The revealed bat starts this many times its size and settles to normal. 1 means no pop.")]
         [SerializeField, Min(1f)] private float revealPopScale = 1.25f;
 
+        [Header("Hint")]
+        [Tooltip("How big the hinted bat grows at the top of its pulse, as a multiple of its size.")]
+        [SerializeField, Min(1f)] private float hintPulseScale = 1.2f;
+        [Tooltip("Seconds from smallest to biggest; a full pulse takes twice this.")]
+        [SerializeField, Min(0.05f)] private float hintPulseSeconds = 0.4f;
+
         [Header("Ping wave")]
         [Tooltip("How fast the ring travels, in cells per second. Keep the board crossed in well under a second: a bat can be tapped before the ring reaches it.")]
         [SerializeField, Min(0.1f)] private float waveSpeedCells = 14f;
@@ -73,6 +79,8 @@ namespace EchoCave.Game
         public float RejectShakeCells => rejectShakeCells;
         public float RejectShakeDuration => rejectShakeDuration;
         public int RejectShakeVibrato => rejectShakeVibrato;
+        public float HintPulseScale => hintPulseScale;
+        public float HintPulseSeconds => hintPulseSeconds;
         public float RevealFadeSeconds => revealFadeSeconds;
         public float ConcealFadeSeconds => concealFadeSeconds;
         public float RevealPopScale => revealPopScale;

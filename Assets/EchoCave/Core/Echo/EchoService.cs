@@ -5,17 +5,22 @@ namespace EchoCave.Core
 {
     // Ping budget and the temporary reveal of hidden bats. The board is never touched: a revealed bat is
     // only listed here, so undo and the solver are unaffected, and the reveal can simply expire.
+    // A hint can also pin a bat: a pinned bat stays revealed after the echo runs out, until this service
+    // is dropped with the attempt.
     // Time comes in through Tick, so the core stays free of any clock.
     public sealed class EchoService
     {
         private readonly IEchoStrategy _strategy;
         private readonly HashSet<int> _revealed = new HashSet<int>();
+        private readonly HashSet<int> _pinned = new HashSet<int>();
+        private readonly HashSet<int> _all = new HashSet<int>();
 
         public int PingsLeft { get; private set; }
         public bool IsActive { get; private set; }
         public float RemainingSeconds { get; private set; }
 
-        public IReadOnlyCollection<int> RevealedBatIds => _revealed;
+        // Bats revealed by the echo now, plus the pinned ones.
+        public IReadOnlyCollection<int> RevealedBatIds => _all;
 
         // Raised after a ping starts a reveal.
         public event Action<EchoPulse> Pinged;
@@ -49,6 +54,7 @@ namespace EchoCave.Core
             PingsLeft--;
             _revealed.Clear();
             foreach (int id in pulse.BatIds) _revealed.Add(id);
+            Rebuild();
             RemainingSeconds = pulse.DurationSeconds;
             IsActive = true;
 
@@ -70,10 +76,24 @@ namespace EchoCave.Core
             RemainingSeconds = 0f;
             IsActive = false;
             _revealed.Clear();
+            Rebuild();
             Expired?.Invoke();
         }
 
-        public bool IsRevealed(int batId) => _revealed.Contains(batId);
+        public bool IsRevealed(int batId) => _all.Contains(batId);
+
+        // Keeps a bat revealed for the rest of the attempt, whether or not an echo is running. It costs no ping.
+        public void Pin(int batId)
+        {
+            if (_pinned.Add(batId)) Rebuild();
+        }
+
+        private void Rebuild()
+        {
+            _all.Clear();
+            _all.UnionWith(_revealed);
+            _all.UnionWith(_pinned);
+        }
 
         // Extra pings, for example from a rewarded ad.
         public void GrantPings(int count)

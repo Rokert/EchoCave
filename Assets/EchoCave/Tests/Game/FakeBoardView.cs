@@ -21,6 +21,9 @@ namespace EchoCave.Tests
         public int[] Revealed = new int[0];
         public int RejectedCount;
 
+        // The bats a hint pointed at, in order.
+        public readonly List<int> HintedBatIds = new List<int>();
+
         // How many pings were drawn, and the ids the last one revealed.
         public int PingShownCount;
 
@@ -68,6 +71,11 @@ namespace EchoCave.Tests
         {
             PingShownCount++;
             Revealed = batIds.ToArray();
+        }
+
+        public void ShowHint(int batId)
+        {
+            HintedBatIds.Add(batId);
         }
 
         public void ShowRejected()
