@@ -2,6 +2,7 @@
     "name": "EchoCave.Game",
     "rootNamespace": "EchoCave.Game",
     "references": [
+        "EchoCave.Ads",
         "EchoCave.Core",
         "Rokert.Core",
         "Rokert.Core.Bindings",

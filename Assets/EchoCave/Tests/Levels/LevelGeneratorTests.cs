@@ -12,7 +12,8 @@ namespace EchoCave.Tests
         private readonly LevelGenerator _generator = new LevelGenerator(Resolver);
 
         // 5x5, six bats of which one hidden, two pings, three taps of slack, chains two deep with a trap.
-        private static LevelSpec Spec(int slack = 3, int step = 10)
+        // That structure scores at least 6 + 2 + 3 * 2 + 1 = 15, so the default window above a floor of 0 must be wider than 15.
+        private static LevelSpec Spec(int slack = 3, int step = 20)
         {
             return new LevelSpec(5, 5, 6, 1, 2, slack, 2, 1, step, 2);
         }

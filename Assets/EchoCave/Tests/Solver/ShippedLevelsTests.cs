@@ -10,6 +10,34 @@ namespace EchoCave.Tests
     public class ShippedLevelsTests
     {
         [Test]
+        public void EveryLevel_HasAUniquePositiveId()
+        {
+            var ids = new List<int>();
+            foreach (string guid in AssetDatabase.FindAssets("t:LevelData"))
+            {
+                var asset = AssetDatabase.LoadAssetAtPath<LevelData>(AssetDatabase.GUIDToAssetPath(guid));
+                if (asset != null) ids.Add(asset.LevelId);
+            }
+
+            Assert.IsEmpty(LevelIdRules.Validate(ids), "Level ids are what saved progress hangs on.");
+        }
+
+        // Saves of version 1 were keyed by catalog position and are converted as position + 1, which only holds
+        // while these ten levels keep ids 1 to 10 in this order.
+        [Test]
+        public void TheFirstTenCatalogLevels_KeepTheIdsThatSaveMigrationRelyOn()
+        {
+            string[] guids = AssetDatabase.FindAssets("t:LevelCatalog");
+            Assert.AreEqual(1, guids.Length, "Expected exactly one LevelCatalog.");
+            var catalog = AssetDatabase.LoadAssetAtPath<LevelCatalog>(AssetDatabase.GUIDToAssetPath(guids[0]));
+
+            IReadOnlyList<int> ids = catalog.ToLevelIds();
+
+            Assert.GreaterOrEqual(ids.Count, 10);
+            for (int i = 0; i < 10; i++) Assert.AreEqual(i + 1, ids[i], $"catalog position {i}");
+        }
+
+        [Test]
         public void EveryLevel_IsValid_Solvable_AndFitsItsMoveLimit()
         {
             var solver = new LevelSolver(new MoveResolver());
