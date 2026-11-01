@@ -84,6 +84,7 @@ Levels are data assets (bat positions, directions, hidden flags, move limit, pin
 ## Platforms
 
 - **WebGL**: no native ad SDK; uses the null/web ad provider. Keep the core allocation-light and avoid threading.
+  - Built with `EchoCave > Build > WebGL (zip for itch.io)` (`Editor/BuildWebGL.cs`): always the Game scene, WebGL 2 only, Gzip with the decompression fallback, the `EchoCave` template in `Assets/WebGLTemplates` (dark loading screen with the logo and a progress bar in the palette, favicon from the app icon), output in `Builds/` (git-ignored) plus a zip with `index.html` at its root. The playtest is hosted on itch.io; see `PLAYTEST.md` (D-025).
 - **Android (Play Store)**: AdMob or AppLovin MAX behind `IAdService`; IAP for remove-ads and ping packs.
 
 ## Level progression (v1, 10 levels)

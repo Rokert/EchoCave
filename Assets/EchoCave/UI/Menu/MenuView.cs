@@ -12,12 +12,14 @@ namespace EchoCave.UI
 
         public event Action PlayPressed;
 
-        public MenuView(VisualElement root)
+        // The version is shown small at the bottom, so a tester can say which build a comment is about.
+        public MenuView(VisualElement root, string version)
         {
             if (root == null) throw new ArgumentNullException(nameof(root));
 
             _layer = Require<VisualElement>(root, "menu-layer");
             Require<Button>(root, "play-button").clicked += () => PlayPressed?.Invoke();
+            Require<Label>(root, "version-label").text = string.IsNullOrEmpty(version) ? string.Empty : "v" + version;
         }
 
         public void Show() => _layer.RemoveFromClassList(HiddenClass);
