@@ -91,7 +91,7 @@ namespace EchoCave.UI
             var popupsView = new PopupsView(root, starStaggerMillis);
             _popups = new PopupsPresenter(popupsView, EventBus.Global, new FlowPopupCommands(flow));
 
-            var menuView = new MenuView(root);
+            var menuView = new MenuView(root, Application.version);
             _menuPresenter = new MenuPresenter(menuView, EventBus.Global, () => flow.RequestPlay(), flow.State == GameState.Menu);
 
             tapInput.SetBlocker(new UiPointerBlocker(document));

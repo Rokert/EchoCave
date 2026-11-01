@@ -10,5 +10,6 @@
             <ui:VisualElement class="pill-button__lip" picking-mode="Ignore" />
             <ui:VisualElement class="pill-button__face" picking-mode="Ignore"><ui:Label text="Play" class="pill-button__label font-bold" picking-mode="Ignore" /></ui:VisualElement>
         </ui:Button>
+        <ui:Label name="version-label" text="" class="menu__version font-medium" picking-mode="Ignore" />
     </ui:VisualElement>
 </ui:UXML>
