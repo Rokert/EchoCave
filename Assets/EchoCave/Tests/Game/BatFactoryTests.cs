@@ -34,7 +34,8 @@ namespace EchoCave.Tests
             UnityEngine.Object.DestroyImmediate(_containerRoot);
         }
 
-        // A bare BatView with the three children it needs; the serialized fields are wired the way the prefab does.
+        // A bare BatView with the three children it needs, each with the SpriteRenderer the real prefab has (the
+        // reveal fade works on their alpha); the serialized fields are wired the way the prefab does.
         private static BatView CreateBatView(string name)
         {
             var root = new GameObject(name);
@@ -44,6 +45,7 @@ namespace EchoCave.Tests
             {
                 var child = new GameObject(childName);
                 child.transform.SetParent(root.transform, false);
+                child.AddComponent<SpriteRenderer>();
                 return child;
             }
 
@@ -61,6 +63,8 @@ namespace EchoCave.Tests
         private static Bat MakeBat(int id, Direction direction, bool hidden = false) => new Bat(id, new Cell(1, 1), direction, hidden);
 
         private static bool IsActive(BatView view, string child) => view.transform.Find(child).gameObject.activeSelf;
+
+        private static float AlphaOf(BatView view, string child) => view.transform.Find(child).GetComponent<SpriteRenderer>().color.a;
 
         private static void AssertArrowAngle(BatView view, float degrees)
         {
@@ -89,6 +93,64 @@ namespace EchoCave.Tests
             Assert.IsFalse(IsActive(view, "Body"));
             Assert.IsFalse(IsActive(view, "Arrow"));
             Assert.IsTrue(IsActive(view, "Silhouette"));
+        }
+
+        [Test]
+        public void Get_HiddenBat_DrawsTheSilhouetteOpaque_AndTheBatInvisible()
+        {
+            BatView view = NewFactory().Get(MakeBat(1, Direction.Up, hidden: true));
+
+            Assert.AreEqual(1f, AlphaOf(view, "Silhouette"), 1e-5f);
+            Assert.AreEqual(0f, AlphaOf(view, "Body"), 1e-5f);
+            Assert.AreEqual(0f, AlphaOf(view, "Arrow"), 1e-5f);
+        }
+
+        [Test]
+        public void SetRevealed_ShowsTheBatOpaque_AndKeepsTheArrowsOwnTransparency()
+        {
+            _prefab.transform.Find("Arrow").GetComponent<SpriteRenderer>().color = new Color(1f, 1f, 1f, 0.5f);
+            BatView view = NewFactory().Get(MakeBat(1, Direction.Up, hidden: true));
+
+            view.SetRevealed(true);
+
+            Assert.IsTrue(IsActive(view, "Body"));
+            Assert.IsFalse(IsActive(view, "Silhouette"));
+            Assert.AreEqual(1f, AlphaOf(view, "Body"), 1e-5f);
+            Assert.AreEqual(0.5f, AlphaOf(view, "Arrow"), 1e-5f);
+
+            view.SetRevealed(false);
+
+            Assert.IsTrue(IsActive(view, "Silhouette"));
+            Assert.IsFalse(IsActive(view, "Body"));
+        }
+
+        [Test]
+        public void RevealAndConceal_DoNothingToABatThatIsNotHidden()
+        {
+            BatView view = NewFactory().Get(MakeBat(1, Direction.Up));
+
+            view.Reveal(0f, 0.25f, 1.25f);
+            view.Conceal(0.35f);
+
+            Assert.IsTrue(IsActive(view, "Body"));
+            Assert.IsFalse(IsActive(view, "Silhouette"));
+            Assert.AreEqual(1f, AlphaOf(view, "Body"), 1e-5f);
+        }
+
+        [Test]
+        public void ARecycledHiddenView_ComesBackAsAFullyVisibleBat()
+        {
+            BatFactory factory = NewFactory();
+            BatView view = factory.Get(MakeBat(1, Direction.Up, hidden: true));
+            factory.Release(view);
+
+            BatView reused = factory.Get(MakeBat(2, Direction.Up));
+
+            Assert.AreSame(view, reused);
+            Assert.IsTrue(IsActive(reused, "Body"));
+            Assert.IsFalse(IsActive(reused, "Silhouette"));
+            Assert.AreEqual(1f, AlphaOf(reused, "Body"), 1e-5f);
+            Assert.AreEqual(1f, AlphaOf(reused, "Arrow"), 1e-5f);
         }
 
         [Test]

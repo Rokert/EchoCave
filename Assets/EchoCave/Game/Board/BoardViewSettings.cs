@@ -41,6 +41,22 @@ namespace EchoCave.Game
         [SerializeField, Min(0.01f)] private float rejectShakeDuration = 0.3f;
         [SerializeField, Min(1)] private int rejectShakeVibrato = 8;
 
+        [Header("Echo reveal")]
+        [Tooltip("Seconds a hidden bat takes to fade from its silhouette into the bat.")]
+        [SerializeField, Min(0f)] private float revealFadeSeconds = 0.25f;
+        [Tooltip("Seconds it takes to fade back into the silhouette when the echo runs out.")]
+        [SerializeField, Min(0f)] private float concealFadeSeconds = 0.35f;
+        [Tooltip("The revealed bat starts this many times its size and settles to normal. 1 means no pop.")]
+        [SerializeField, Min(1f)] private float revealPopScale = 1.25f;
+
+        [Header("Ping wave")]
+        [Tooltip("How fast the ring travels, in cells per second. Keep the board crossed in well under a second: a bat can be tapped before the ring reaches it.")]
+        [SerializeField, Min(0.1f)] private float waveSpeedCells = 14f;
+        [Tooltip("Where the ring band sits in its sprite, as a share of the sprite's half size (about 0.78 for Ping Ring).")]
+        [SerializeField, Range(0.1f, 1f)] private float waveBandShare = 0.78f;
+        [Tooltip("Above the bats.")]
+        [SerializeField] private int waveSortingOrder = 3;
+
         public float CellSize => cellSize;
         public float CameraMarginCells => cameraMarginCells;
         public float TileScale => tileScale;
@@ -57,5 +73,11 @@ namespace EchoCave.Game
         public float RejectShakeCells => rejectShakeCells;
         public float RejectShakeDuration => rejectShakeDuration;
         public int RejectShakeVibrato => rejectShakeVibrato;
+        public float RevealFadeSeconds => revealFadeSeconds;
+        public float ConcealFadeSeconds => concealFadeSeconds;
+        public float RevealPopScale => revealPopScale;
+        public float WaveSpeedCells => waveSpeedCells;
+        public float WaveBandShare => waveBandShare;
+        public int WaveSortingOrder => waveSortingOrder;
     }
 }
