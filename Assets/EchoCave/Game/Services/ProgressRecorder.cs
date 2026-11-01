@@ -4,8 +4,8 @@ using Rokert.Core;
 
 namespace EchoCave.Game
 {
-    // Listens for wins on the EventBus and saves them, and keeps the audio service in step with the switches
-    // in the pause popup. Plain C#: the composition root creates it on enable and disposes it on disable.
+    // Listens for wins on the EventBus and saves them, and keeps the audio service and the save in step with the
+    // switches in the pause popup. Plain C#: the composition root creates it on enable and disposes it on disable.
     public sealed class ProgressRecorder : IDisposable
     {
         private readonly EventBus _events;
@@ -39,6 +39,7 @@ namespace EchoCave.Game
         private void OnAudioToggled(AudioToggled toggled)
         {
             _audio.SetEnabled(toggled.Channel, toggled.Enabled);
+            _save.SetAudio(toggled.Channel, toggled.Enabled);
         }
     }
 }

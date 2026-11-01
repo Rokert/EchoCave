@@ -71,6 +71,22 @@ namespace EchoCave.Tests
         }
 
         [Test]
+        public void AToggle_IsSaved_SoItSurvivesARestart()
+        {
+            var store = new InMemorySaveStore();
+            var save = new SaveService(store);
+            using (new ProgressRecorder(_bus, save, new NullAudioService(), LevelIds))
+            {
+                _bus.Publish(new AudioToggled(AudioChannel.Sound, false));
+            }
+
+            var restarted = new SaveService(store);
+
+            Assert.IsFalse(restarted.SoundOn);
+            Assert.IsTrue(restarted.MusicOn);
+        }
+
+        [Test]
         public void AfterDispose_NothingIsListenedTo()
         {
             _recorder.Dispose();

@@ -70,17 +70,21 @@ namespace EchoCave.Tests
         }
 
         [Test]
-        public void Reset_ForgetsEverything_AndDeletesTheSave()
+        public void Reset_ForgetsTheProgress_ButKeepsTheAudioSwitches()
         {
             var store = new CountingStore();
             var service = new SaveService(store);
             service.RecordWin(1, 6, 3);
+            service.SetAudio(AudioChannel.Sound, false);
 
             service.Reset();
 
             Assert.AreEqual(0, service.Progress.CompletedCount);
-            Assert.AreEqual(1, store.Deletes);
-            Assert.AreEqual(0, new SaveService(store).Progress.CompletedCount);
+            Assert.IsFalse(service.SoundOn);
+
+            var reloaded = new SaveService(store);
+            Assert.AreEqual(0, reloaded.Progress.CompletedCount);
+            Assert.IsFalse(reloaded.SoundOn, "a preference is not an achievement: Reset must not undo it");
         }
 
         [TestCase("not json at all")]
@@ -124,13 +128,15 @@ namespace EchoCave.Tests
             progress.RecordWin(1, 3, 6);
             progress.RecordWin(8, 1, 14);
 
-            Assert.IsTrue(SaveSerializer.TryDeserialize(SaveSerializer.Serialize(progress), out PlayerProgress back));
+            Assert.IsTrue(SaveSerializer.TryDeserialize(SaveSerializer.Serialize(progress, true, false), out SaveContent back));
 
-            Assert.AreEqual(2, back.CompletedCount);
-            Assert.AreEqual(3, back.StarsOf(1));
-            Assert.AreEqual(6, back.BestMovesOf(1));
-            Assert.AreEqual(1, back.StarsOf(8));
-            Assert.AreEqual(14, back.BestMovesOf(8));
+            Assert.AreEqual(2, back.Progress.CompletedCount);
+            Assert.AreEqual(3, back.Progress.StarsOf(1));
+            Assert.AreEqual(6, back.Progress.BestMovesOf(1));
+            Assert.AreEqual(1, back.Progress.StarsOf(8));
+            Assert.AreEqual(14, back.Progress.BestMovesOf(8));
+            Assert.IsTrue(back.SoundOn);
+            Assert.IsFalse(back.MusicOn);
         }
 
         [Test]
@@ -153,7 +159,7 @@ namespace EchoCave.Tests
         }
 
         [Test]
-        public void AfterTheNextWin_AConvertedSaveIsStoredAsVersion2()
+        public void AfterTheNextWin_AConvertedSaveIsStoredAsTheCurrentVersion()
         {
             var store = new InMemorySaveStore();
             store.Write("{\"version\":1,\"levels\":[{\"index\":0,\"stars\":1,\"moves\":9}]}");
@@ -162,8 +168,108 @@ namespace EchoCave.Tests
             service.RecordWin(1, 5, 3);
 
             store.TryRead(out string stored);
-            StringAssert.Contains("\"version\":2", stored);
+            StringAssert.Contains("\"version\":3", stored);
             Assert.AreEqual(3, new SaveService(store).Progress.StarsOf(1));
+        }
+
+        [Test]
+        public void BothSwitches_StartOn_WhenThereIsNoSave()
+        {
+            var service = new SaveService(new InMemorySaveStore());
+
+            Assert.IsTrue(service.SoundOn);
+            Assert.IsTrue(service.MusicOn);
+        }
+
+        [Test]
+        public void ASwitchTurnedOff_SurvivesAReload_AndTheOtherStaysOn()
+        {
+            var store = new InMemorySaveStore();
+            new SaveService(store).SetAudio(AudioChannel.Music, false);
+
+            var reloaded = new SaveService(store);
+
+            Assert.IsFalse(reloaded.MusicOn);
+            Assert.IsTrue(reloaded.SoundOn);
+        }
+
+        [Test]
+        public void ASwitchTurnedBackOn_IsSavedToo()
+        {
+            var store = new InMemorySaveStore();
+            var service = new SaveService(store);
+            service.SetAudio(AudioChannel.Sound, false);
+            service.SetAudio(AudioChannel.Sound, true);
+
+            Assert.IsTrue(new SaveService(store).SoundOn);
+        }
+
+        [Test]
+        public void ASwitchSetToWhatItAlreadyIs_WritesNothing()
+        {
+            var store = new CountingStore();
+            var service = new SaveService(store);
+
+            service.SetAudio(AudioChannel.Sound, true);
+            service.SetAudio(AudioChannel.Music, true);
+
+            Assert.AreEqual(0, store.Writes);
+
+            service.SetAudio(AudioChannel.Sound, false);
+            service.SetAudio(AudioChannel.Sound, false);
+
+            Assert.AreEqual(1, store.Writes);
+        }
+
+        [Test]
+        public void AVersion2Save_LoadsWithBothSwitchesOn_AndKeepsItsProgress()
+        {
+            var store = new InMemorySaveStore();
+            store.Write("{\"version\":2,\"levels\":[{\"id\":4,\"stars\":2,\"moves\":9}]}");
+
+            var service = new SaveService(store);
+
+            Assert.IsFalse(service.RecoveredFromBadData);
+            Assert.IsTrue(service.SoundOn, "a save made before the switches existed must not come back muted");
+            Assert.IsTrue(service.MusicOn);
+            Assert.AreEqual(2, service.Progress.StarsOf(4));
+        }
+
+        [Test]
+        public void AVersion3Save_ReadsBothSwitches()
+        {
+            var store = new InMemorySaveStore();
+            store.Write("{\"version\":3,\"soundOff\":true,\"musicOff\":false,\"levels\":[]}");
+
+            var service = new SaveService(store);
+
+            Assert.IsFalse(service.SoundOn);
+            Assert.IsTrue(service.MusicOn);
+        }
+
+        [Test]
+        public void AVersion1Save_LoadsWithBothSwitchesOn()
+        {
+            var store = new InMemorySaveStore();
+            store.Write("{\"version\":1,\"levels\":[{\"index\":0,\"stars\":3,\"moves\":4}]}");
+
+            var service = new SaveService(store);
+
+            Assert.IsTrue(service.SoundOn);
+            Assert.IsTrue(service.MusicOn);
+        }
+
+        [Test]
+        public void ASaveTheGameCannotRead_StartsWithBothSwitchesOn()
+        {
+            var store = new InMemorySaveStore();
+            store.Write("not json at all");
+
+            var service = new SaveService(store);
+
+            Assert.IsTrue(service.RecoveredFromBadData);
+            Assert.IsTrue(service.SoundOn);
+            Assert.IsTrue(service.MusicOn);
         }
 
         [Test]

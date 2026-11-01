@@ -5,12 +5,13 @@ using UnityEngine;
 
 namespace EchoCave.Game
 {
-    // Turns progress into JSON and back. Reading is forgiving: a save the game cannot understand is reported,
+    // Turns a save into JSON and back. Reading is forgiving: a save the game cannot understand is reported,
     // never thrown, because a broken save must not stop the game from starting.
     public static class SaveSerializer
     {
-        // Version 2 keys levels by their stable id (D-029). Version 1 keyed them by catalog position.
-        public const int CurrentVersion = 2;
+        // Version 3 adds the sound and music switches. Version 2 keyed levels by their stable id (D-029) and
+        // version 1 by catalog position.
+        public const int CurrentVersion = 3;
 
         // The ten levels of version 1 got ids 1 to 10 in catalog order, so position i was id i + 1.
         private const int LegacyIdOffset = 1;
@@ -21,10 +22,14 @@ namespace EchoCave.Game
             public int version;
         }
 
+        // The switches are stored as "off" flags: JsonUtility reads a missing field as false, so a version 2 save,
+        // which has neither, comes out with both switches on, which is what it always meant.
         [Serializable]
         private sealed class SaveFile
         {
             public int version;
+            public bool soundOff;
+            public bool musicOff;
             public List<LevelEntry> levels = new List<LevelEntry>();
         }
 
@@ -51,22 +56,22 @@ namespace EchoCave.Game
             public int moves;
         }
 
-        public static string Serialize(PlayerProgress progress)
+        public static string Serialize(PlayerProgress progress, bool soundOn, bool musicOn)
         {
             if (progress == null) throw new ArgumentNullException(nameof(progress));
 
-            var file = new SaveFile { version = CurrentVersion };
+            var file = new SaveFile { version = CurrentVersion, soundOff = !soundOn, musicOff = !musicOn };
             foreach (LevelRecord record in progress.Records)
                 file.levels.Add(new LevelEntry { id = record.LevelId, stars = record.Stars, moves = record.BestMoves });
 
             return JsonUtility.ToJson(file);
         }
 
-        // False when the text is not a save this version understands. Entries that make no sense are skipped.
-        // A version 1 save is read and converted.
-        public static bool TryDeserialize(string json, out PlayerProgress progress)
+        // False when the text is not a save this version understands; content is then a fresh save. Entries that
+        // make no sense are skipped. Versions 1 and 2 are read and converted.
+        public static bool TryDeserialize(string json, out SaveContent content)
         {
-            progress = new PlayerProgress();
+            content = SaveContent.Fresh();
             if (string.IsNullOrEmpty(json)) return false;
 
             try
@@ -74,8 +79,8 @@ namespace EchoCave.Game
                 Header header = JsonUtility.FromJson<Header>(json);
                 if (header == null) return false;
 
-                if (header.version == CurrentVersion) return ReadCurrent(json, progress);
-                if (header.version == 1) return ReadLegacy(json, progress);
+                if (header.version == CurrentVersion || header.version == 2) return ReadCurrent(json, out content);
+                if (header.version == 1) return ReadLegacy(json, out content);
                 return false;
             }
             catch (ArgumentException)
@@ -84,31 +89,37 @@ namespace EchoCave.Game
             }
         }
 
-        private static bool ReadCurrent(string json, PlayerProgress progress)
+        private static bool ReadCurrent(string json, out SaveContent content)
         {
+            content = SaveContent.Fresh();
             SaveFile file = JsonUtility.FromJson<SaveFile>(json);
             if (file == null || file.levels == null) return false;
 
+            var progress = new PlayerProgress();
             foreach (LevelEntry entry in file.levels)
             {
                 if (entry == null) continue;
                 Add(progress, new LevelRecord(entry.id, entry.stars, entry.moves));
             }
 
+            content = new SaveContent(progress, !file.soundOff, !file.musicOff);
             return true;
         }
 
-        private static bool ReadLegacy(string json, PlayerProgress progress)
+        private static bool ReadLegacy(string json, out SaveContent content)
         {
+            content = SaveContent.Fresh();
             LegacySaveFile file = JsonUtility.FromJson<LegacySaveFile>(json);
             if (file == null || file.levels == null) return false;
 
+            var progress = new PlayerProgress();
             foreach (LegacyLevelEntry entry in file.levels)
             {
                 if (entry == null) continue;
                 Add(progress, new LevelRecord(entry.index + LegacyIdOffset, entry.stars, entry.moves));
             }
 
+            content = new SaveContent(progress, true, true);
             return true;
         }
 
