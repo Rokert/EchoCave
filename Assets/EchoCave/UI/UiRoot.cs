@@ -33,6 +33,9 @@ namespace EchoCave.UI
         private VisualElement _safeArea;
         private HudPresenter _presenter;
         private VisualElement _menu;
+        private VisualElement _root;
+        private PopupsView _popupsView;
+        private IAudioService _audio;
         private PopupsPresenter _popups;
         private MenuPresenter _menuPresenter;
         private Vector2Int _appliedScreen;
@@ -78,6 +81,7 @@ namespace EchoCave.UI
             if (_presenter != null) return;
 
             VisualElement root = document.rootVisualElement;
+            _root = root;
             _hud = root.Q<VisualElement>("hud-root");
             _safeArea = root.Q<VisualElement>("safe-area");
             _menu = root.Q<VisualElement>("menu-layer");
@@ -89,10 +93,15 @@ namespace EchoCave.UI
             _presenter = new HudPresenter(view, EventBus.Global, flow.RequestPing, () => TogglePause(flow), flow.LevelCount);
 
             var popupsView = new PopupsView(root, starStaggerMillis);
+            _popupsView = popupsView;
             _popups = new PopupsPresenter(popupsView, EventBus.Global, new FlowPopupCommands(flow));
 
             var menuView = new MenuView(root, Application.version);
             _menuPresenter = new MenuPresenter(menuView, EventBus.Global, () => flow.RequestPlay(), flow.State == GameState.Menu);
+
+            _audio = gameRoot.Audio;
+            _root.RegisterCallback<ClickEvent>(OnClick);
+            popupsView.StarLit += OnStarLit;
 
             tapInput.SetBlocker(new UiPointerBlocker(document));
 
@@ -101,6 +110,11 @@ namespace EchoCave.UI
 
         private void Decompose()
         {
+            _root?.UnregisterCallback<ClickEvent>(OnClick);
+            if (_popupsView != null) _popupsView.StarLit -= OnStarLit;
+            _popupsView = null;
+            _root = null;
+
             _presenter?.Dispose();
             _presenter = null;
             _popups?.Dispose();
@@ -109,6 +123,23 @@ namespace EchoCave.UI
             _menuPresenter = null;
 
             if (tapInput != null) tapInput.SetBlocker(null);
+        }
+
+        // One handler for every button on the panel: the sound follows the button's classes (UiSoundRules).
+        private void OnClick(ClickEvent evt)
+        {
+            Button button = null;
+            for (var element = evt.target as VisualElement; element != null && button == null; element = element.parent)
+                button = element as Button;
+            if (button == null) return;
+
+            SoundCue? cue = UiSoundRules.CueForButton(button.GetClasses());
+            if (cue.HasValue) _audio.Play(cue.Value);
+        }
+
+        private void OnStarLit(int index)
+        {
+            _audio.Play(UiSoundRules.CueForStar(index));
         }
 
         private static void TogglePause(GameFlow flow)

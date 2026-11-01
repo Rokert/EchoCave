@@ -207,5 +207,30 @@ namespace EchoCave.Tests
         {
             Assert.Throws<ArgumentNullException>(() => new PopupsView(null, 280));
         }
+
+        [Test]
+        public void EachEarnedStar_RaisesStarLit_InOrder_AndNoOtherDoes()
+        {
+            var lit = new System.Collections.Generic.List<int>();
+            _view.StarLit += lit.Add;
+
+            _view.ShowComplete(2, 5, 9, true);
+
+            CollectionAssert.AreEqual(new[] { 0, 1 }, lit);
+        }
+
+        [Test]
+        public void ThreeStars_RaiseThreeSounds_AndZeroStarsNone()
+        {
+            var lit = new System.Collections.Generic.List<int>();
+            _view.StarLit += lit.Add;
+
+            _view.ShowComplete(3, 5, 9, true);
+            Assert.AreEqual(3, lit.Count);
+
+            lit.Clear();
+            _view.ShowComplete(0, 9, 9, true);
+            Assert.IsEmpty(lit);
+        }
     }
 }
