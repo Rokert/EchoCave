@@ -29,9 +29,9 @@ namespace EchoCave.Game
             }
         }
 
-        public void RecordWin(int levelIndex, int moves, int stars)
+        public void RecordWin(int levelId, int moves, int stars)
         {
-            if (Progress.RecordWin(levelIndex, stars, moves)) _store.Write(SaveSerializer.Serialize(Progress));
+            if (Progress.RecordWin(levelId, stars, moves)) _store.Write(SaveSerializer.Serialize(Progress));
         }
 
         public void Reset()

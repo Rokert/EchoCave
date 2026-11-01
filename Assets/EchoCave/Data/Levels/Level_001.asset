@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 794601ffb717a474486870e007be666e, type: 3}
   m_Name: Level_001
   m_EditorClassIdentifier: EchoCave.Game::EchoCave.Game.LevelData
+  levelId: 1
   width: 5
   height: 5
   bats:

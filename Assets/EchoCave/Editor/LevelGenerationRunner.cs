@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Text;
 using EchoCave.Core;
 using EchoCave.Game;
@@ -76,6 +77,7 @@ namespace EchoCave.Editor
                 }
 
                 difficulty = kept.Difficulty;
+                EnsureId(existing);
                 report.AppendLine($"{entry.levelName}: kept as is, difficulty {difficulty}.");
                 return true;
             }
@@ -103,12 +105,30 @@ namespace EchoCave.Editor
 
             Undo.RecordObject(asset, $"Generate {entry.levelName}");
             asset.Configure(level);
+            EnsureId(asset);
             EditorUtility.SetDirty(asset);
 
             report.AppendLine(
                 $"{entry.levelName}: {metrics.Bats} bats, {metrics.Hidden} hidden, {metrics.BlockedAtStart} traps, " +
                 $"{metrics.Waves} waves, difficulty {difficulty}, limit {(level.HasMoveLimit ? level.MoveLimit.ToString() : "none")}.");
             return true;
+        }
+
+        // A level that has no id yet gets the next free one. A level that has one keeps it, even when it is regenerated
+        // or moved in the plan: the id is what saved progress hangs on.
+        private static void EnsureId(LevelData asset)
+        {
+            if (asset.LevelId >= 1) return;
+
+            var inUse = new List<int>();
+            foreach (string guid in AssetDatabase.FindAssets("t:LevelData"))
+            {
+                var other = AssetDatabase.LoadAssetAtPath<LevelData>(AssetDatabase.GUIDToAssetPath(guid));
+                if (other != null) inUse.Add(other.LevelId);
+            }
+
+            asset.AssignId(LevelIdRules.NextFree(inUse));
+            EditorUtility.SetDirty(asset);
         }
 
         private static void WriteCatalog(LevelGenerationPlan plan)

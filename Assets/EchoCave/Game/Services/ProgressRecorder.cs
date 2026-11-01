@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Rokert.Core;
 
 namespace EchoCave.Game
@@ -10,12 +11,15 @@ namespace EchoCave.Game
         private readonly EventBus _events;
         private readonly ISaveService _save;
         private readonly IAudioService _audio;
+        private readonly IReadOnlyList<int> _levelIds;
 
-        public ProgressRecorder(EventBus events, ISaveService save, IAudioService audio)
+        // levelIds[i] is the stable id of the level at catalog position i: progress is saved by id, the flow speaks in positions.
+        public ProgressRecorder(EventBus events, ISaveService save, IAudioService audio, IReadOnlyList<int> levelIds)
         {
             _events = events ?? throw new ArgumentNullException(nameof(events));
             _save = save ?? throw new ArgumentNullException(nameof(save));
             _audio = audio ?? throw new ArgumentNullException(nameof(audio));
+            _levelIds = levelIds ?? throw new ArgumentNullException(nameof(levelIds));
 
             _events.Subscribe<LevelWon>(OnLevelWon);
             _events.Subscribe<AudioToggled>(OnAudioToggled);
@@ -29,7 +33,7 @@ namespace EchoCave.Game
 
         private void OnLevelWon(LevelWon won)
         {
-            _save.RecordWin(won.LevelIndex, won.MovesUsed, won.Stars);
+            _save.RecordWin(_levelIds[won.LevelIndex], won.MovesUsed, won.Stars);
         }
 
         private void OnAudioToggled(AudioToggled toggled)

@@ -17,6 +17,9 @@ namespace EchoCave.Game
             public bool hidden;
         }
 
+        [Tooltip("Identifies this level in saved progress. Assigned once, never changed, never reused: moving the level in the catalog must not touch it. 0 means not assigned yet.")]
+        [SerializeField, Min(0)] private int levelId;
+
         [SerializeField, Min(1)] private int width = 5;
         [SerializeField, Min(1)] private int height = 5;
         [SerializeField] private List<BatEntry> bats = new List<BatEntry>();
@@ -27,6 +30,8 @@ namespace EchoCave.Game
         [SerializeField, Min(1)] private int threeStarMoves = 1;
         [SerializeField, Min(1)] private int twoStarMoves = 1;
 
+        public int LevelId => levelId;
+
         public LevelDefinition ToDefinition()
         {
             var definitions = new List<BatDefinition>(bats.Count);
@@ -34,6 +39,11 @@ namespace EchoCave.Game
                 definitions.Add(new BatDefinition(new Cell(bat.cell.x, bat.cell.y), bat.direction, bat.hidden));
 
             return new LevelDefinition(width, height, definitions, moveLimit, pingBudget, threeStarMoves, twoStarMoves);
+        }
+
+        internal void AssignId(int id)
+        {
+            levelId = id;
         }
 
         internal void Configure(LevelDefinition definition)

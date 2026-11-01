@@ -9,7 +9,7 @@ namespace EchoCave.Game
         PlayerProgress Progress { get; }
 
         // Records a win and saves at once when it improved something.
-        void RecordWin(int levelIndex, int moves, int stars);
+        void RecordWin(int levelId, int moves, int stars);
 
         // Forgets all progress and deletes the save.
         void Reset();
