@@ -18,12 +18,22 @@ namespace EchoCave.Game
         public GameFlow Flow { get; private set; }
 
         private IAdService _ads;
+        private ISaveService _save;
+        private IAudioService _audio;
+        private IAnalyticsService _analytics;
+        private ProgressRecorder _recorder;
 
         private void Awake()
         {
             // Replace, not Register: with Reload Domain off the registry outlives a Play session.
             _ads = new NullAdService();
+            _save = new SaveService(new PlayerPrefsSaveStore());
+            _audio = new NullAudioService();
+            _analytics = new NullAnalyticsService();
             ServiceLocator.Replace<IAdService>(_ads);
+            ServiceLocator.Replace<ISaveService>(_save);
+            ServiceLocator.Replace<IAudioService>(_audio);
+            ServiceLocator.Replace<IAnalyticsService>(_analytics);
 
             var echoStrategy = new RevealAllHiddenStrategy(echoSettings.RevealSeconds);
             Flow = new GameFlow(boardView, catalog.ToDefinitions(), new MoveResolver(), EventBus.Global, echoStrategy);
@@ -32,18 +42,23 @@ namespace EchoCave.Game
         private void OnEnable()
         {
             tapInput.Tapped += OnTapped;
+            _recorder = new ProgressRecorder(EventBus.Global, _save, _audio);
             EventBus.Global.Subscribe<LevelStarted>(OnLevelStarted);
         }
 
         private void OnDisable()
         {
             tapInput.Tapped -= OnTapped;
+            _recorder.Dispose();
             EventBus.Global.Unsubscribe<LevelStarted>(OnLevelStarted);
         }
 
         private void OnDestroy()
         {
             ServiceLocator.Unregister(_ads);
+            ServiceLocator.Unregister(_save);
+            ServiceLocator.Unregister(_audio);
+            ServiceLocator.Unregister(_analytics);
         }
 
         private void Update()
