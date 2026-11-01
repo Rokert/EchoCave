@@ -1,19 +1,19 @@
 namespace EchoCave.Core
 {
-    // The best result a player has had on one level.
+    // The best result a player has had on one level, identified by its stable level id.
     public readonly struct LevelRecord
     {
-        public int Index { get; }
+        public int LevelId { get; }
         public int Stars { get; }
         public int BestMoves { get; }
 
-        public LevelRecord(int index, int stars, int bestMoves)
+        public LevelRecord(int levelId, int stars, int bestMoves)
         {
-            Index = index;
+            LevelId = levelId;
             Stars = stars;
             BestMoves = bestMoves;
         }
 
-        public bool IsValid => Index >= 0 && Stars >= 1 && Stars <= PlayerProgress.MaxStars && BestMoves >= 0;
+        public bool IsValid => LevelId >= 1 && Stars >= 1 && Stars <= PlayerProgress.MaxStars && BestMoves >= 0;
     }
 }

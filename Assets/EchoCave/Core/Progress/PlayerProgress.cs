@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace EchoCave.Core
 {
     // What the player has achieved, level by level. Pure data and rules: where it is stored is the save
-    // service's business. A level is identified by its index in the catalog.
+    // service's business. A level is identified by its stable id (see LevelIdRules), not by its place in the catalog.
     public sealed class PlayerProgress
     {
         public const int MaxStars = 3;
@@ -23,7 +23,7 @@ namespace EchoCave.Core
             }
         }
 
-        // Ordered by level index.
+        // Ordered by level id.
         public IReadOnlyList<LevelRecord> Records
         {
             get
@@ -33,25 +33,25 @@ namespace EchoCave.Core
             }
         }
 
-        public bool IsCompleted(int levelIndex) => _records.ContainsKey(levelIndex);
+        public bool IsCompleted(int levelId) => _records.ContainsKey(levelId);
 
         // 0 when the level has never been won.
-        public int StarsOf(int levelIndex) => _records.TryGetValue(levelIndex, out LevelRecord r) ? r.Stars : 0;
+        public int StarsOf(int levelId) => _records.TryGetValue(levelId, out LevelRecord r) ? r.Stars : 0;
 
         // 0 when the level has never been won.
-        public int BestMovesOf(int levelIndex) => _records.TryGetValue(levelIndex, out LevelRecord r) ? r.BestMoves : 0;
+        public int BestMovesOf(int levelId) => _records.TryGetValue(levelId, out LevelRecord r) ? r.BestMoves : 0;
 
         // Keeps the best stars and the fewest moves separately, so a win never lowers either.
         // Returns true when something improved.
-        public bool RecordWin(int levelIndex, int stars, int moves)
+        public bool RecordWin(int levelId, int stars, int moves)
         {
-            if (levelIndex < 0) throw new ArgumentOutOfRangeException(nameof(levelIndex), levelIndex, "Must not be negative.");
+            if (levelId < 1) throw new ArgumentOutOfRangeException(nameof(levelId), levelId, "Level ids start at 1.");
             if (stars < 1 || stars > MaxStars) throw new ArgumentOutOfRangeException(nameof(stars), stars, "A win earns 1 to 3 stars.");
             if (moves < 0) throw new ArgumentOutOfRangeException(nameof(moves), moves, "Must not be negative.");
 
-            if (!_records.TryGetValue(levelIndex, out LevelRecord old))
+            if (!_records.TryGetValue(levelId, out LevelRecord old))
             {
-                _records[levelIndex] = new LevelRecord(levelIndex, stars, moves);
+                _records[levelId] = new LevelRecord(levelId, stars, moves);
                 return true;
             }
 
@@ -59,7 +59,7 @@ namespace EchoCave.Core
             int bestMoves = Math.Min(old.BestMoves, moves);
             if (bestStars == old.Stars && bestMoves == old.BestMoves) return false;
 
-            _records[levelIndex] = new LevelRecord(levelIndex, bestStars, bestMoves);
+            _records[levelId] = new LevelRecord(levelId, bestStars, bestMoves);
             return true;
         }
     }

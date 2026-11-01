@@ -43,17 +43,17 @@ namespace EchoCave.Tests
         {
             var store = new InMemorySaveStore();
             var first = new SaveService(store);
-            first.RecordWin(0, 6, 3);
-            first.RecordWin(3, 11, 1);
-            first.RecordWin(0, 5, 3);
+            first.RecordWin(1, 6, 3);
+            first.RecordWin(4, 11, 1);
+            first.RecordWin(1, 5, 3);
 
             var second = new SaveService(store);
 
             Assert.AreEqual(2, second.Progress.CompletedCount);
-            Assert.AreEqual(3, second.Progress.StarsOf(0));
-            Assert.AreEqual(5, second.Progress.BestMovesOf(0));
-            Assert.AreEqual(1, second.Progress.StarsOf(3));
-            Assert.AreEqual(11, second.Progress.BestMovesOf(3));
+            Assert.AreEqual(3, second.Progress.StarsOf(1));
+            Assert.AreEqual(5, second.Progress.BestMovesOf(1));
+            Assert.AreEqual(1, second.Progress.StarsOf(4));
+            Assert.AreEqual(11, second.Progress.BestMovesOf(4));
             Assert.IsFalse(second.RecoveredFromBadData);
         }
 
@@ -63,8 +63,8 @@ namespace EchoCave.Tests
             var store = new CountingStore();
             var service = new SaveService(store);
 
-            service.RecordWin(0, 6, 3);
-            service.RecordWin(0, 9, 1);
+            service.RecordWin(1, 6, 3);
+            service.RecordWin(1, 9, 1);
 
             Assert.AreEqual(1, store.Writes);
         }
@@ -74,7 +74,7 @@ namespace EchoCave.Tests
         {
             var store = new CountingStore();
             var service = new SaveService(store);
-            service.RecordWin(0, 6, 3);
+            service.RecordWin(1, 6, 3);
 
             service.Reset();
 
@@ -85,7 +85,8 @@ namespace EchoCave.Tests
 
         [TestCase("not json at all")]
         [TestCase("{\"version\":99,\"levels\":[]}")]
-        [TestCase("{\"levels\":[{\"index\":0,\"stars\":3,\"moves\":4}]}")]
+        [TestCase("{\"levels\":[{\"id\":1,\"stars\":3,\"moves\":4}]}")]
+        [TestCase("{\"version\":0,\"levels\":[]}")]
         public void ASaveTheGameCannotRead_StartsFresh_AndSaysSo(string content)
         {
             var store = new InMemorySaveStore();
@@ -101,35 +102,68 @@ namespace EchoCave.Tests
         public void EntriesThatMakeNoSense_AreSkipped_AndTheRestIsKept()
         {
             var store = new InMemorySaveStore();
-            store.Write("{\"version\":1,\"levels\":["
-                + "{\"index\":0,\"stars\":3,\"moves\":4},"
-                + "{\"index\":1,\"stars\":9,\"moves\":4},"
-                + "{\"index\":-2,\"stars\":2,\"moves\":4},"
-                + "{\"index\":2,\"stars\":2,\"moves\":7}]}");
+            store.Write("{\"version\":2,\"levels\":["
+                + "{\"id\":1,\"stars\":3,\"moves\":4},"
+                + "{\"id\":2,\"stars\":9,\"moves\":4},"
+                + "{\"id\":0,\"stars\":2,\"moves\":4},"
+                + "{\"id\":3,\"stars\":2,\"moves\":7}]}");
 
             var service = new SaveService(store);
 
             Assert.IsFalse(service.RecoveredFromBadData);
             Assert.AreEqual(2, service.Progress.CompletedCount);
-            Assert.AreEqual(3, service.Progress.StarsOf(0));
-            Assert.AreEqual(2, service.Progress.StarsOf(2));
-            Assert.IsFalse(service.Progress.IsCompleted(1));
+            Assert.AreEqual(3, service.Progress.StarsOf(1));
+            Assert.AreEqual(2, service.Progress.StarsOf(3));
+            Assert.IsFalse(service.Progress.IsCompleted(2));
         }
 
         [Test]
         public void TheSerializer_RoundTripsEveryRecord()
         {
             var progress = new PlayerProgress();
-            progress.RecordWin(0, 3, 6);
-            progress.RecordWin(7, 1, 14);
+            progress.RecordWin(1, 3, 6);
+            progress.RecordWin(8, 1, 14);
 
             Assert.IsTrue(SaveSerializer.TryDeserialize(SaveSerializer.Serialize(progress), out PlayerProgress back));
 
             Assert.AreEqual(2, back.CompletedCount);
-            Assert.AreEqual(3, back.StarsOf(0));
-            Assert.AreEqual(6, back.BestMovesOf(0));
-            Assert.AreEqual(1, back.StarsOf(7));
-            Assert.AreEqual(14, back.BestMovesOf(7));
+            Assert.AreEqual(3, back.StarsOf(1));
+            Assert.AreEqual(6, back.BestMovesOf(1));
+            Assert.AreEqual(1, back.StarsOf(8));
+            Assert.AreEqual(14, back.BestMovesOf(8));
+        }
+
+        [Test]
+        public void AVersion1Save_IsConverted_BecauseTheFirstTenIdsFollowedCatalogOrder()
+        {
+            var store = new InMemorySaveStore();
+            store.Write("{\"version\":1,\"levels\":["
+                + "{\"index\":0,\"stars\":3,\"moves\":4},"
+                + "{\"index\":2,\"stars\":2,\"moves\":7},"
+                + "{\"index\":-1,\"stars\":2,\"moves\":7}]}");
+
+            var service = new SaveService(store);
+
+            Assert.IsFalse(service.RecoveredFromBadData);
+            Assert.AreEqual(2, service.Progress.CompletedCount);
+            Assert.AreEqual(3, service.Progress.StarsOf(1));
+            Assert.AreEqual(4, service.Progress.BestMovesOf(1));
+            Assert.AreEqual(2, service.Progress.StarsOf(3));
+            Assert.AreEqual(7, service.Progress.BestMovesOf(3));
+        }
+
+        [Test]
+        public void AfterTheNextWin_AConvertedSaveIsStoredAsVersion2()
+        {
+            var store = new InMemorySaveStore();
+            store.Write("{\"version\":1,\"levels\":[{\"index\":0,\"stars\":1,\"moves\":9}]}");
+            var service = new SaveService(store);
+
+            service.RecordWin(1, 5, 3);
+
+            store.TryRead(out string stored);
+            StringAssert.Contains("\"version\":2", stored);
+            Assert.AreEqual(3, new SaveService(store).Progress.StarsOf(1));
         }
 
         [Test]

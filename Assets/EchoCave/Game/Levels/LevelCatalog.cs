@@ -12,6 +12,15 @@ namespace EchoCave.Game
 
         public int Count => levels.Count;
 
+        // The stable id of each level, in play order. Check them with LevelIdRules.Validate.
+        public IReadOnlyList<int> ToLevelIds()
+        {
+            var ids = new List<int>(levels.Count);
+            foreach (LevelData level in levels) ids.Add(level.LevelId);
+
+            return ids;
+        }
+
         public IReadOnlyList<LevelDefinition> ToDefinitions()
         {
             var definitions = new List<LevelDefinition>(levels.Count);

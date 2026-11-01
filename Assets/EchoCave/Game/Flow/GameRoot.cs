@@ -1,4 +1,5 @@
 using EchoCave.Ads;
+using System.Collections.Generic;
 using EchoCave.Core;
 using Rokert.Core;
 using UnityEngine;
@@ -22,9 +23,16 @@ namespace EchoCave.Game
         private IAudioService _audio;
         private IAnalyticsService _analytics;
         private ProgressRecorder _recorder;
+        private IReadOnlyList<int> _levelIds;
 
         private void Awake()
         {
+            // Progress is saved by level id, so a catalog with a missing or repeated id would corrupt saves: stop here, loudly.
+            _levelIds = catalog.ToLevelIds();
+            IReadOnlyList<string> idErrors = LevelIdRules.Validate(_levelIds);
+            if (idErrors.Count > 0)
+                throw new System.InvalidOperationException("The level catalog has bad level ids:\n" + string.Join("\n", idErrors));
+
             // Replace, not Register: with Reload Domain off the registry outlives a Play session.
             _ads = new NullAdService();
             _save = new SaveService(new PlayerPrefsSaveStore());
@@ -42,7 +50,7 @@ namespace EchoCave.Game
         private void OnEnable()
         {
             tapInput.Tapped += OnTapped;
-            _recorder = new ProgressRecorder(EventBus.Global, _save, _audio);
+            _recorder = new ProgressRecorder(EventBus.Global, _save, _audio, _levelIds);
             EventBus.Global.Subscribe<LevelStarted>(OnLevelStarted);
         }
 
