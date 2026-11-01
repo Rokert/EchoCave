@@ -1,0 +1,141 @@
+using System;
+using EchoCave.Core;
+using EchoCave.Game;
+using NUnit.Framework;
+
+namespace EchoCave.Tests
+{
+    public class SaveServiceTests
+    {
+        // Counts writes so a test can tell "saved" from "did nothing".
+        private sealed class CountingStore : ISaveStore
+        {
+            private readonly InMemorySaveStore _inner = new InMemorySaveStore();
+            public int Writes { get; private set; }
+            public int Deletes { get; private set; }
+
+            public bool TryRead(out string content) => _inner.TryRead(out content);
+
+            public void Write(string content)
+            {
+                Writes++;
+                _inner.Write(content);
+            }
+
+            public void Delete()
+            {
+                Deletes++;
+                _inner.Delete();
+            }
+        }
+
+        [Test]
+        public void AnEmptyStore_StartsFresh_WithoutComplaint()
+        {
+            var service = new SaveService(new InMemorySaveStore());
+
+            Assert.AreEqual(0, service.Progress.CompletedCount);
+            Assert.IsFalse(service.RecoveredFromBadData);
+        }
+
+        [Test]
+        public void Progress_SurvivesAReload_FromTheSameStore()
+        {
+            var store = new InMemorySaveStore();
+            var first = new SaveService(store);
+            first.RecordWin(0, 6, 3);
+            first.RecordWin(3, 11, 1);
+            first.RecordWin(0, 5, 3);
+
+            var second = new SaveService(store);
+
+            Assert.AreEqual(2, second.Progress.CompletedCount);
+            Assert.AreEqual(3, second.Progress.StarsOf(0));
+            Assert.AreEqual(5, second.Progress.BestMovesOf(0));
+            Assert.AreEqual(1, second.Progress.StarsOf(3));
+            Assert.AreEqual(11, second.Progress.BestMovesOf(3));
+            Assert.IsFalse(second.RecoveredFromBadData);
+        }
+
+        [Test]
+        public void ASaveIsWritten_OnlyWhenAWinImprovesSomething()
+        {
+            var store = new CountingStore();
+            var service = new SaveService(store);
+
+            service.RecordWin(0, 6, 3);
+            service.RecordWin(0, 9, 1);
+
+            Assert.AreEqual(1, store.Writes);
+        }
+
+        [Test]
+        public void Reset_ForgetsEverything_AndDeletesTheSave()
+        {
+            var store = new CountingStore();
+            var service = new SaveService(store);
+            service.RecordWin(0, 6, 3);
+
+            service.Reset();
+
+            Assert.AreEqual(0, service.Progress.CompletedCount);
+            Assert.AreEqual(1, store.Deletes);
+            Assert.AreEqual(0, new SaveService(store).Progress.CompletedCount);
+        }
+
+        [TestCase("not json at all")]
+        [TestCase("{\"version\":99,\"levels\":[]}")]
+        [TestCase("{\"levels\":[{\"index\":0,\"stars\":3,\"moves\":4}]}")]
+        public void ASaveTheGameCannotRead_StartsFresh_AndSaysSo(string content)
+        {
+            var store = new InMemorySaveStore();
+            store.Write(content);
+
+            var service = new SaveService(store);
+
+            Assert.AreEqual(0, service.Progress.CompletedCount);
+            Assert.IsTrue(service.RecoveredFromBadData);
+        }
+
+        [Test]
+        public void EntriesThatMakeNoSense_AreSkipped_AndTheRestIsKept()
+        {
+            var store = new InMemorySaveStore();
+            store.Write("{\"version\":1,\"levels\":["
+                + "{\"index\":0,\"stars\":3,\"moves\":4},"
+                + "{\"index\":1,\"stars\":9,\"moves\":4},"
+                + "{\"index\":-2,\"stars\":2,\"moves\":4},"
+                + "{\"index\":2,\"stars\":2,\"moves\":7}]}");
+
+            var service = new SaveService(store);
+
+            Assert.IsFalse(service.RecoveredFromBadData);
+            Assert.AreEqual(2, service.Progress.CompletedCount);
+            Assert.AreEqual(3, service.Progress.StarsOf(0));
+            Assert.AreEqual(2, service.Progress.StarsOf(2));
+            Assert.IsFalse(service.Progress.IsCompleted(1));
+        }
+
+        [Test]
+        public void TheSerializer_RoundTripsEveryRecord()
+        {
+            var progress = new PlayerProgress();
+            progress.RecordWin(0, 3, 6);
+            progress.RecordWin(7, 1, 14);
+
+            Assert.IsTrue(SaveSerializer.TryDeserialize(SaveSerializer.Serialize(progress), out PlayerProgress back));
+
+            Assert.AreEqual(2, back.CompletedCount);
+            Assert.AreEqual(3, back.StarsOf(0));
+            Assert.AreEqual(6, back.BestMovesOf(0));
+            Assert.AreEqual(1, back.StarsOf(7));
+            Assert.AreEqual(14, back.BestMovesOf(7));
+        }
+
+        [Test]
+        public void ANullStore_IsRejected()
+        {
+            Assert.Throws<ArgumentNullException>(() => new SaveService(null));
+        }
+    }
+}
