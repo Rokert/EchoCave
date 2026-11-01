@@ -177,6 +177,52 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &153836484
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 153836485}
+  - component: {fileID: 153836486}
+  m_Layer: 0
+  m_Name: SoundPlayer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &153836485
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 153836484}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &153836486
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 153836484}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d545dc7ae3c8f466fa7003403887a5cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: EchoCave.Game::EchoCave.Game.SoundPlayer
+  bank: {fileID: 11400000, guid: f5a7b7fdeb4814be6bc94ed80782eb91, type: 2}
+  voices: 8
 --- !u!1 &731728627
 GameObject:
   m_ObjectHideFlags: 0
@@ -226,6 +272,7 @@ MonoBehaviour:
   boardView: {fileID: 1851453772}
   boardCamera: {fileID: 1907140417}
   tapInput: {fileID: 930681444}
+  soundPlayer: {fileID: 153836486}
 --- !u!1 &930681443
 GameObject:
   m_ObjectHideFlags: 0
@@ -668,3 +715,4 @@ SceneRoots:
   - {fileID: 731728629}
   - {fileID: 102982046}
   - {fileID: 1845697725}
+  - {fileID: 153836485}

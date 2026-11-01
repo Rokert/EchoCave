@@ -135,6 +135,11 @@ Every `LevelData` carries a `levelId` (1 or more), assigned once by the generati
 **Why:** stars must stay with their level when levels are reordered or inserted, and it is cheap now, before any player has a save.
 **Consequence:** never reuse or edit a shipped id (deleting the highest-numbered level would let its id be handed out again, so retire a level by leaving it out of the catalog, not by deleting its asset). A hand-made level made outside the runner has id 0 until the runner passes over it, and the game will not start until it does.
 
+## D-030 — Sound: original synthesized effects, a data-driven bank, cues driven by game events (Accepted)
+The effects are original, synthesized with RokertSfx (a local Python tool, outside this repository for now; its presets are the source and the WAVs in `Audio/Sfx` are the result), so nothing third-party is in git and the repository can go public. Which clip plays for a cue, how loud and how often is data in a `SoundBank`, not code. The game never touches an `AudioSource` directly: events become cues in `SoundCuePlayer`, the audio service decides whether to play (the sound switch), and `SoundPlayer` plays through a small pool of voices. The bounce thud starts with the animation (when `MoveSpent` is published), not at the moment of impact; the ping, the per-bat reveal and the others follow their own events.
+**Why:** a bank edited in the Inspector lets the sound be tuned without code, and keeping the decision (event to cue) apart from the playing makes both testable without Unity audio.
+**Consequence:** the bounce can sound a little before the visible hit (a fraction of a second on a 5x5 board); if it feels off, the view can raise an event at the impact instead. Music is not covered yet. Persisting the two switches and showing them in the pause popup is ROK-177; the button and star sounds are ROK-176.
+
 ## Open questions
 - Check the "EchoCave" name against Play Store before publishing.
 - Play Store closed-testing requirement for new personal accounts.

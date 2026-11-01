@@ -27,6 +27,9 @@ namespace EchoCave.Game
         private Transform _tileContainer;
         private ObjectPool<PingWave> _wavePool;
 
+        // Raised once per hidden bat, when the ping wave reaches it and its reveal begins. The sound listens.
+        public event Action BatRevealed;
+
         public GridLayout2D Layout { get; private set; }
 
         // Replaces whatever is on screen. Animations still running are cut short and their callbacks never fire.
@@ -140,10 +143,15 @@ namespace EchoCave.Game
 
                 float distanceCells = ((Vector2)pair.Value.transform.localPosition).magnitude / Layout.CellSize;
                 float delay = hasWave ? EchoWaveTiming.DelayFor(distanceCells, settings.WaveSpeedCells) : 0f;
-                pair.Value.Reveal(delay, settings.RevealFadeSeconds, settings.RevealPopScale);
+                pair.Value.Reveal(delay, settings.RevealFadeSeconds, settings.RevealPopScale, RaiseBatRevealed);
             }
 
             if (hasWave) PlayWave();
+        }
+
+        private void RaiseBatRevealed()
+        {
+            BatRevealed?.Invoke();
         }
 
         private void PlayWave()

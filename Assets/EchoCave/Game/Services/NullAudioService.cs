@@ -1,6 +1,6 @@
 namespace EchoCave.Game
 {
-    // No sound system yet: it only remembers the two switches.
+    // Silent: it only remembers the two switches. The game falls back to it when no sound player is wired.
     public sealed class NullAudioService : IAudioService
     {
         private bool _sound = true;
@@ -12,6 +12,10 @@ namespace EchoCave.Game
         {
             if (channel == AudioChannel.Sound) _sound = enabled;
             else _music = enabled;
+        }
+
+        public void Play(SoundCue cue)
+        {
         }
     }
 }
