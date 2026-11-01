@@ -1,3 +1,4 @@
+using EchoCave.Ads;
 using EchoCave.Core;
 using Rokert.Core;
 using UnityEngine;
@@ -16,8 +17,14 @@ namespace EchoCave.Game
 
         public GameFlow Flow { get; private set; }
 
+        private IAdService _ads;
+
         private void Awake()
         {
+            // Replace, not Register: with Reload Domain off the registry outlives a Play session.
+            _ads = new NullAdService();
+            ServiceLocator.Replace<IAdService>(_ads);
+
             var echoStrategy = new RevealAllHiddenStrategy(echoSettings.RevealSeconds);
             Flow = new GameFlow(boardView, catalog.ToDefinitions(), new MoveResolver(), EventBus.Global, echoStrategy);
         }
@@ -32,6 +39,11 @@ namespace EchoCave.Game
         {
             tapInput.Tapped -= OnTapped;
             EventBus.Global.Unsubscribe<LevelStarted>(OnLevelStarted);
+        }
+
+        private void OnDestroy()
+        {
+            ServiceLocator.Unregister(_ads);
         }
 
         private void Update()

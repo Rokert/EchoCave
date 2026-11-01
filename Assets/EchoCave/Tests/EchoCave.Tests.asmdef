@@ -2,6 +2,7 @@
     "name": "EchoCave.Tests",
     "rootNamespace": "EchoCave.Tests",
     "references": [
+        "EchoCave.Ads",
         "EchoCave.Core",
         "EchoCave.Game",
         "EchoCave.UI",

@@ -115,6 +115,11 @@ The playtest build targets WebGL 2 only. WebGPU is out of experimental in Unity 
 **Why:** a tester who cannot start the game because of a graphics API or a missing header is a lost data point, so the most compatible choices win. A scripted build removes the chance of shipping the wrong scene (the project's scene list pointed at `SampleScene`).
 **Consequence:** no automatic data on where players quit or lose until an analytics provider exists. WebGPU can be added later as a first entry in the graphics API list with WebGL 2 as fallback. The 6.6 WebGPU status comes from a third-party summary and an Alpha documentation page; confirm it in the release notes before relying on it.
 
+## D-026 — Ads edge: callbacks, a null provider, and Game references Ads (Accepted)
+`IAdService` in `EchoCave.Ads` offers `ShowInterstitial` and `ShowRewarded`, each reporting an `AdResult` (`Granted`, `Dismissed`, `Unavailable`) through a callback that always runs exactly once. `NullAdService` is the provider for the editor and WebGL: a rewarded request is granted at once, an interstitial is `Unavailable`. `GameRoot` registers it with `ServiceLocator.Replace` and unregisters it in `OnDestroy`. The provider SDK (D-009) stays open and will be a second implementation behind the same interface.
+**Why:** callbacks because WebGL has no threads and the SDKs report that way; a granted null rewarded so the flows built on it (ping refill, hints) can be played and tested without an SDK.
+**Consequence:** `EchoCave.Game` references `EchoCave.Ads`, because the composition root has to know the implementation it registers. `Ads` never references `Game`; consumers ask the `ServiceLocator` for `IAdService` at the edges only. Reward flows must grant only on `Granted`.
+
 ## Open questions
 - Check the "EchoCave" name against Play Store before publishing.
 - Play Store closed-testing requirement for new personal accounts.

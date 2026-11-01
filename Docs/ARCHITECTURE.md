@@ -42,7 +42,7 @@ Dependency direction: `Game`, `UI`, `Ads` → `Core` → `Rokert.Core`. Core nev
 - `FlowState` and its four subclasses: only react to `Enter`; the rules live in `GameFlow`.
 - `LevelCatalog` (ScriptableObject): the levels in play order, handed to the flow as `LevelDefinition`s.
 - `EchoSettings` (ScriptableObject): the reveal duration. `GameRoot` turns it into the `RevealAllHiddenStrategy` the flow receives.
-- `GameRoot` (composition root of the Game scene): builds the flow from the catalog and the scene views, forwards `TapInput` taps, ticks the flow in `Update`, and re-frames the camera on `LevelStarted`. The game starts in the menu; the UI's Play button asks the flow to play. No edge services are registered yet; save, audio, analytics and ads have their own tickets (ROK-145, ROK-146).
+- `GameRoot` (composition root of the Game scene): builds the flow from the catalog and the scene views, forwards `TapInput` taps, ticks the flow in `Update`, and re-frames the camera on `LevelStarted`. The game starts in the menu; the UI's Play button asks the flow to play. It registers the edge services in the `ServiceLocator` (only `IAdService` so far, with `NullAdService`; save, audio and analytics are ROK-145) and unregisters them in `OnDestroy`, using `Replace` because the registry outlives a Play session when Reload Domain is off.
 - `ScreenAspect`: the single rule that says portrait or landscape (aspect >= 1 is landscape), shared by the backdrop art and the UI scaling.
 - `IPointerBlocker` (`Game`, implemented in `UI`): `TapInput` asks it whether a pointer is over the UI and drops the tap if so.
 
