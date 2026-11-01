@@ -37,6 +37,9 @@ namespace EchoCave.UI
         public event Action<PopupAction> ActionPressed;
         public event Action<AudioChannel, bool> ToggleChanged;
 
+        // Raised as each earned star lights, with its position (0 to 2), so a sound can follow it.
+        public event Action<int> StarLit;
+
         public PopupsView(VisualElement root, int starStaggerMillis)
         {
             if (root == null) throw new ArgumentNullException(nameof(root));
@@ -129,14 +132,21 @@ namespace EchoCave.UI
             for (int i = 0; i < earned; i++)
             {
                 VisualElement star = _stars[i];
+                int index = i;
                 if (_layer.panel == null)
                 {
-                    star.AddToClassList(StarOnClass);
+                    LightStar(star, index);
                     continue;
                 }
 
-                Schedule(star, () => star.AddToClassList(StarOnClass), ShowDelayMillis + _starStaggerMillis * (i + 1));
+                Schedule(star, () => LightStar(star, index), ShowDelayMillis + _starStaggerMillis * (i + 1));
             }
+        }
+
+        private void LightStar(VisualElement star, int index)
+        {
+            star.AddToClassList(StarOnClass);
+            StarLit?.Invoke(index);
         }
 
         private void Schedule(VisualElement element, Action action, long delayMillis)

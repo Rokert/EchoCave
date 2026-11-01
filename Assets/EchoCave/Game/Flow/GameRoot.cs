@@ -20,6 +20,9 @@ namespace EchoCave.Game
 
         public GameFlow Flow { get; private set; }
 
+        // The audio service of this scene, for the UI to play its own sounds through. Set in Awake.
+        public IAudioService Audio => _audio;
+
         private IAdService _ads;
         private ISaveService _save;
         private IAudioService _audio;
