@@ -15,6 +15,8 @@ namespace EchoCave.Game
         [SerializeField] private BoardView boardView;
         [SerializeField] private BoardCamera boardCamera;
         [SerializeField] private TapInput tapInput;
+        [Tooltip("Plays the sounds. Without it the game runs silent.")]
+        [SerializeField] private SoundPlayer soundPlayer;
 
         public GameFlow Flow { get; private set; }
 
@@ -23,6 +25,7 @@ namespace EchoCave.Game
         private IAudioService _audio;
         private IAnalyticsService _analytics;
         private ProgressRecorder _recorder;
+        private SoundCuePlayer _cues;
         private IReadOnlyList<int> _levelIds;
 
         private void Awake()
@@ -36,7 +39,16 @@ namespace EchoCave.Game
             // Replace, not Register: with Reload Domain off the registry outlives a Play session.
             _ads = new NullAdService();
             _save = new SaveService(new PlayerPrefsSaveStore());
-            _audio = new NullAudioService();
+            if (soundPlayer != null)
+            {
+                _audio = new AudioService(soundPlayer);
+            }
+            else
+            {
+                Debug.LogError("GameRoot has no Sound Player assigned, so the game will be silent.", this);
+                _audio = new NullAudioService();
+            }
+
             _analytics = new NullAnalyticsService();
             ServiceLocator.Replace<IAdService>(_ads);
             ServiceLocator.Replace<ISaveService>(_save);
@@ -51,6 +63,8 @@ namespace EchoCave.Game
         {
             tapInput.Tapped += OnTapped;
             _recorder = new ProgressRecorder(EventBus.Global, _save, _audio, _levelIds);
+            _cues = new SoundCuePlayer(EventBus.Global, _audio);
+            boardView.BatRevealed += OnBatRevealed;
             EventBus.Global.Subscribe<LevelStarted>(OnLevelStarted);
         }
 
@@ -58,6 +72,8 @@ namespace EchoCave.Game
         {
             tapInput.Tapped -= OnTapped;
             _recorder.Dispose();
+            _cues.Dispose();
+            boardView.BatRevealed -= OnBatRevealed;
             EventBus.Global.Unsubscribe<LevelStarted>(OnLevelStarted);
         }
 
@@ -77,6 +93,11 @@ namespace EchoCave.Game
         private void OnTapped(Vector2 world)
         {
             Flow.HandleTap(world);
+        }
+
+        private void OnBatRevealed()
+        {
+            _audio.Play(SoundCue.Reveal);
         }
 
         private void OnLevelStarted(LevelStarted started)

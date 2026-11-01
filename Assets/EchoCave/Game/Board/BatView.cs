@@ -1,3 +1,4 @@
+using System;
 using DG.Tweening;
 using EchoCave.Core;
 using UnityEngine;
@@ -56,15 +57,15 @@ namespace EchoCave.Game
         }
 
         // A bat that is hidden by default fades into the bat after delaySeconds, with a small pop. Does nothing for
-        // other bats or one that is already revealed.
-        internal void Reveal(float delaySeconds, float fadeSeconds, float popScale)
+        // other bats or one that is already revealed. onStart runs when the fade really begins, after the delay.
+        internal void Reveal(float delaySeconds, float fadeSeconds, float popScale, Action onStart = null)
         {
             if (!_hiddenByDefault || _revealed) return;
 
             CaptureRest();
             _revealed = true;
             _popScale = popScale;
-            Fade(1f, delaySeconds, fadeSeconds);
+            Fade(1f, delaySeconds, fadeSeconds, onStart);
         }
 
         // Fades a revealed bat back into its silhouette.
@@ -73,7 +74,7 @@ namespace EchoCave.Game
             if (!_hiddenByDefault || !_revealed) return;
 
             _revealed = false;
-            Fade(0f, 0f, fadeSeconds);
+            Fade(0f, 0f, fadeSeconds, null);
         }
 
         // Stops animations and restores the prefab pose, because fly-out and bounce tweens change both.
@@ -88,7 +89,7 @@ namespace EchoCave.Game
             Apply(1f);
         }
 
-        private void Fade(float target, float delaySeconds, float fadeSeconds)
+        private void Fade(float target, float delaySeconds, float fadeSeconds, Action onStart)
         {
             KillFade();
 
@@ -96,6 +97,7 @@ namespace EchoCave.Game
                 .SetDelay(delaySeconds)
                 .SetEase(Ease.OutQuad)
                 .SetLink(gameObject);
+            if (onStart != null) _fade.OnStart(() => onStart());
         }
 
         private void KillFade()

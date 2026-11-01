@@ -1,0 +1,67 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1ad44ad0ce80a4d7fbbcc8703a2139cb, type: 3}
+  m_Name: SoundBank
+  m_EditorClassIdentifier: EchoCave.Game::EchoCave.Game.SoundBank
+  entries:
+  - cue: 0
+    clip: {fileID: 8300000, guid: 46258b620c8214e688a3ccde10bd0d3d, type: 3}
+    volume: 1
+    minIntervalSeconds: 0
+  - cue: 1
+    clip: {fileID: 8300000, guid: 37ad105252ba8407c9bb8fa39f0b388c, type: 3}
+    volume: 1
+    minIntervalSeconds: 0.06
+  - cue: 2
+    clip: {fileID: 8300000, guid: 7e5c64d2ea1824777863d04fd1047b15, type: 3}
+    volume: 1
+    minIntervalSeconds: 0
+  - cue: 3
+    clip: {fileID: 8300000, guid: 86f7767394ad74ad286dc243423eb7f3, type: 3}
+    volume: 1
+    minIntervalSeconds: 0
+  - cue: 4
+    clip: {fileID: 8300000, guid: 221e7358f2d3d4bfea6879eb62cda4c2, type: 3}
+    volume: 1
+    minIntervalSeconds: 0
+  - cue: 5
+    clip: {fileID: 8300000, guid: 1baeba018c0bf47cda92a1f03783c53b, type: 3}
+    volume: 1
+    minIntervalSeconds: 0
+  - cue: 6
+    clip: {fileID: 8300000, guid: 2a7488baf630f435499e264a2989a129, type: 3}
+    volume: 1
+    minIntervalSeconds: 0
+  - cue: 7
+    clip: {fileID: 8300000, guid: 087b800fe8ddf48da95b31bfca7a361a, type: 3}
+    volume: 1
+    minIntervalSeconds: 0
+  - cue: 8
+    clip: {fileID: 8300000, guid: 76bd4d00445884971b55482d3820b1b8, type: 3}
+    volume: 1
+    minIntervalSeconds: 0.04
+  - cue: 9
+    clip: {fileID: 8300000, guid: a80ba9c2cccda4453802bab90b2eb41f, type: 3}
+    volume: 1
+    minIntervalSeconds: 0.04
+  - cue: 10
+    clip: {fileID: 8300000, guid: 7e6d2f06fac904015b1d23ad82c0232e, type: 3}
+    volume: 1
+    minIntervalSeconds: 0
+  - cue: 11
+    clip: {fileID: 8300000, guid: 01fec8d749e6940859c045ddfd565b63, type: 3}
+    volume: 1
+    minIntervalSeconds: 0
+  - cue: 12
+    clip: {fileID: 8300000, guid: f1d02c2fc529f4ce89d61e8d1a71442f, type: 3}
+    volume: 1
+    minIntervalSeconds: 0
