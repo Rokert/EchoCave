@@ -17,6 +17,7 @@ namespace EchoCave.Editor
 
             var text = new StringBuilder();
             text.Append("[Save] ").Append(progress.CompletedCount).Append(" levels won, ").Append(progress.TotalStars).Append(" stars.");
+            text.Append("\n  sound ").Append(service.SoundOn ? "on" : "off").Append(", music ").Append(service.MusicOn ? "on" : "off");
             foreach (LevelRecord record in progress.Records)
                 text.Append("\n  level id ").Append(record.LevelId).Append(": ").Append(record.Stars).Append(" stars, best ").Append(record.BestMoves).Append(" moves");
             if (service.RecoveredFromBadData) text.Append("\n  The stored save could not be read.");

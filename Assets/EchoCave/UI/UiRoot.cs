@@ -92,14 +92,16 @@ namespace EchoCave.UI
             var view = new HudView(root, pingShakeAmplitude, pingShakeCount, pingShakeMillis);
             _presenter = new HudPresenter(view, EventBus.Global, flow.RequestPing, () => TogglePause(flow), flow.LevelCount);
 
+            _audio = gameRoot.Audio;
             var popupsView = new PopupsView(root, starStaggerMillis);
             _popupsView = popupsView;
-            _popups = new PopupsPresenter(popupsView, EventBus.Global, new FlowPopupCommands(flow));
+            _popups = new PopupsPresenter(
+                popupsView, EventBus.Global, new FlowPopupCommands(flow),
+                _audio.IsEnabled(AudioChannel.Sound), _audio.IsEnabled(AudioChannel.Music));
 
             var menuView = new MenuView(root, Application.version);
             _menuPresenter = new MenuPresenter(menuView, EventBus.Global, () => flow.RequestPlay(), flow.State == GameState.Menu);
 
-            _audio = gameRoot.Audio;
             _root.RegisterCallback<ClickEvent>(OnClick);
             popupsView.StarLit += OnStarLit;
 

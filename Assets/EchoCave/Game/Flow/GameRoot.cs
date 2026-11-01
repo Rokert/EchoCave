@@ -52,6 +52,10 @@ namespace EchoCave.Game
                 _audio = new NullAudioService();
             }
 
+            // The switches the player left at the end of the last session.
+            _audio.SetEnabled(AudioChannel.Sound, _save.SoundOn);
+            _audio.SetEnabled(AudioChannel.Music, _save.MusicOn);
+
             _analytics = new NullAnalyticsService();
             ServiceLocator.Replace<IAdService>(_ads);
             ServiceLocator.Replace<ISaveService>(_save);

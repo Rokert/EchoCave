@@ -29,6 +29,34 @@ namespace EchoCave.Tests
         private void StartLevel(int moveLimit) => _bus.Publish(new LevelStarted(0, moveLimit, 0));
 
         [Test]
+        public void ThePauseShowsTheSwitchesTheGameWasLeftWith()
+        {
+            _presenter.Dispose();
+            _presenter = new PopupsPresenter(_view, _bus, _commands, soundOn: false, musicOn: true);
+            StartLevel(9);
+
+            _bus.Publish(new PauseChanged(true));
+
+            Assert.AreEqual(ShownPopup.Pause, _view.Shown);
+            Assert.IsFalse(_view.SoundOn, "the saved switch must show as off, not reset to on");
+            Assert.IsTrue(_view.MusicOn);
+        }
+
+        [Test]
+        public void AFlippedSwitch_StaysFlipped_FromTheSavedStart()
+        {
+            _presenter.Dispose();
+            _presenter = new PopupsPresenter(_view, _bus, _commands, soundOn: false, musicOn: false);
+            StartLevel(9);
+
+            _view.Toggle(AudioChannel.Music, true);
+            _bus.Publish(new PauseChanged(true));
+
+            Assert.IsFalse(_view.SoundOn);
+            Assert.IsTrue(_view.MusicOn);
+        }
+
+        [Test]
         public void NoPopupShows_UntilTheGameAsksForOne()
         {
             Assert.AreEqual(ShownPopup.None, _view.Shown);

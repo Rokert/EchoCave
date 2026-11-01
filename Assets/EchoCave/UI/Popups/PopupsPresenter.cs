@@ -7,8 +7,9 @@ namespace EchoCave.UI
     // Decides which popup is on screen from the game's events and sends its buttons back to the game.
     // Plain C#; Dispose unsubscribes from everything.
     //
-    // The sound and music switches live here, so they keep their state from level to level. They do nothing
-    // yet beyond publishing AudioToggled: the audio service of ROK-145 will listen to it.
+    // The sound and music switches live here, so they keep their state from level to level. They start from the
+    // values the game was left with (saved between sessions) and publish AudioToggled when the player flips one;
+    // the audio service and the save listen to it.
     public sealed class PopupsPresenter : IDisposable
     {
         private readonly IPopupsView _view;
@@ -16,11 +17,13 @@ namespace EchoCave.UI
         private readonly IPopupCommands _commands;
 
         private int _moveLimit;
-        private bool _soundOn = true;
-        private bool _musicOn = true;
+        private bool _soundOn;
+        private bool _musicOn;
 
-        public PopupsPresenter(IPopupsView view, EventBus events, IPopupCommands commands)
+        public PopupsPresenter(IPopupsView view, EventBus events, IPopupCommands commands, bool soundOn = true, bool musicOn = true)
         {
+            _soundOn = soundOn;
+            _musicOn = musicOn;
             _view = view ?? throw new ArgumentNullException(nameof(view));
             _events = events ?? throw new ArgumentNullException(nameof(events));
             _commands = commands ?? throw new ArgumentNullException(nameof(commands));
