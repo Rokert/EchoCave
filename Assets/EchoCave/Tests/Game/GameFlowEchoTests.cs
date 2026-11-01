@@ -105,6 +105,45 @@ namespace EchoCave.Tests
         }
 
         [Test]
+        public void AnAcceptedPing_DrawsTheWaveOnce_WithTheBatsItReveals()
+        {
+            StartLevel(0);
+
+            _flow.RequestPing();
+
+            Assert.AreEqual(1, _view.PingShownCount);
+            CollectionAssert.AreEquivalent(new[] { 0, 2 }, _view.Revealed);
+        }
+
+        [Test]
+        public void ARefusedPing_DrawsNoWave()
+        {
+            StartLevel(0);
+            _flow.RequestPing();
+            _flow.Tick(Reveal + 0.1f);
+            _flow.RequestPing();
+            _flow.Tick(Reveal + 0.1f);
+            int wavesBefore = _view.PingShownCount;
+
+            _flow.RequestPing();
+
+            Assert.AreEqual(wavesBefore, _view.PingShownCount, "no pings are left, so nothing may be drawn");
+            Assert.AreEqual(1, _refused.Count);
+        }
+
+        [Test]
+        public void TheEchoRunningOut_HidesTheBatsWithoutAnotherWave()
+        {
+            StartLevel(0);
+            _flow.RequestPing();
+
+            _flow.Tick(Reveal + 0.1f);
+
+            Assert.AreEqual(1, _view.PingShownCount);
+            Assert.IsEmpty(_view.Revealed);
+        }
+
+        [Test]
         public void Reveal_EndsAfterItsDuration_AndTheViewHidesTheBatsAgain()
         {
             StartLevel(0);

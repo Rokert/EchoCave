@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using DG.Tweening;
 using EchoCave.Core;
+using Rokert.Core;
 using UnityEngine;
 
 namespace EchoCave.Game
@@ -16,11 +17,15 @@ namespace EchoCave.Game
         [SerializeField] private BoardViewSettings settings;
         [Tooltip("Drawn under every cell. Leave empty to draw no tiles.")]
         [SerializeField] private Sprite cellSprite;
+        [Tooltip("The ring of the ping wave. Leave empty to reveal hidden bats at once, with no wave.")]
+        [SerializeField] private Sprite pingRingSprite;
 
         private readonly Dictionary<int, BatView> _views = new Dictionary<int, BatView>();
         private readonly List<SpriteRenderer> _tiles = new List<SpriteRenderer>();
+        private readonly List<PingWave> _activeWaves = new List<PingWave>();
         private BatFactory _factory;
         private Transform _tileContainer;
+        private ObjectPool<PingWave> _wavePool;
 
         public GridLayout2D Layout { get; private set; }
 
@@ -62,6 +67,8 @@ namespace EchoCave.Game
             _factory?.ReleaseAll();
             _views.Clear();
 
+            foreach (PingWave wave in new List<PingWave>(_activeWaves)) ReleaseWave(wave);
+
             foreach (SpriteRenderer tile in _tiles) tile.gameObject.SetActive(false);
         }
 
@@ -100,12 +107,73 @@ namespace EchoCave.Game
             return renderer;
         }
 
+        // No wave: used when the echo runs out and when a loss shows what was hidden.
         public void SetRevealed(IReadOnlyCollection<int> batIds)
         {
             if (batIds == null) throw new ArgumentNullException(nameof(batIds));
 
             var revealed = new HashSet<int>(batIds);
-            foreach (KeyValuePair<int, BatView> pair in _views) pair.Value.SetRevealed(revealed.Contains(pair.Key));
+            foreach (KeyValuePair<int, BatView> pair in _views)
+            {
+                if (revealed.Contains(pair.Key)) pair.Value.Reveal(0f, settings.RevealFadeSeconds, settings.RevealPopScale);
+                else pair.Value.Conceal(settings.ConcealFadeSeconds);
+            }
+        }
+
+        // The ring leaves the centre of the board and each hidden bat reveals when it reaches it (D-028). Without a
+        // ring sprite the bats reveal at once.
+        public void ShowPing(IReadOnlyCollection<int> batIds)
+        {
+            if (batIds == null) throw new ArgumentNullException(nameof(batIds));
+            if (Layout == null) return;
+
+            var revealed = new HashSet<int>(batIds);
+            bool hasWave = pingRingSprite != null;
+
+            foreach (KeyValuePair<int, BatView> pair in _views)
+            {
+                if (!revealed.Contains(pair.Key))
+                {
+                    pair.Value.Conceal(settings.ConcealFadeSeconds);
+                    continue;
+                }
+
+                float distanceCells = ((Vector2)pair.Value.transform.localPosition).magnitude / Layout.CellSize;
+                float delay = hasWave ? EchoWaveTiming.DelayFor(distanceCells, settings.WaveSpeedCells) : 0f;
+                pair.Value.Reveal(delay, settings.RevealFadeSeconds, settings.RevealPopScale);
+            }
+
+            if (hasWave) PlayWave();
+        }
+
+        private void PlayWave()
+        {
+            _wavePool ??= new ObjectPool<PingWave>(CreateWave, wave => wave.gameObject.SetActive(true), wave => wave.gameObject.SetActive(false));
+
+            PingWave wave = _wavePool.Get();
+            _activeWaves.Add(wave);
+
+            float cell = Layout.CellSize;
+            float reachWorld = EchoWaveTiming.ReachCells(Layout.Width, Layout.Height) * cell;
+            wave.transform.localPosition = Vector3.zero;
+            wave.Play(settings.WaveSpeedCells * cell, reachWorld, settings.WaveBandShare, () => ReleaseWave(wave));
+        }
+
+        private PingWave CreateWave()
+        {
+            var host = new GameObject("PingWave");
+            host.transform.SetParent(transform, false);
+            PingWave wave = host.AddComponent<PingWave>();
+            wave.Setup(pingRingSprite, settings.WaveSortingOrder);
+            return wave;
+        }
+
+        private void ReleaseWave(PingWave wave)
+        {
+            if (!_activeWaves.Remove(wave)) return;
+
+            wave.Stop();
+            _wavePool.Release(wave);
         }
 
         // A short sideways shake of every bat: "no, that did nothing".

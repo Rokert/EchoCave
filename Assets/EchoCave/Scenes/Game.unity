@@ -458,6 +458,7 @@ MonoBehaviour:
   batContainer: {fileID: 2102626714}
   settings: {fileID: 11400000, guid: e5ae06147674c4b66ba973baec3c8608, type: 2}
   cellSprite: {fileID: 779293467229747183, guid: 8dba19dc772c14e9aaa3c7c70aa12717, type: 3}
+  pingRingSprite: {fileID: 21300000, guid: ebfb7205e911a4b029dfe358635f2a1c, type: 3}
 --- !u!4 &1851453773
 Transform:
   m_ObjectHideFlags: 0

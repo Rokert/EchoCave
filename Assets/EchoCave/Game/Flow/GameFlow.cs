@@ -247,7 +247,7 @@ namespace EchoCave.Game
 
         private void OnPinged(EchoPulse pulse)
         {
-            _view.SetRevealed(_echo.RevealedBatIds);
+            _view.ShowPing(_echo.RevealedBatIds);
             _events.Publish(new PingUsed(_echo.PingsLeft, pulse.DurationSeconds));
         }
 

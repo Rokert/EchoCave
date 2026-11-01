@@ -15,7 +15,18 @@ namespace EchoCave.Game
         private bool _restCaptured;
         private Vector3 _restScale;
         private Quaternion _restRotation;
+        private Vector3 _bodyRestScale;
+        private float _arrowAlpha;
+        private SpriteRenderer _bodyRenderer;
+        private SpriteRenderer _arrowRenderer;
+        private SpriteRenderer _silhouetteRenderer;
         private bool _hiddenByDefault;
+        private bool _revealed;
+
+        // 0 shows only the silhouette, 1 only the bat; in between both are drawn, cross-fading.
+        private float _blend = 1f;
+        private float _popScale = 1f;
+        private Tween _fade;
 
         public int BatId { get; private set; }
 
@@ -28,17 +39,41 @@ namespace EchoCave.Game
             SetHidden(isHidden);
         }
 
-        // A bat that is hidden by default shows itself while revealed and goes dark again afterwards.
+        // Immediate: shows or hides a bat that is hidden by default, with no fade.
         public void SetRevealed(bool revealed)
         {
             SetHidden(_hiddenByDefault && !revealed);
+            _revealed = _hiddenByDefault && revealed;
         }
 
         public void SetHidden(bool isHidden)
         {
-            body.SetActive(!isHidden);
-            arrow.gameObject.SetActive(!isHidden);
-            silhouette.SetActive(isHidden);
+            CaptureRest();
+            KillFade();
+            _revealed = false;
+            _popScale = 1f;
+            Apply(isHidden ? 0f : 1f);
+        }
+
+        // A bat that is hidden by default fades into the bat after delaySeconds, with a small pop. Does nothing for
+        // other bats or one that is already revealed.
+        internal void Reveal(float delaySeconds, float fadeSeconds, float popScale)
+        {
+            if (!_hiddenByDefault || _revealed) return;
+
+            CaptureRest();
+            _revealed = true;
+            _popScale = popScale;
+            Fade(1f, delaySeconds, fadeSeconds);
+        }
+
+        // Fades a revealed bat back into its silhouette.
+        internal void Conceal(float fadeSeconds)
+        {
+            if (!_hiddenByDefault || !_revealed) return;
+
+            _revealed = false;
+            Fade(0f, 0f, fadeSeconds);
         }
 
         // Stops animations and restores the prefab pose, because fly-out and bounce tweens change both.
@@ -47,8 +82,50 @@ namespace EchoCave.Game
         {
             CaptureRest();
             transform.DOKill();
+            KillFade();
             transform.localScale = _restScale;
             transform.localRotation = _restRotation;
+            Apply(1f);
+        }
+
+        private void Fade(float target, float delaySeconds, float fadeSeconds)
+        {
+            KillFade();
+
+            _fade = DOTween.To(() => _blend, Apply, target, fadeSeconds)
+                .SetDelay(delaySeconds)
+                .SetEase(Ease.OutQuad)
+                .SetLink(gameObject);
+        }
+
+        private void KillFade()
+        {
+            _fade?.Kill();
+            _fade = null;
+        }
+
+        // Draws the bat at a point of the silhouette-to-bat blend. The pop only shows on the way in: it shrinks
+        // from _popScale to the resting size as the blend reaches 1.
+        private void Apply(float blend)
+        {
+            _blend = Mathf.Clamp01(blend);
+
+            body.SetActive(_blend > 0f);
+            arrow.gameObject.SetActive(_blend > 0f);
+            silhouette.SetActive(_blend < 1f);
+
+            SetAlpha(_bodyRenderer, _blend);
+            SetAlpha(_arrowRenderer, _blend * _arrowAlpha);
+            SetAlpha(_silhouetteRenderer, 1f - _blend);
+
+            body.transform.localScale = _bodyRestScale * Mathf.Lerp(_popScale, 1f, _blend);
+        }
+
+        private static void SetAlpha(SpriteRenderer renderer, float alpha)
+        {
+            Color color = renderer.color;
+            color.a = alpha;
+            renderer.color = color;
         }
 
         // Lazy because the first call can come before Awake when the container is inactive.
@@ -58,6 +135,11 @@ namespace EchoCave.Game
 
             _restScale = transform.localScale;
             _restRotation = transform.localRotation;
+            _bodyRestScale = body.transform.localScale;
+            _bodyRenderer = body.GetComponent<SpriteRenderer>();
+            _arrowRenderer = arrow.GetComponent<SpriteRenderer>();
+            _silhouetteRenderer = silhouette.GetComponent<SpriteRenderer>();
+            _arrowAlpha = _arrowRenderer.color.a;
             _restCaptured = true;
         }
 

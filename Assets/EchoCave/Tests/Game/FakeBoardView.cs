@@ -21,6 +21,9 @@ namespace EchoCave.Tests
         public int[] Revealed = new int[0];
         public int RejectedCount;
 
+        // How many pings were drawn, and the ids the last one revealed.
+        public int PingShownCount;
+
         // Reports a miss while still handing back a real bat's cell, which is what a careless presenter would act on.
         public bool ForceMiss;
 
@@ -58,6 +61,12 @@ namespace EchoCave.Tests
 
         public void SetRevealed(IReadOnlyCollection<int> batIds)
         {
+            Revealed = batIds.ToArray();
+        }
+
+        public void ShowPing(IReadOnlyCollection<int> batIds)
+        {
+            PingShownCount++;
             Revealed = batIds.ToArray();
         }
 

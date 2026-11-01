@@ -23,6 +23,10 @@ namespace EchoCave.Game
         // Shows exactly these bats as revealed; every other hidden bat goes dark again.
         void SetRevealed(IReadOnlyCollection<int> batIds);
 
+        // A ping was accepted: draws the wave and reveals these bats as it reaches them. Bats that are not listed
+        // go dark again.
+        void ShowPing(IReadOnlyCollection<int> batIds);
+
         // Tells the player that what they just asked for was refused.
         void ShowRejected();
     }
