@@ -45,8 +45,11 @@
     justify-content: flex-end;
 }
 
+/* The hint button and the ping button sit side by side, centred in portrait. */
 .hud-bottom {
-    align-items: center;
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: center;
     padding-bottom: 12px;
 }
 
@@ -54,9 +57,9 @@
     padding: 20px 40px;
 }
 
-/* Landscape keeps the ping button at the lower edge, on the side a thumb reaches. */
+/* Landscape keeps the buttons at the lower edge, on the side a thumb reaches. */
 .landscape .hud-bottom {
-    align-items: flex-end;
+    justify-content: flex-end;
 }
 
 /* The default button theme paints a grey box on hover, press and focus; the HUD buttons draw their own face. */
@@ -65,7 +68,10 @@
 .round-button:focus,
 .ping-button:hover,
 .ping-button:active,
-.ping-button:focus {
+.ping-button:focus,
+.hint-button:hover,
+.hint-button:active,
+.hint-button:focus {
     background-color: rgba(0, 0, 0, 0);
     border-color: rgba(0, 0, 0, 0);
 }
@@ -154,6 +160,79 @@
 
 .level-sign .moves-sign__value {
     font-size: 44px;
+}
+
+/* --- hint button: a smaller twin of the ping button, in gold, to its left --- */
+
+.hint-button {
+    width: 164px;
+    height: 164px;
+    margin: 0 36px 0 0;
+    padding: 0;
+    border-width: 0;
+    background-color: rgba(0, 0, 0, 0);
+}
+
+.hint-button__disc {
+    position: absolute;
+    left: 4px;
+    top: 10px;
+    width: 156px;
+    height: 156px;
+    border-radius: 78px;
+    border-width: 8px;
+    border-color: var(--star-gold);
+    background-color: var(--bg-mid);
+    align-items: center;
+    justify-content: center;
+}
+
+.hint-button__icon {
+    width: 96px;
+    height: 96px;
+    -unity-background-scale-mode: scale-to-fit;
+    background-image: url("/Assets/EchoCave/Art/Icons/Hint Icon Ready.png");
+}
+
+.hint-button__badge {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 56px;
+    height: 56px;
+    border-radius: 28px;
+    background-color: var(--ui-cream);
+    align-items: center;
+    justify-content: center;
+}
+
+.hint-button__count {
+    margin: 0;
+    padding: 0;
+    font-size: 30px;
+    color: var(--ui-text);
+    -unity-text-align: middle-center;
+}
+
+.hint-button:active .hint-button__disc {
+    translate: 0 6px;
+}
+
+/* No hints left: everything goes dim, like the ping button. */
+.hint-button--empty .hint-button__disc {
+    border-color: var(--bg-rock);
+}
+
+.hint-button--empty .hint-button__icon {
+    background-image: url("/Assets/EchoCave/Art/Icons/Hint Icon Empty.png");
+}
+
+.hint-button--empty .hint-button__badge {
+    background-color: var(--bg-mid);
+}
+
+.hint-button--empty .hint-button__count {
+    color: var(--ui-cream);
 }
 
 /* --- ping button --- */

@@ -120,7 +120,11 @@ namespace EchoCave.Game
         Busy,
 
         // No bat can leave, which a valid level never produces.
-        NothingToHint
+        NothingToHint,
+
+        // The bat a hint pointed at is still on the board and still pulsing: that hint is still good, so a second
+        // one would only spend a hint to show the same thing.
+        AlreadyHinted
     }
 
     // A hint was spent and the chosen bat is pulsing.

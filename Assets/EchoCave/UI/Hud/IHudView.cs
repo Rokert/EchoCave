@@ -14,10 +14,20 @@ namespace EchoCave.UI
         Empty
     }
 
+    public enum HintButtonState
+    {
+        // At least one hint left.
+        Ready,
+
+        // No hints left.
+        Empty
+    }
+
     // What the HUD presenter needs from the HUD view, so its tests can use a fake.
     public interface IHudView
     {
         event Action PingPressed;
+        event Action HintPressed;
         event Action PausePressed;
 
         void SetVisible(bool visible);
@@ -32,10 +42,17 @@ namespace EchoCave.UI
 
         void SetPingState(PingButtonState state);
 
+        void SetHints(int hintsLeft);
+
+        void SetHintState(HintButtonState state);
+
         // While paused the button shows "resume" instead of "pause".
         void SetPaused(bool paused);
 
         // A short shake of the ping button: "that did nothing".
         void ShakePing();
+
+        // The same for the hint button.
+        void ShakeHint();
     }
 }

@@ -28,6 +28,9 @@ namespace EchoCave.Game
 
         private BoardPresenter _presenter;
         private EchoService _echo;
+
+        // The bat the current hint points at, or -1. The hint stays valid for as long as that bat is on the board.
+        private int _hintedBatId = -1;
         private bool _playRequested;
         private bool _retryRequested;
         private bool _nextRequested;
@@ -183,6 +186,13 @@ namespace EchoCave.Game
                 return;
             }
 
+            // Removing other bats never blocks a free bat (D-010), so the hinted one stays a good move until it is tapped.
+            if (_hintedBatId >= 0 && Session.Board.TryGetBat(_hintedBatId, out _))
+            {
+                RefuseHint(HintRefusal.AlreadyHinted);
+                return;
+            }
+
             if (_hints.Count <= 0)
             {
                 RefuseHint(HintRefusal.NoHintsLeft);
@@ -208,6 +218,7 @@ namespace EchoCave.Game
                 _view.SetRevealed(_echo.RevealedBatIds);
             }
 
+            _hintedBatId = pick.Value.BatId;
             _view.ShowHint(pick.Value.BatId);
             _events.Publish(new HintUsed(_hints.Count, pick.Value.BatId));
         }
@@ -231,6 +242,7 @@ namespace EchoCave.Game
 
         internal void ShowMenu()
         {
+            _hintedBatId = -1;
             DetachEcho();
             DetachPresenter();
             SetPaused(false);
@@ -241,6 +253,7 @@ namespace EchoCave.Game
 
         internal void BeginLevel()
         {
+            _hintedBatId = -1;
             DetachEcho();
             DetachPresenter();
             SetPaused(false);

@@ -9,15 +9,16 @@ namespace EchoCave.UI
     {
         private const string ToggleClass = "toggle";
         private const string PingButtonClass = "ping-button";
+        private const string HintButtonClass = "hint-button";
 
-        // Null when the button makes no sound of its own: the ping button already plays the ping, or the
-        // refusal, through its game events, and a click on top would blur them.
+        // Null when the button makes no sound of its own: the ping and hint buttons already play their sound, or the
+        // refusal, through game events, and a click on top would blur them.
         public static SoundCue? CueForButton(IEnumerable<string> classes)
         {
             bool isToggle = false;
             foreach (string name in classes)
             {
-                if (name == PingButtonClass) return null;
+                if (name == PingButtonClass || name == HintButtonClass) return null;
                 if (name == ToggleClass) isToggle = true;
             }
 

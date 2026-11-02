@@ -26,6 +26,19 @@ namespace EchoCave.Tests
         private static readonly LevelDefinition Visible = new LevelDefinition(
             3, 1, new[] { new BatDefinition(new Cell(1, 0), Direction.Right, false) }, 0, 2, 1, 1);
 
+        // Five cells, four visible bats facing right: they must leave right to left, one hint at a time.
+        private static readonly LevelDefinition Chain = new LevelDefinition(
+            5,
+            1,
+            new[]
+            {
+                new BatDefinition(new Cell(0, 0), Direction.Right, false),
+                new BatDefinition(new Cell(1, 0), Direction.Right, false),
+                new BatDefinition(new Cell(2, 0), Direction.Right, false),
+                new BatDefinition(new Cell(3, 0), Direction.Right, false)
+            },
+            0, 0, 4, 4);
+
         private const float EchoSeconds = 2f;
 
         private FakeBoardView _view;
@@ -48,7 +61,7 @@ namespace EchoCave.Tests
             bus.Subscribe<HintRefused>(e => _refused.Add(e));
 
             var stock = new HintStock(_save, 5, bus);
-            _flow = new GameFlow(_view, new[] { Hidden, Visible }, new MoveResolver(), bus, new RevealAllHiddenStrategy(EchoSeconds), stock);
+            _flow = new GameFlow(_view, new[] { Hidden, Visible, Chain }, new MoveResolver(), bus, new RevealAllHiddenStrategy(EchoSeconds), stock);
         }
 
         private static Vector2 Center(int x, int y) => new Vector2(x + 0.5f, y + 0.5f);
@@ -194,17 +207,98 @@ namespace EchoCave.Tests
         [Test]
         public void EachHint_SpendsOne_UntilNoneAreLeft()
         {
-            StartLevel(1);
+            StartLevel(2);
 
-            _flow.RequestHint();
-            _flow.RequestHint();
-            _flow.RequestHint();
-            _flow.RequestHint();
+            for (int i = 0; i < 3; i++)
+            {
+                _flow.RequestHint();
+                TapAndSettle(3 - i, 0);
+            }
 
             Assert.AreEqual(3, _used.Count);
+            Assert.AreEqual(0, _save.Hints);
+
+            _flow.RequestHint();
+
             Assert.AreEqual(1, _refused.Count);
             Assert.AreEqual(HintRefusal.NoHintsLeft, _refused[0].Reason);
+            Assert.AreEqual(3, _used.Count);
+        }
+
+        [Test]
+        public void WhileTheHintedBatStillPulses_AnotherHintIsRefused_AndCostsNothing()
+        {
+            StartLevel(1);
+            _flow.RequestHint();
+
+            _flow.RequestHint();
+            _flow.RequestHint();
+
+            Assert.AreEqual(1, _used.Count, "one hint, one use");
+            Assert.AreEqual(2, _save.Hints, "pressing again must not spend the others");
+            Assert.AreEqual(2, _refused.Count);
+            Assert.AreEqual(HintRefusal.AlreadyHinted, _refused[0].Reason);
+            Assert.AreEqual(2, _view.RejectedCount, "the refusal must be seen");
+            CollectionAssert.AreEqual(new[] { 0 }, _view.HintedBatIds, "the pulse is not restarted on another bat");
+        }
+
+        [Test]
+        public void TheHintStaysVigilant_EvenWhenAnotherBatIsTappedMeanwhile()
+        {
+            StartLevel(0);
+            _flow.RequestHint();
+
+            // Bat 1 is blocked by bat 2, so this tap bounces and the hinted bat stays on the board.
+            TapAndSettle(1, 0);
+            _flow.RequestHint();
+
+            Assert.AreEqual(1, _used.Count);
+            Assert.AreEqual(HintRefusal.AlreadyHinted, _refused[0].Reason);
+            Assert.AreEqual(2, _save.Hints);
+        }
+
+        [Test]
+        public void OnceTheHintedBatHasLeft_AnotherHintIsPossible()
+        {
+            StartLevel(0);
+            _flow.RequestHint();
+            TapAndSettle(3, 0);
+
+            _flow.RequestHint();
+
+            CollectionAssert.AreEqual(new[] { 2, 1 }, _view.HintedBatIds);
+            Assert.AreEqual(1, _save.Hints);
+            Assert.AreEqual(2, _used.Count);
+            Assert.IsEmpty(_refused);
+        }
+
+        [Test]
+        public void WithAHintStillActive_ARefusalSaysSo_EvenWhenNoneAreLeft()
+        {
+            _save.SetHints(1);
+            StartLevel(1);
+            _flow.RequestHint();
+
+            _flow.RequestHint();
+
+            Assert.AreEqual(HintRefusal.AlreadyHinted, _refused[0].Reason, "the player still has a hint on screen: that is the news");
             Assert.AreEqual(0, _save.Hints);
+        }
+
+        [Test]
+        public void ANewAttempt_ForgetsTheOldHint()
+        {
+            StartLevel(1);
+            _flow.RequestHint();
+
+            _flow.RequestMenu();
+            _flow.Tick(0f);
+            StartLevel(1);
+            _flow.RequestHint();
+
+            Assert.AreEqual(2, _used.Count);
+            Assert.IsEmpty(_refused);
+            CollectionAssert.AreEqual(new[] { 0, 0 }, _view.HintedBatIds);
         }
 
         [Test]

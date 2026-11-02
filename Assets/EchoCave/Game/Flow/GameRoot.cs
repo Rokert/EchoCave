@@ -105,6 +105,12 @@ namespace EchoCave.Game
             Flow.Tick(Time.deltaTime);
         }
 
+        // What the hint button calls. The place where a hint that cannot be paid for can be topped up (an ad).
+        public void RequestHint()
+        {
+            Flow.RequestHint();
+        }
+
         private void OnTapped(Vector2 world)
         {
             Flow.HandleTap(world);

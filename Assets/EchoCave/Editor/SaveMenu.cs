@@ -37,6 +37,22 @@ namespace EchoCave.Editor
             return 0;
         }
 
+        // For testing: puts the hints back to the starting count without touching the progress.
+        [MenuItem("EchoCave/Save/Refill hints")]
+        private static void RefillHints()
+        {
+            // The running game keeps its own copy of the save and would write it back over this.
+            if (EditorApplication.isPlayingOrWillChangePlaymode)
+            {
+                Debug.LogError("[Save] Stop Play mode first: the running game would overwrite the refill.");
+                return;
+            }
+
+            int starting = StartingHints();
+            new SaveService(new PlayerPrefsSaveStore(), starting).SetHints(starting);
+            Debug.Log($"[Save] Hints set to {starting}.");
+        }
+
         [MenuItem("EchoCave/Save/Delete progress")]
         private static void DeleteProgress()
         {
