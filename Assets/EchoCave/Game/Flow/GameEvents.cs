@@ -112,6 +112,56 @@ namespace EchoCave.Game
     // The reveal ran out and the hidden bats went dark again.
     public readonly struct EchoExpired { }
 
+    public enum HintRefusal
+    {
+        NoHintsLeft,
+
+        // A move is still animating.
+        Busy,
+
+        // No bat can leave, which a valid level never produces.
+        NothingToHint,
+
+        // The bat a hint pointed at is still on the board and still pulsing: that hint is still good, so a second
+        // one would only spend a hint to show the same thing.
+        AlreadyHinted
+    }
+
+    // A hint was spent and the chosen bat is pulsing.
+    public readonly struct HintUsed
+    {
+        public int HintsLeft { get; }
+        public int BatId { get; }
+
+        public HintUsed(int hintsLeft, int batId)
+        {
+            HintsLeft = hintsLeft;
+            BatId = batId;
+        }
+    }
+
+    // A hint was asked for and refused; it costs nothing.
+    public readonly struct HintRefused
+    {
+        public HintRefusal Reason { get; }
+
+        public HintRefused(HintRefusal reason)
+        {
+            Reason = reason;
+        }
+    }
+
+    // The number of hints the player holds changed.
+    public readonly struct HintsChanged
+    {
+        public int Count { get; }
+
+        public HintsChanged(int count)
+        {
+            Count = count;
+        }
+    }
+
     // A ping did nothing; the reason says why, so the HUD can tell the player.
     public readonly struct PingRefused
     {

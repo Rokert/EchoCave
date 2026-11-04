@@ -15,17 +15,22 @@ namespace EchoCave.Game
     //
     // Each attempt gets its own EchoService, so a retry restores the pings. The echo clock only runs while
     // Playing, and a ping acts at once instead of waiting for a Tick (D-019).
-    public sealed class GameFlow
+    public sealed class GameFlow : IHintGate
     {
         private readonly IBoardView _view;
         private readonly IReadOnlyList<LevelDefinition> _levels;
         private readonly MoveResolver _resolver;
         private readonly EventBus _events;
         private readonly IEchoStrategy _echoStrategy;
+        private readonly IHintStock _hints;
+        private readonly HintPicker _hintPicker;
         private readonly StateMachine<FlowState> _machine = new StateMachine<FlowState>();
 
         private BoardPresenter _presenter;
         private EchoService _echo;
+
+        // The bat the current hint points at, or -1. The hint stays valid for as long as that bat is on the board.
+        private int _hintedBatId = -1;
         private bool _playRequested;
         private bool _retryRequested;
         private bool _nextRequested;
@@ -52,13 +57,16 @@ namespace EchoCave.Game
             IReadOnlyList<LevelDefinition> levels,
             MoveResolver resolver,
             EventBus events,
-            IEchoStrategy echoStrategy)
+            IEchoStrategy echoStrategy,
+            IHintStock hints = null)
         {
             _view = view ?? throw new ArgumentNullException(nameof(view));
             _levels = levels ?? throw new ArgumentNullException(nameof(levels));
             _resolver = resolver ?? throw new ArgumentNullException(nameof(resolver));
             _events = events ?? throw new ArgumentNullException(nameof(events));
             _echoStrategy = echoStrategy ?? throw new ArgumentNullException(nameof(echoStrategy));
+            _hints = hints ?? new NoHintStock();
+            _hintPicker = new HintPicker(_resolver);
 
             if (levels.Count == 0) throw new ArgumentException("The game needs at least one level.", nameof(levels));
 
@@ -165,6 +173,61 @@ namespace EchoCave.Game
             _view.ShowRejected();
         }
 
+        // Playing only. Spends one hint to point at a bat that can leave now; the bat pulses until it is tapped, and
+        // a hidden one is revealed for the rest of the attempt. It costs no move. A hint that cannot be given
+        // spends nothing and tells the player: the HUD gets HintRefused with the reason and the bats shake.
+        public void RequestHint()
+        {
+            switch (CheckHint())
+            {
+                case HintStatus.Unavailable: return;
+                case HintStatus.Busy: RefuseHint(HintRefusal.Busy); return;
+                case HintStatus.AlreadyHinted: RefuseHint(HintRefusal.AlreadyHinted); return;
+                case HintStatus.NoHintsLeft: RefuseHint(HintRefusal.NoHintsLeft); return;
+            }
+
+            HintPick? pick = _hintPicker.Pick(Session.Board);
+            if (!pick.HasValue)
+            {
+                RefuseHint(HintRefusal.NothingToHint);
+                return;
+            }
+
+            if (!_hints.TrySpend())
+            {
+                RefuseHint(HintRefusal.NoHintsLeft);
+                return;
+            }
+
+            if (pick.Value.IsHidden)
+            {
+                _echo.Pin(pick.Value.BatId);
+                _view.SetRevealed(_echo.RevealedBatIds);
+            }
+
+            _hintedBatId = pick.Value.BatId;
+            _view.ShowHint(pick.Value.BatId);
+            _events.Publish(new HintUsed(_hints.Count, pick.Value.BatId));
+        }
+
+        // What a hint request would do right now, with no effect: nothing is spent and nothing is published.
+        public HintStatus CheckHint()
+        {
+            if (State != GameState.Playing || IsPaused) return HintStatus.Unavailable;
+            if (_presenter.IsBusy) return HintStatus.Busy;
+
+            // Removing other bats never blocks a free bat (D-010), so the hinted one stays a good move until it is tapped.
+            if (_hintedBatId >= 0 && Session.Board.TryGetBat(_hintedBatId, out _)) return HintStatus.AlreadyHinted;
+
+            return _hints.Count <= 0 ? HintStatus.NoHintsLeft : HintStatus.Ready;
+        }
+
+        private void RefuseHint(HintRefusal reason)
+        {
+            _events.Publish(new HintRefused(reason));
+            _view.ShowRejected();
+        }
+
         // Playing only.
         public void RequestPause()
         {
@@ -178,6 +241,7 @@ namespace EchoCave.Game
 
         internal void ShowMenu()
         {
+            _hintedBatId = -1;
             DetachEcho();
             DetachPresenter();
             SetPaused(false);
@@ -188,6 +252,7 @@ namespace EchoCave.Game
 
         internal void BeginLevel()
         {
+            _hintedBatId = -1;
             DetachEcho();
             DetachPresenter();
             SetPaused(false);

@@ -23,6 +23,7 @@ namespace EchoCave.Game
         private readonly Dictionary<int, BatView> _views = new Dictionary<int, BatView>();
         private readonly List<SpriteRenderer> _tiles = new List<SpriteRenderer>();
         private readonly List<PingWave> _activeWaves = new List<PingWave>();
+        private BatView _hinted;
         private BatFactory _factory;
         private Transform _tileContainer;
         private ObjectPool<PingWave> _wavePool;
@@ -69,6 +70,7 @@ namespace EchoCave.Game
         {
             _factory?.ReleaseAll();
             _views.Clear();
+            _hinted = null;
 
             foreach (PingWave wave in new List<PingWave>(_activeWaves)) ReleaseWave(wave);
 
@@ -184,6 +186,16 @@ namespace EchoCave.Game
             _wavePool.Release(wave);
         }
 
+        // One bat at a time pulses. The previous one calms down, and the pulse ends for good when the bat is tapped.
+        public void ShowHint(int batId)
+        {
+            if (!_views.TryGetValue(batId, out BatView view)) return;
+
+            _hinted?.StopHint();
+            _hinted = view;
+            view.StartHint(settings.HintPulseScale, settings.HintPulseSeconds);
+        }
+
         // A short sideways shake of every bat: "no, that did nothing".
         public void ShowRejected()
         {
@@ -205,6 +217,12 @@ namespace EchoCave.Game
             int batId = result.Bat.Id;
             if (!_views.TryGetValue(batId, out BatView view))
                 throw new InvalidOperationException($"Bat {batId} has no view to animate.");
+
+            if (view == _hinted)
+            {
+                view.StopHint();
+                _hinted = null;
+            }
 
             MovePlan plan = MovePathPlanner.Plan(result, Layout, settings.ExitOvershootCells, settings.BumpCells);
             Transform bat = view.transform;

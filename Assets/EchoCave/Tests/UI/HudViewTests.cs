@@ -13,6 +13,8 @@ namespace EchoCave.Tests
         private VisualElement _hud;
         private VisualElement _pauseIcon;
         private Button _pingButton;
+        private Button _hintButton;
+        private Label _hintCount;
         private Label _movesValue;
         private Label _levelValue;
         private Label _pingCount;
@@ -25,6 +27,8 @@ namespace EchoCave.Tests
             _hud = new VisualElement { name = "hud-root" };
             _pauseIcon = new VisualElement { name = "pause-icon" };
             _pingButton = new Button { name = "ping-button" };
+            _hintButton = new Button { name = "hint-button" };
+            _hintCount = new Label { name = "hint-count" };
             _movesValue = new Label { name = "moves-value" };
             _levelValue = new Label { name = "level-value" };
             _pingCount = new Label { name = "ping-count" };
@@ -33,6 +37,8 @@ namespace EchoCave.Tests
             pauseButton.Add(_pauseIcon);
             _hud.Add(pauseButton);
             _hud.Add(_pingButton);
+            _hud.Add(_hintButton);
+            _hud.Add(_hintCount);
             _hud.Add(_movesValue);
             _hud.Add(_levelValue);
             _hud.Add(_pingCount);
@@ -120,6 +126,49 @@ namespace EchoCave.Tests
             var thrown = Assert.Throws<InvalidOperationException>(() => new HudView(_root, 14f, 3, 320));
 
             StringAssert.Contains("ping-button", thrown.Message);
+        }
+
+        [Test]
+        public void SetHints_ShowsTheCount()
+        {
+            _view.SetHints(3);
+
+            Assert.AreEqual("3", _hintCount.text);
+        }
+
+        [Test]
+        public void SetHintState_MarksExactlyOneStateClass()
+        {
+            _view.SetHintState(HintButtonState.Ready);
+            Assert.IsTrue(_hintButton.ClassListContains("hint-button--ready"));
+            Assert.IsFalse(_hintButton.ClassListContains("hint-button--empty"));
+
+            _view.SetHintState(HintButtonState.Empty);
+            Assert.IsFalse(_hintButton.ClassListContains("hint-button--ready"));
+            Assert.IsTrue(_hintButton.ClassListContains("hint-button--empty"));
+        }
+
+        [Test]
+        public void TheAdState_IsExclusive_WithTheOthers()
+        {
+            _view.SetHintState(HintButtonState.WatchAd);
+
+            Assert.IsTrue(_hintButton.ClassListContains("hint-button--ad"));
+            Assert.IsFalse(_hintButton.ClassListContains("hint-button--ready"));
+            Assert.IsFalse(_hintButton.ClassListContains("hint-button--empty"));
+
+            _view.SetHintState(HintButtonState.Ready);
+            Assert.IsFalse(_hintButton.ClassListContains("hint-button--ad"));
+        }
+
+        [Test]
+        public void AMissingHintButton_IsReportedByName()
+        {
+            _hud.Remove(_hintButton);
+
+            var thrown = Assert.Throws<InvalidOperationException>(() => new HudView(_root, 14f, 3, 320));
+
+            StringAssert.Contains("hint-button", thrown.Message);
         }
 
         [Test]

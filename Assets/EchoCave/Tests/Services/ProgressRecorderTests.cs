@@ -6,6 +6,8 @@ namespace EchoCave.Tests
 {
     public class ProgressRecorderTests
     {
+        private const int StartingHints = 3;
+
         private EventBus _bus;
         private SaveService _save;
         private NullAudioService _audio;
@@ -18,7 +20,7 @@ namespace EchoCave.Tests
         public void SetUp()
         {
             _bus = new EventBus();
-            _save = new SaveService(new InMemorySaveStore());
+            _save = new SaveService(new InMemorySaveStore(), StartingHints);
             _audio = new NullAudioService();
             _recorder = new ProgressRecorder(_bus, _save, _audio, LevelIds);
         }
@@ -74,13 +76,13 @@ namespace EchoCave.Tests
         public void AToggle_IsSaved_SoItSurvivesARestart()
         {
             var store = new InMemorySaveStore();
-            var save = new SaveService(store);
+            var save = new SaveService(store, StartingHints);
             using (new ProgressRecorder(_bus, save, new NullAudioService(), LevelIds))
             {
                 _bus.Publish(new AudioToggled(AudioChannel.Sound, false));
             }
 
-            var restarted = new SaveService(store);
+            var restarted = new SaveService(store, StartingHints);
 
             Assert.IsFalse(restarted.SoundOn);
             Assert.IsTrue(restarted.MusicOn);

@@ -13,18 +13,21 @@ namespace EchoCave.Tests
         private EventBus _bus;
         private HudPresenter _presenter;
         private const int LevelCount = 10;
+        private const int StartingHints = 3;
 
         private int _pingCalls;
+        private int _hintCalls;
         private int _pauseCalls;
 
         [SetUp]
         public void SetUp()
         {
             _pingCalls = 0;
+            _hintCalls = 0;
             _pauseCalls = 0;
             _view = new FakeHudView();
             _bus = new EventBus();
-            _presenter = new HudPresenter(_view, _bus, () => _pingCalls++, () => _pauseCalls++, LevelCount);
+            _presenter = new HudPresenter(_view, _bus, () => _pingCalls++, () => _hintCalls++, () => _pauseCalls++, LevelCount, StartingHints, false);
         }
 
         private void StartLevel(int moveLimit, int pingBudget)
@@ -202,10 +205,120 @@ namespace EchoCave.Tests
         {
             Action noop = () => { };
 
-            Assert.Throws<ArgumentNullException>(() => new HudPresenter(null, _bus, noop, noop, LevelCount));
-            Assert.Throws<ArgumentNullException>(() => new HudPresenter(_view, null, noop, noop, LevelCount));
-            Assert.Throws<ArgumentNullException>(() => new HudPresenter(_view, _bus, null, noop, LevelCount));
-            Assert.Throws<ArgumentNullException>(() => new HudPresenter(_view, _bus, noop, null, LevelCount));
+            Assert.Throws<ArgumentNullException>(() => new HudPresenter(null, _bus, noop, noop, noop, LevelCount, StartingHints, false));
+            Assert.Throws<ArgumentNullException>(() => new HudPresenter(_view, null, noop, noop, noop, LevelCount, StartingHints, false));
+            Assert.Throws<ArgumentNullException>(() => new HudPresenter(_view, _bus, null, noop, noop, LevelCount, StartingHints, false));
+            Assert.Throws<ArgumentNullException>(() => new HudPresenter(_view, _bus, noop, null, noop, LevelCount, StartingHints, false));
+            Assert.Throws<ArgumentNullException>(() => new HudPresenter(_view, _bus, noop, noop, null, LevelCount, StartingHints, false));
+        }
+
+        [Test]
+        public void TheHintCount_IsShownFromTheStart_BeforeAnyLevel()
+        {
+            Assert.AreEqual(3, _view.Hints);
+            Assert.AreEqual(HintButtonState.Ready, _view.HintState);
+        }
+
+        [Test]
+        public void WhenTheHintsChange_TheCountAndTheStateFollow()
+        {
+            _bus.Publish(new HintsChanged(1));
+            Assert.AreEqual(1, _view.Hints);
+            Assert.AreEqual(HintButtonState.Ready, _view.HintState);
+
+            _bus.Publish(new HintsChanged(0));
+            Assert.AreEqual(0, _view.Hints);
+            Assert.AreEqual(HintButtonState.Empty, _view.HintState);
+
+            _bus.Publish(new HintsChanged(2));
+            Assert.AreEqual(HintButtonState.Ready, _view.HintState, "a refill must bring the button back to life");
+        }
+
+        [Test]
+        public void StartingWithNoHints_ShowsTheButtonEmpty()
+        {
+            var view = new FakeHudView();
+            using (new HudPresenter(view, new EventBus(), () => { }, () => { }, () => { }, LevelCount, 0, false))
+            {
+                Assert.AreEqual(0, view.Hints);
+                Assert.AreEqual(HintButtonState.Empty, view.HintState);
+            }
+        }
+
+        [Test]
+        public void ARefusedHint_ShakesTheHintButton_NotThePing()
+        {
+            _bus.Publish(new HintRefused(HintRefusal.NoHintsLeft));
+
+            Assert.AreEqual(1, _view.HintShakeCount);
+            Assert.AreEqual(0, _view.ShakeCount);
+        }
+
+        [Test]
+        public void ARefusedPing_DoesNotShakeTheHintButton()
+        {
+            _bus.Publish(new PingRefused(PingResult.NoPingsLeft));
+
+            Assert.AreEqual(0, _view.HintShakeCount);
+        }
+
+        [Test]
+        public void PressingTheHintButton_AsksTheGame_AndNothingElse()
+        {
+            _view.PressHint();
+
+            Assert.AreEqual(1, _hintCalls);
+            Assert.AreEqual(0, _pingCalls);
+            Assert.AreEqual(0, _pauseCalls);
+        }
+
+        [Test]
+        public void AfterDispose_TheHintButtonAndTheHintEventsAreIgnored()
+        {
+            _presenter.Dispose();
+
+            _view.PressHint();
+            _bus.Publish(new HintsChanged(0));
+            _bus.Publish(new HintRefused(HintRefusal.Busy));
+
+            Assert.AreEqual(0, _hintCalls);
+            Assert.AreEqual(3, _view.Hints);
+            Assert.AreEqual(0, _view.HintShakeCount);
+        }
+
+        [Test]
+        public void WithNoHintsAndAnAdToWatch_TheButtonOffersTheAd_InsteadOfLookingDead()
+        {
+            var view = new FakeHudView();
+            using (new HudPresenter(view, new EventBus(), () => { }, () => { }, () => { }, LevelCount, 0, true))
+            {
+                Assert.AreEqual(HintButtonState.WatchAd, view.HintState);
+            }
+        }
+
+        [Test]
+        public void WithHintsLeft_TheButtonIsReady_EvenWhenAnAdCouldRefillIt()
+        {
+            var view = new FakeHudView();
+            using (new HudPresenter(view, new EventBus(), () => { }, () => { }, () => { }, LevelCount, 2, true))
+            {
+                Assert.AreEqual(HintButtonState.Ready, view.HintState);
+            }
+        }
+
+        [Test]
+        public void SpendingTheLastHint_SwitchesToTheAdOffer_AndAGrantSwitchesBack()
+        {
+            var view = new FakeHudView();
+            var bus = new EventBus();
+            using (new HudPresenter(view, bus, () => { }, () => { }, () => { }, LevelCount, 1, true))
+            {
+                bus.Publish(new HintsChanged(0));
+                Assert.AreEqual(HintButtonState.WatchAd, view.HintState);
+
+                bus.Publish(new HintsChanged(1));
+                Assert.AreEqual(HintButtonState.Ready, view.HintState);
+            }
         }
     }
 }

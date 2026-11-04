@@ -12,6 +12,7 @@ namespace EchoCave.Game
     {
         [SerializeField] private LevelCatalog catalog;
         [SerializeField] private EchoSettings echoSettings;
+        [SerializeField] private HintSettings hintSettings;
         [SerializeField] private BoardView boardView;
         [SerializeField] private BoardCamera boardCamera;
         [SerializeField] private TapInput tapInput;
@@ -23,16 +24,26 @@ namespace EchoCave.Game
         // The audio service of this scene, for the UI to play its own sounds through. Set in Awake.
         public IAudioService Audio => _audio;
 
+        // The hint stock, for the HUD to show and for the ad refill to top up. Set in Awake.
+        public IHintStock Hints => _hintStock;
+
+        // True when a rewarded ad can bring hints back, so the HUD can offer it.
+        public bool HintsCanBeRefilled => hintSettings.RefillWithAds;
+
         private IAdService _ads;
         private ISaveService _save;
         private IAudioService _audio;
         private IAnalyticsService _analytics;
         private ProgressRecorder _recorder;
         private SoundCuePlayer _cues;
+        private IHintStock _hintStock;
+        private HintRefill _hintRefill;
         private IReadOnlyList<int> _levelIds;
 
         private void Awake()
         {
+            if (hintSettings == null) throw new System.InvalidOperationException("GameRoot has no Hint Settings assigned.");
+
             // Progress is saved by level id, so a catalog with a missing or repeated id would corrupt saves: stop here, loudly.
             _levelIds = catalog.ToLevelIds();
             IReadOnlyList<string> idErrors = LevelIdRules.Validate(_levelIds);
@@ -41,7 +52,8 @@ namespace EchoCave.Game
 
             // Replace, not Register: with Reload Domain off the registry outlives a Play session.
             _ads = new NullAdService();
-            _save = new SaveService(new PlayerPrefsSaveStore());
+            _save = new SaveService(new PlayerPrefsSaveStore(), hintSettings.StartingHints);
+            _hintStock = new HintStock(_save, hintSettings.MaxHints, EventBus.Global);
             if (soundPlayer != null)
             {
                 _audio = new AudioService(soundPlayer);
@@ -63,7 +75,8 @@ namespace EchoCave.Game
             ServiceLocator.Replace<IAnalyticsService>(_analytics);
 
             var echoStrategy = new RevealAllHiddenStrategy(echoSettings.RevealSeconds);
-            Flow = new GameFlow(boardView, catalog.ToDefinitions(), new MoveResolver(), EventBus.Global, echoStrategy);
+            Flow = new GameFlow(boardView, catalog.ToDefinitions(), new MoveResolver(), EventBus.Global, echoStrategy, _hintStock);
+            _hintRefill = new HintRefill(Flow, _hintStock, _ads, hintSettings.HintsPerAd, hintSettings.RefillWithAds);
         }
 
         private void OnEnable()
@@ -95,6 +108,12 @@ namespace EchoCave.Game
         private void Update()
         {
             Flow.Tick(Time.deltaTime);
+        }
+
+        // What the hint button calls: a hint, or a rewarded ad first when none are left and the settings allow it.
+        public void RequestHint()
+        {
+            _hintRefill.Request();
         }
 
         private void OnTapped(Vector2 world)

@@ -12,13 +12,20 @@ namespace EchoCave.Game
         bool SoundOn { get; }
         bool MusicOn { get; }
 
+        // The hints the player holds. A save from before hints existed starts with the starting count.
+        int Hints { get; }
+
         // Records a win and saves at once when it improved something.
         void RecordWin(int levelId, int moves, int stars);
+
+        // Saves the hint count at once when it changed.
+        void SetHints(int count);
 
         // Saves a switch at once when it changed.
         void SetAudio(AudioChannel channel, bool enabled);
 
-        // Forgets all progress. The audio switches are kept: they are a preference, not an achievement.
+        // Forgets all progress and gives back the starting hints. The audio switches are kept: they are a preference,
+        // not an achievement.
         void Reset();
     }
 }

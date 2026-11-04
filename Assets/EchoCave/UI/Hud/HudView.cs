@@ -14,21 +14,28 @@ namespace EchoCave.UI
         private const string ReadyClass = "ping-button--ready";
         private const string ActiveClass = "ping-button--active";
         private const string EmptyClass = "ping-button--empty";
+        private const string HintReadyClass = "hint-button--ready";
+        private const string HintEmptyClass = "hint-button--empty";
+        private const string HintAdClass = "hint-button--ad";
 
         private readonly VisualElement _hud;
         private readonly Button _pauseButton;
         private readonly VisualElement _pauseIcon;
         private readonly Button _pingButton;
+        private readonly Button _hintButton;
         private readonly Label _movesValue;
         private readonly Label _levelValue;
         private readonly Label _pingCount;
+        private readonly Label _hintCount;
 
         private readonly float _shakeAmplitude;
         private readonly int _shakeCount;
         private readonly int _shakeMillis;
-        private ValueAnimation<float> _shake;
+        private ValueAnimation<float> _pingShake;
+        private ValueAnimation<float> _hintShake;
 
         public event Action PingPressed;
+        public event Action HintPressed;
         public event Action PausePressed;
 
         public HudView(VisualElement root, float shakeAmplitude, int shakeCount, int shakeMillis)
@@ -39,9 +46,11 @@ namespace EchoCave.UI
             _pauseButton = Require<Button>(root, "pause-button");
             _pauseIcon = Require<VisualElement>(root, "pause-icon");
             _pingButton = Require<Button>(root, "ping-button");
+            _hintButton = Require<Button>(root, "hint-button");
             _movesValue = Require<Label>(root, "moves-value");
             _levelValue = Require<Label>(root, "level-value");
             _pingCount = Require<Label>(root, "ping-count");
+            _hintCount = Require<Label>(root, "hint-count");
 
             _shakeAmplitude = shakeAmplitude;
             _shakeCount = shakeCount;
@@ -49,6 +58,7 @@ namespace EchoCave.UI
 
             _pauseButton.clicked += () => PausePressed?.Invoke();
             _pingButton.clicked += () => PingPressed?.Invoke();
+            _hintButton.clicked += () => HintPressed?.Invoke();
         }
 
         public void SetVisible(bool visible)
@@ -78,6 +88,18 @@ namespace EchoCave.UI
             _pingButton.EnableInClassList(EmptyClass, state == PingButtonState.Empty);
         }
 
+        public void SetHints(int hintsLeft)
+        {
+            _hintCount.text = hintsLeft.ToString();
+        }
+
+        public void SetHintState(HintButtonState state)
+        {
+            _hintButton.EnableInClassList(HintReadyClass, state == HintButtonState.Ready);
+            _hintButton.EnableInClassList(HintEmptyClass, state == HintButtonState.Empty);
+            _hintButton.EnableInClassList(HintAdClass, state == HintButtonState.WatchAd);
+        }
+
         public void SetPaused(bool paused)
         {
             _pauseIcon.EnableInClassList(PlayIconClass, paused);
@@ -85,15 +107,26 @@ namespace EchoCave.UI
 
         public void ShakePing()
         {
-            // UI Toolkit recycles an animation once it ends, and Stop on a recycled one throws. KeepAlive keeps
-            // the object valid, so a second refusal can safely cut the first shake short.
-            _shake?.Stop();
-            _shake = _pingButton.experimental.animation.Start(0f, 1f, _shakeMillis, (element, t) =>
+            _pingShake = Shake(_pingButton, _pingShake);
+        }
+
+        public void ShakeHint()
+        {
+            _hintShake = Shake(_hintButton, _hintShake);
+        }
+
+        // UI Toolkit recycles an animation once it ends, and Stop on a recycled one throws. KeepAlive keeps
+        // the object valid, so a second refusal can safely cut the first shake short.
+        private ValueAnimation<float> Shake(VisualElement button, ValueAnimation<float> running)
+        {
+            running?.Stop();
+            ValueAnimation<float> shake = button.experimental.animation.Start(0f, 1f, _shakeMillis, (element, t) =>
             {
                 float x = Mathf.Sin(t * Mathf.PI * 2f * _shakeCount) * _shakeAmplitude * (1f - t);
                 element.style.translate = new Translate(new Length(x), new Length(0f));
             }).KeepAlive();
-            _shake.OnCompleted(() => _pingButton.style.translate = new Translate(new Length(0f), new Length(0f)));
+            shake.OnCompleted(() => button.style.translate = new Translate(new Length(0f), new Length(0f)));
+            return shake;
         }
 
         private static T Require<T>(VisualElement root, string name) where T : VisualElement

@@ -55,6 +55,24 @@ namespace EchoCave.Tests
         }
 
         [Test]
+        public void AHint_PlaysItsChime_AndARefusedHintTheSameNoAsARefusedPing()
+        {
+            _bus.Publish(new HintUsed(2, 0));
+            _bus.Publish(new HintRefused(HintRefusal.NoHintsLeft));
+            _bus.Publish(new HintRefused(HintRefusal.Busy));
+
+            CollectionAssert.AreEqual(new[] { SoundCue.Hint, SoundCue.Refuse, SoundCue.Refuse }, _audio.Played);
+        }
+
+        [Test]
+        public void TheHintCountChanging_PlaysNothing_OnlyUsingOneDoes()
+        {
+            _bus.Publish(new HintsChanged(2));
+
+            Assert.IsEmpty(_audio.Played);
+        }
+
+        [Test]
         public void AMove_PlaysTheWhooshWhenItExits_AndTheThudWhenItBounces()
         {
             _bus.Publish(new MoveSpent(1, 9, MoveOutcome.Exited));

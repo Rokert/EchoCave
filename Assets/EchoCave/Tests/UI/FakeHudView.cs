@@ -7,6 +7,7 @@ namespace EchoCave.Tests
     internal sealed class FakeHudView : IHudView
     {
         public event Action PingPressed;
+        public event Action HintPressed;
         public event Action PausePressed;
 
         public bool Visible = true;
@@ -16,6 +17,9 @@ namespace EchoCave.Tests
         public int LevelNumber = -1;
         public int LevelCount = -1;
         public PingButtonState PingState = PingButtonState.Ready;
+        public int Hints = -1;
+        public HintButtonState HintState = HintButtonState.Ready;
+        public int HintShakeCount;
         public bool Paused;
         public int ShakeCount;
 
@@ -37,11 +41,19 @@ namespace EchoCave.Tests
 
         public void SetPingState(PingButtonState state) => PingState = state;
 
+        public void SetHints(int hintsLeft) => Hints = hintsLeft;
+
+        public void SetHintState(HintButtonState state) => HintState = state;
+
         public void SetPaused(bool paused) => Paused = paused;
 
         public void ShakePing() => ShakeCount++;
 
+        public void ShakeHint() => HintShakeCount++;
+
         public void PressPing() => PingPressed?.Invoke();
+
+        public void PressHint() => HintPressed?.Invoke();
 
         public void PressPause() => PausePressed?.Invoke();
     }

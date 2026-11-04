@@ -36,6 +36,15 @@
                 </ui:VisualElement>
 
                 <ui:VisualElement class="hud-bottom" picking-mode="Ignore">
+                    <ui:Button name="hint-button" class="hint-button hint-button--ready">
+                        <ui:VisualElement class="hint-button__disc" picking-mode="Ignore">
+                            <ui:VisualElement class="hint-button__icon" picking-mode="Ignore" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="hint-button__badge" picking-mode="Ignore">
+                            <ui:Label name="hint-count" text="0" class="hint-button__count font-bold" picking-mode="Ignore" />
+                            <ui:Label text="AD" class="hint-button__ad font-bold" picking-mode="Ignore" />
+                        </ui:VisualElement>
+                    </ui:Button>
                     <ui:Button name="ping-button" class="ping-button ping-button--ready">
                         <ui:VisualElement class="ping-button__disc" picking-mode="Ignore">
                             <ui:VisualElement class="ping-button__icon" picking-mode="Ignore" />

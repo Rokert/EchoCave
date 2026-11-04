@@ -20,6 +20,8 @@ namespace EchoCave.Game
             _events.Subscribe<PingUsed>(OnPingUsed);
             _events.Subscribe<EchoExpired>(OnEchoExpired);
             _events.Subscribe<PingRefused>(OnPingRefused);
+            _events.Subscribe<HintUsed>(OnHintUsed);
+            _events.Subscribe<HintRefused>(OnHintRefused);
             _events.Subscribe<MoveSpent>(OnMoveSpent);
             _events.Subscribe<LevelWon>(OnLevelWon);
             _events.Subscribe<LevelLost>(OnLevelLost);
@@ -30,6 +32,8 @@ namespace EchoCave.Game
             _events.Unsubscribe<PingUsed>(OnPingUsed);
             _events.Unsubscribe<EchoExpired>(OnEchoExpired);
             _events.Unsubscribe<PingRefused>(OnPingRefused);
+            _events.Unsubscribe<HintUsed>(OnHintUsed);
+            _events.Unsubscribe<HintRefused>(OnHintRefused);
             _events.Unsubscribe<MoveSpent>(OnMoveSpent);
             _events.Unsubscribe<LevelWon>(OnLevelWon);
             _events.Unsubscribe<LevelLost>(OnLevelLost);
@@ -40,6 +44,11 @@ namespace EchoCave.Game
         private void OnEchoExpired(EchoExpired expired) => _audio.Play(SoundCue.Expire);
 
         private void OnPingRefused(PingRefused refused) => _audio.Play(SoundCue.Refuse);
+
+        private void OnHintUsed(HintUsed used) => _audio.Play(SoundCue.Hint);
+
+        // A refused hint sounds like a refused ping: the same "no".
+        private void OnHintRefused(HintRefused refused) => _audio.Play(SoundCue.Refuse);
 
         // Published as the animation starts, so the whoosh and the thud begin with the movement.
         private void OnMoveSpent(MoveSpent spent)

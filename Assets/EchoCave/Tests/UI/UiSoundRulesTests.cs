@@ -28,6 +28,13 @@ namespace EchoCave.Tests
         }
 
         [Test]
+        public void TheHintButton_MakesNoClick_ItsEventsPlayTheirOwnSound()
+        {
+            Assert.IsNull(UiSoundRules.CueForButton(new[] { "hint-button", "hint-button--ready" }));
+            Assert.IsNull(UiSoundRules.CueForButton(new[] { "hint-button--empty", "hint-button" }));
+        }
+
+        [Test]
         public void AButtonWithNoClasses_StillClicks()
         {
             Assert.AreEqual(SoundCue.Click, UiSoundRules.CueForButton(new string[0]));

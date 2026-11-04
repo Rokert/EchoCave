@@ -27,6 +27,9 @@ namespace EchoCave.Game
         // go dark again.
         void ShowPing(IReadOnlyCollection<int> batIds);
 
+        // Points at a bat that can leave now: it pulses until it is tapped or the board is cleared.
+        void ShowHint(int batId);
+
         // Tells the player that what they just asked for was refused.
         void ShowRejected();
     }

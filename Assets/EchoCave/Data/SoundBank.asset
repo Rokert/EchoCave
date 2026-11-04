@@ -65,3 +65,7 @@ MonoBehaviour:
     clip: {fileID: 8300000, guid: f1d02c2fc529f4ce89d61e8d1a71442f, type: 3}
     volume: 1
     minIntervalSeconds: 0
+  - cue: 13
+    clip: {fileID: 8300000, guid: f3f28346fbfac40cd92e93bd13d881f9, type: 3}
+    volume: 1
+    minIntervalSeconds: 0
