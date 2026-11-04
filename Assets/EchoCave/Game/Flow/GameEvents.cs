@@ -124,7 +124,10 @@ namespace EchoCave.Game
 
         // The bat a hint pointed at is still on the board and still pulsing: that hint is still good, so a second
         // one would only spend a hint to show the same thing.
-        AlreadyHinted
+        AlreadyHinted,
+
+        // A tutorial lesson that does not teach hints yet.
+        NotInLesson
     }
 
     // A hint was spent and the chosen bat is pulsing.
@@ -186,6 +189,94 @@ namespace EchoCave.Game
             Source = source;
             ToStock = toStock;
             ToReserve = toReserve;
+        }
+    }
+
+    // A tutorial lesson began (the first, the next, or the same one again after a retry). Lessons use their own events,
+    // so progress, stars, rewards and the level popups never count them.
+    public readonly struct LessonStarted
+    {
+        public int LessonIndex { get; }
+        public int LessonCount { get; }
+
+        // 0 means no move limit.
+        public int MoveLimit { get; }
+
+        public int PingBudget { get; }
+
+        public LessonStarted(int lessonIndex, int lessonCount, int moveLimit, int pingBudget)
+        {
+            LessonIndex = lessonIndex;
+            LessonCount = lessonCount;
+            MoveLimit = moveLimit;
+            PingBudget = pingBudget;
+        }
+    }
+
+    public readonly struct LessonWon
+    {
+        public int LessonIndex { get; }
+        public int MovesUsed { get; }
+
+        public LessonWon(int lessonIndex, int movesUsed)
+        {
+            LessonIndex = lessonIndex;
+            MovesUsed = movesUsed;
+        }
+    }
+
+    public readonly struct LessonLost
+    {
+        public int LessonIndex { get; }
+        public int MovesUsed { get; }
+
+        public LessonLost(int lessonIndex, int movesUsed)
+        {
+            LessonIndex = lessonIndex;
+            MovesUsed = movesUsed;
+        }
+    }
+
+    // The tutorial moved: a new step, a new lesson, a won lesson waiting for Continue, or the end. Step is null unless a
+    // step is showing.
+    public readonly struct TutorialChanged
+    {
+        public TutorialPhase Phase { get; }
+        public int LessonIndex { get; }
+        public int LessonCount { get; }
+        public TutorialStep Step { get; }
+
+        public TutorialChanged(TutorialPhase phase, int lessonIndex, int lessonCount, TutorialStep step)
+        {
+            Phase = phase;
+            LessonIndex = lessonIndex;
+            LessonCount = lessonCount;
+            Step = step;
+        }
+    }
+
+    public enum TutorialEnd
+    {
+        // The last lesson was won and the player pressed Continue.
+        Completed,
+
+        // The player pressed Skip.
+        Skipped,
+
+        // The player went back to the menu in the middle of it.
+        Left
+    }
+
+    public readonly struct TutorialEnded
+    {
+        public TutorialEnd Reason { get; }
+
+        // Completed and Skipped mean the player has seen the tutorial; Left does not.
+        public bool Seen => Reason != TutorialEnd.Left;
+
+        public TutorialEnded(TutorialEnd reason)
+        {
+            Reason = reason;
         }
     }
 

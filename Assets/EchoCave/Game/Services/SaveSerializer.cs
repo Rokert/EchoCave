@@ -9,9 +9,9 @@ namespace EchoCave.Game
     // never thrown, because a broken save must not stop the game from starting.
     public static class SaveSerializer
     {
-        // Version 5 adds the reserve hints and the state of the hint rewards. Version 4 added the hint count. Version 3 added the sound and music switches, version 2 keyed levels by their
+        // Version 6 adds the tutorial-seen flag. Version 5 added the reserve hints and the state of the hint rewards. Version 4 added the hint count. Version 3 added the sound and music switches, version 2 keyed levels by their
         // stable id (D-029) and version 1 by catalog position.
-        public const int CurrentVersion = 5;
+        public const int CurrentVersion = 6;
 
         // The ten levels of version 1 got ids 1 to 10 in catalog order, so position i was id i + 1.
         private const int LegacyIdOffset = 1;
@@ -32,6 +32,7 @@ namespace EchoCave.Game
             public bool musicOff;
             public int hints;
             public int reserveHints;
+            public bool tutorialSeen;
             public List<RewardEntry> rewardState = new List<RewardEntry>();
             public List<LevelEntry> levels = new List<LevelEntry>();
         }
@@ -68,11 +69,11 @@ namespace EchoCave.Game
 
         public static string Serialize(
             PlayerProgress progress, bool soundOn, bool musicOn, int hints, int reserveHints = 0,
-            IReadOnlyDictionary<string, int> rewardState = null)
+            IReadOnlyDictionary<string, int> rewardState = null, bool tutorialSeen = false)
         {
             if (progress == null) throw new ArgumentNullException(nameof(progress));
 
-            var file = new SaveFile { version = CurrentVersion, soundOff = !soundOn, musicOff = !musicOn, hints = hints, reserveHints = reserveHints };
+            var file = new SaveFile { version = CurrentVersion, soundOff = !soundOn, musicOff = !musicOn, hints = hints, reserveHints = reserveHints, tutorialSeen = tutorialSeen };
             foreach (LevelRecord record in progress.Records)
                 file.levels.Add(new LevelEntry { id = record.LevelId, stars = record.Stars, moves = record.BestMoves });
 
@@ -88,8 +89,8 @@ namespace EchoCave.Game
         }
 
         // False when the text is not a save this version understands; content is then a fresh save. Entries that
-        // make no sense are skipped. Versions 1 to 4 are read and converted; a save from before the hints existed
-        // gets startingHints, and one from before the reserve has none.
+        // make no sense are skipped. Versions 1 to 5 are read and converted; a save from before the hints existed
+        // gets startingHints, one from before the reserve has none, and one from before the tutorial has not seen it.
         public static bool TryDeserialize(string json, int startingHints, out SaveContent content)
         {
             content = SaveContent.Fresh(startingHints);
@@ -133,7 +134,9 @@ namespace EchoCave.Game
                     if (entry != null && !string.IsNullOrEmpty(entry.key)) rewardState[entry.key] = entry.value;
             }
 
-            content = new SaveContent(progress, !file.soundOff, !file.musicOff, hints, reserveHints, rewardState);
+            bool tutorialSeen = version >= 6 && file.tutorialSeen;
+
+            content = new SaveContent(progress, !file.soundOff, !file.musicOff, hints, reserveHints, rewardState, tutorialSeen);
             return true;
         }
 

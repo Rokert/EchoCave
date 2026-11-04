@@ -15,4 +15,8 @@ MonoBehaviour:
   startingHints: 3
   maxHints: 5
   hintsPerAd: 1
+  reserveSlots: 1
+  winStreakLength: 3
+  hintsPerStreak: 1
+  hintsPerDay: 1
   refillWithAds: 1

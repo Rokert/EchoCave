@@ -1,3 +1,4 @@
+using System;
 using EchoCave.Game;
 using Rokert.Core;
 using UnityEngine;
@@ -29,6 +30,13 @@ namespace EchoCave.UI
         [SerializeField, Min(1f)] private float hintPulseScale = 1.25f;
         [SerializeField, Min(50)] private int hintPulseMillis = 420;
 
+        [Header("Tutorial ring")]
+        [Tooltip("How far the ring reaches beyond the bat or button it points at, in panel units.")]
+        [SerializeField, Min(0f)] private float tutorialRingPadding = 14f;
+        [Tooltip("How big the ring swells once per pulse, 1 being no swell.")]
+        [SerializeField, Min(1f)] private float tutorialRingPulseScale = 1.1f;
+        [SerializeField, Min(0.1f)] private float tutorialRingPulseSeconds = 0.9f;
+
         [Header("Popups")]
         [Tooltip("Milliseconds between one earned star lighting up and the next.")]
         [SerializeField, Min(0)] private int starStaggerMillis = 280;
@@ -42,6 +50,9 @@ namespace EchoCave.UI
         private PopupsView _popupsView;
         private IAudioService _audio;
         private PopupsPresenter _popups;
+        private TutorialView _tutorialView;
+        private TutorialPresenter _tutorial;
+        private VisualElement _tutorialLayer;
         private MenuPresenter _menuPresenter;
         private Vector2Int _appliedScreen;
         private bool _started;
@@ -106,8 +117,16 @@ namespace EchoCave.UI
                 popupsView, EventBus.Global, new FlowPopupCommands(flow),
                 _audio.IsEnabled(AudioChannel.Sound), _audio.IsEnabled(AudioChannel.Music));
 
+            _tutorialLayer = root.Q<VisualElement>("tutorial-layer");
+            _tutorialView = new TutorialView(
+                root, new BoardTutorialTargets(gameRoot.Board, gameRoot.WorldCamera, () => root.panel),
+                tutorialRingPadding, tutorialRingPulseScale, tutorialRingPulseSeconds);
+            _tutorial = new TutorialPresenter(_tutorialView, EventBus.Global, new FlowTutorialCommands(flow));
+
             var menuView = new MenuView(root, Application.version);
-            _menuPresenter = new MenuPresenter(menuView, EventBus.Global, () => flow.RequestPlay(), flow.State == GameState.Menu);
+            _menuPresenter = new MenuPresenter(
+                menuView, EventBus.Global, gameRoot.RequestPlay, flow.State == GameState.Menu,
+                flow.HasTutorial ? (Action)(() => flow.RequestTutorial(thenStartGame: false)) : null);
 
             _root.RegisterCallback<ClickEvent>(OnClick);
             popupsView.StarLit += OnStarLit;
@@ -130,6 +149,11 @@ namespace EchoCave.UI
             _popups = null;
             _menuPresenter?.Dispose();
             _menuPresenter = null;
+            _tutorial?.Dispose();
+            _tutorial = null;
+            _tutorialView?.Dispose();
+            _tutorialView = null;
+            _tutorialLayer = null;
 
             if (tapInput != null) tapInput.SetBlocker(null);
         }
@@ -186,6 +210,15 @@ namespace EchoCave.UI
             _safeArea.style.paddingTop = insets.Top;
             _safeArea.style.paddingRight = insets.Right;
             _safeArea.style.paddingBottom = insets.Bottom;
+
+            // The tutorial layer sits outside the safe area, so it keeps the notch clear by itself.
+            if (_tutorialLayer != null)
+            {
+                _tutorialLayer.style.paddingLeft = insets.Left;
+                _tutorialLayer.style.paddingTop = insets.Top;
+                _tutorialLayer.style.paddingRight = insets.Right;
+                _tutorialLayer.style.paddingBottom = insets.Bottom;
+            }
         }
     }
 }

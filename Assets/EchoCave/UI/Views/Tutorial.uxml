@@ -1,0 +1,30 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="../Styles/Theme.uss" />
+    <Style src="../Styles/Controls.uss" />
+    <Style src="../Styles/Tutorial.uss" />
+
+    <!-- The layer and its containers ignore the pointer, so the board stays tappable; only the buttons catch a tap. -->
+    <ui:VisualElement name="tutorial-layer" class="tutorial-layer tutorial-hidden font-medium" picking-mode="Ignore">
+        <ui:VisualElement name="tutorial-ring" class="tutorial-ring tutorial-hidden" picking-mode="Ignore" />
+
+        <ui:VisualElement class="tutorial-top" picking-mode="Ignore">
+            <ui:VisualElement class="tutorial-bubble" picking-mode="Ignore">
+                <ui:Label name="tutorial-text" text="" class="tutorial-bubble__text font-medium" picking-mode="Ignore" />
+                <ui:VisualElement class="tutorial-bubble__buttons" picking-mode="Ignore">
+                    <ui:Button name="tutorial-skip" class="pill-button pill-button--secondary">
+                        <ui:VisualElement class="pill-button__lip" picking-mode="Ignore" />
+                        <ui:VisualElement class="pill-button__face" picking-mode="Ignore"><ui:Label text="Skip" class="pill-button__label font-semibold" picking-mode="Ignore" /></ui:VisualElement>
+                    </ui:Button>
+                    <ui:Button name="tutorial-retry" class="pill-button tutorial-button-hidden">
+                        <ui:VisualElement class="pill-button__lip" picking-mode="Ignore" />
+                        <ui:VisualElement class="pill-button__face" picking-mode="Ignore"><ui:Label text="Try again" class="pill-button__label font-semibold" picking-mode="Ignore" /></ui:VisualElement>
+                    </ui:Button>
+                    <ui:Button name="tutorial-continue" class="pill-button tutorial-button-hidden">
+                        <ui:VisualElement class="pill-button__lip" picking-mode="Ignore" />
+                        <ui:VisualElement class="pill-button__face" picking-mode="Ignore"><ui:Label name="tutorial-continue-label" text="Got it" class="pill-button__label font-semibold" picking-mode="Ignore" /></ui:VisualElement>
+                    </ui:Button>
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

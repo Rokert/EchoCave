@@ -16,10 +16,11 @@ namespace EchoCave.Game
         public int Hints { get; }
         public int ReserveHints { get; }
         public IReadOnlyDictionary<string, int> RewardState { get; }
+        public bool TutorialSeen { get; }
 
         public SaveContent(
             PlayerProgress progress, bool soundOn, bool musicOn, int hints, int reserveHints = 0,
-            IReadOnlyDictionary<string, int> rewardState = null)
+            IReadOnlyDictionary<string, int> rewardState = null, bool tutorialSeen = false)
         {
             Progress = progress ?? throw new ArgumentNullException(nameof(progress));
             SoundOn = soundOn;
@@ -27,9 +28,10 @@ namespace EchoCave.Game
             Hints = hints;
             ReserveHints = reserveHints;
             RewardState = rewardState ?? NoRewardState;
+            TutorialSeen = tutorialSeen;
         }
 
-        // What a player with no save has: no progress, both switches on, the starting hints, no reserve, no reward state.
+        // What a player with no save has: no progress, both switches on, the starting hints, no reserve, no reward state, the tutorial unseen.
         public static SaveContent Fresh(int startingHints) => new SaveContent(new PlayerProgress(), true, true, startingHints);
     }
 }

@@ -19,6 +19,12 @@ namespace EchoCave.Game
         [Tooltip("Plays the sounds. Without it the game runs silent.")]
         [SerializeField] private SoundPlayer soundPlayer;
 
+        [Header("Tutorial")]
+        [Tooltip("The tutorial lessons. Without it the game has no tutorial and no \"How to play\" button.")]
+        [SerializeField] private TutorialCatalog tutorialCatalog;
+        [Tooltip("Per-build choices about the tutorial. Without it the tutorial starts by itself on the first Play.")]
+        [SerializeField] private TutorialSettings tutorialSettings;
+
         public GameFlow Flow { get; private set; }
 
         // The audio service of this scene, for the UI to play its own sounds through. Set in Awake.
@@ -26,6 +32,10 @@ namespace EchoCave.Game
 
         // The hint stock, for the HUD to show and for the ad refill to top up. Set in Awake.
         public IHintStock Hints => _hintStock;
+
+        // The board and its camera, for the tutorial overlay to find a bat on the screen.
+        public BoardView Board => boardView;
+        public Camera WorldCamera => boardCamera.GetComponent<Camera>();
 
         // True when a rewarded ad can bring hints back, so the HUD can offer it.
         public bool HintsCanBeRefilled => hintSettings.RefillWithAds;
@@ -78,7 +88,8 @@ namespace EchoCave.Game
             ServiceLocator.Replace<IAnalyticsService>(_analytics);
 
             var echoStrategy = new RevealAllHiddenStrategy(echoSettings.RevealSeconds);
-            Flow = new GameFlow(boardView, catalog.ToDefinitions(), new MoveResolver(), EventBus.Global, echoStrategy, _hintStock);
+            IReadOnlyList<TutorialLesson> lessons = tutorialCatalog != null ? tutorialCatalog.ToLessons() : null;
+            Flow = new GameFlow(boardView, catalog.ToDefinitions(), new MoveResolver(), EventBus.Global, echoStrategy, _hintStock, lessons);
             _hintRefill = new HintRefill(Flow, _hintStock, _ads, hintSettings.HintsPerAd, hintSettings.RefillWithAds);
         }
 
@@ -134,6 +145,16 @@ namespace EchoCave.Game
         private void Update()
         {
             Flow.Tick(Time.deltaTime);
+        }
+
+        // What the Play button calls. The very first time, and until the tutorial has been finished or skipped, Play
+        // starts the tutorial (unless this build turned that off) and the first level follows it; otherwise it starts
+        // the first level.
+        public void RequestPlay()
+        {
+            bool autoStart = tutorialSettings == null || tutorialSettings.AutoStart;
+            if (TutorialEntry.ShouldAutoStart(Flow.HasTutorial, autoStart, _save.TutorialSeen)) Flow.RequestTutorial(thenStartGame: true);
+            else Flow.RequestPlay();
         }
 
         // What the hint button calls: a hint, or a rewarded ad first when none are left and the settings allow it.

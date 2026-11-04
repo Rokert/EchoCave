@@ -16,7 +16,10 @@ namespace EchoCave.Game
         AlreadyHinted,
 
         // The player holds no hints. The only status a rewarded ad can fix.
-        NoHintsLeft
+        NoHintsLeft,
+
+        // A tutorial lesson with no hint of its own: the button is for a later lesson.
+        NotInLesson
     }
 
     // What the hint refill needs from the game flow, so it can be tested without one.

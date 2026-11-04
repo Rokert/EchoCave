@@ -26,6 +26,9 @@ namespace EchoCave.Tests
         public bool HasNext;
         public bool SoundOn;
         public bool MusicOn;
+        public bool HowToPlayVisible;
+
+        public void SetHowToPlayVisible(bool visible) => HowToPlayVisible = visible;
 
         public void Hide()
         {
@@ -64,6 +67,8 @@ namespace EchoCave.Tests
     internal sealed class FakePopupCommands : IPopupCommands
     {
         public bool HasNextLevel { get; set; } = true;
+        public bool HasTutorial { get; set; } = true;
+        public int HowToPlays;
         public int Retries;
         public int Nexts;
         public int Menus;
@@ -76,5 +81,7 @@ namespace EchoCave.Tests
         public void Menu() => Menus++;
 
         public void Resume() => Resumes++;
+
+        public void HowToPlay() => HowToPlays++;
     }
 }

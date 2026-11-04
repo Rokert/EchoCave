@@ -12,7 +12,8 @@ namespace EchoCave.UI
         Retry,
         Menu,
         Resume,
-        Restart
+        Restart,
+        HowToPlay
     }
 
     // What the popups presenter needs from the popups view, so its tests can use a fake.
@@ -32,5 +33,8 @@ namespace EchoCave.UI
         void ShowLost(int movesUsed, int moveLimit);
 
         void ShowPause(bool soundOn, bool musicOn);
+
+        // The "How to play" button of the pause popup only shows when the game has a tutorial.
+        void SetHowToPlayVisible(bool visible);
     }
 }

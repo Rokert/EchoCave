@@ -1,0 +1,78 @@
+/* The tutorial overlay: a text bubble at the top and a ring on the thing to use. Sizes are in panel units. */
+
+.tutorial-layer {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.tutorial-hidden {
+    display: none;
+}
+
+.tutorial-button-hidden {
+    display: none;
+}
+
+/* Under the HUD's top row (pause, moves, level) so it never covers them, and above the board. */
+.tutorial-top {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 260px;
+    align-items: center;
+}
+
+.landscape .tutorial-top {
+    top: 170px;
+}
+
+.tutorial-bubble {
+    max-width: 920px;
+    margin: 0 40px;
+    padding: 28px 36px 24px 36px;
+    border-radius: 44px;
+    border-width: 6px;
+    border-color: var(--echo-cyan);
+    background-color: var(--bg-mid);
+    align-items: center;
+}
+
+.landscape .tutorial-bubble {
+    max-width: 1100px;
+    padding: 18px 28px 16px 28px;
+}
+
+.tutorial-bubble__text {
+    margin: 0 0 18px 0;
+    padding: 0;
+    font-size: 44px;
+    color: var(--ui-cream);
+    white-space: normal;
+    -unity-text-align: middle-center;
+}
+
+.landscape .tutorial-bubble__text {
+    font-size: 36px;
+    margin-bottom: 12px;
+}
+
+.tutorial-bubble__buttons {
+    flex-direction: row;
+    justify-content: center;
+}
+
+.tutorial-bubble__buttons > .pill-button {
+    margin: 0 12px;
+}
+
+/* A ring over the bat or the button to use. Its position and size are set by the view every few milliseconds. */
+.tutorial-ring {
+    position: absolute;
+    border-width: 10px;
+    border-color: var(--echo-glow);
+    border-radius: 999px;
+    background-color: rgba(168, 243, 255, 0.12);
+}

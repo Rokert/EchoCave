@@ -74,6 +74,15 @@ namespace EchoCave.Tests
         }
 
         [Test]
+        public void ALessonWonOrLost_SoundsLikeALevel()
+        {
+            _bus.Publish(new LessonWon(0, 3));
+            _bus.Publish(new LessonLost(1, 4));
+
+            CollectionAssert.AreEqual(new[] { SoundCue.Win, SoundCue.Lose }, _audio.Played);
+        }
+
+        [Test]
         public void TheReserveChanging_PlaysNothing_OnlyTheRewardDoes()
         {
             _bus.Publish(new HintReserveChanged(1));

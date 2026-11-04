@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c7726699335b14e0d81c0f83efa91e32, type: 3}
+  m_Name: TutorialCatalog
+  m_EditorClassIdentifier: EchoCave.Game::EchoCave.Game.TutorialCatalog
+  lessons:
+  - {fileID: 11400000, guid: fc69bdd9f9ea14019bab28a82c23f307, type: 2}
+  - {fileID: 11400000, guid: b9332fb2d08be45b89fa93423287a22a, type: 2}
+  - {fileID: 11400000, guid: 07c2d58d399db4012afe2642a2d8a7f0, type: 2}
+  - {fileID: 11400000, guid: 3735d08d19d0b4681b2137e0be9e9252, type: 2}
+  - {fileID: 11400000, guid: 3cacadbb34bd14c37b5f2d1a3b328646, type: 2}
