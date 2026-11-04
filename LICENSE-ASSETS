@@ -1,0 +1,35 @@
+Art and sounds of EchoCave
+==========================
+
+Copyright (c) 2026 Julian (Rokert)
+
+Unless a section below says otherwise, the art and the sounds in this repository are
+licensed under the Creative Commons Attribution-NonCommercial 4.0 International
+licence (CC BY-NC 4.0):
+
+    https://creativecommons.org/licenses/by-nc/4.0/
+    https://creativecommons.org/licenses/by-nc/4.0/legalcode
+
+You may share and adapt them for non-commercial purposes if you give appropriate credit
+("EchoCave by Julian (Rokert)"), link to the licence and say if you made changes.
+
+What this covers
+----------------
+- Assets/EchoCave/Art/Characters, Icons, UI and Backgrounds (the bat, the silhouette, the
+  arrow, the echo and hint icons, the ping ring, the stars, the cell tile, the backdrops).
+- Assets/EchoCave/Audio (the sound effects).
+
+What is NOT covered (all rights reserved)
+-----------------------------------------
+- The name "EchoCave".
+- The logo, the app icon and the cover image: Assets/EchoCave/Art/Brand, and the logo,
+  favicon and thumbnail in Assets/WebGLTemplates/EchoCave.
+No permission is given to use them, or anything that could be mistaken for them, for any
+other project, product or publication.
+
+Third-party material, under its own terms
+-----------------------------------------
+- Fredoka (Assets/EchoCave/Art/Fonts): SIL Open Font License 1.1, see OFL.txt there.
+- DOTween by Demigiant (Assets/Plugins/Demigiant): its own licence, see the readme.txt there.
+
+The source code is under the MIT licence, see LICENSE.
