@@ -6,6 +6,10 @@ namespace EchoCave.UI
     public interface IMenuView
     {
         event Action PlayPressed;
+        event Action HowToPlayPressed;
+
+        // The "How to play" button only shows when the game has a tutorial.
+        void SetHowToPlayVisible(bool visible);
 
         void Show();
         void Hide();

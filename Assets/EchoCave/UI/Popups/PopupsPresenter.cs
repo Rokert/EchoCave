@@ -32,11 +32,13 @@ namespace EchoCave.UI
             _view.ToggleChanged += OnToggleChanged;
 
             _events.Subscribe<LevelStarted>(OnLevelStarted);
+            _events.Subscribe<LessonStarted>(OnLessonStarted);
             _events.Subscribe<LevelWon>(OnLevelWon);
             _events.Subscribe<LevelLost>(OnLevelLost);
             _events.Subscribe<PauseChanged>(OnPauseChanged);
             _events.Subscribe<MenuOpened>(OnMenuOpened);
 
+            _view.SetHowToPlayVisible(_commands.HasTutorial);
             _view.Hide();
         }
 
@@ -46,6 +48,7 @@ namespace EchoCave.UI
             _view.ToggleChanged -= OnToggleChanged;
 
             _events.Unsubscribe<LevelStarted>(OnLevelStarted);
+            _events.Unsubscribe<LessonStarted>(OnLessonStarted);
             _events.Unsubscribe<LevelWon>(OnLevelWon);
             _events.Unsubscribe<LevelLost>(OnLevelLost);
             _events.Unsubscribe<PauseChanged>(OnPauseChanged);
@@ -55,6 +58,12 @@ namespace EchoCave.UI
         private void OnLevelStarted(LevelStarted started)
         {
             _moveLimit = started.MoveLimit;
+            _view.Hide();
+        }
+
+        // A lesson has its own overlay for winning and losing, so only the popup that was open is closed.
+        private void OnLessonStarted(LessonStarted started)
+        {
             _view.Hide();
         }
 
@@ -99,6 +108,9 @@ namespace EchoCave.UI
                     break;
                 case PopupAction.Resume:
                     _commands.Resume();
+                    break;
+                case PopupAction.HowToPlay:
+                    _commands.HowToPlay();
                     break;
             }
         }

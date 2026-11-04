@@ -26,6 +26,7 @@ namespace EchoCave.UI
         private readonly Button _hintButton;
         private readonly Label _movesValue;
         private readonly Label _levelValue;
+        private readonly Label _levelCaption;
         private readonly Label _pingCount;
         private readonly Label _hintCount;
 
@@ -57,6 +58,9 @@ namespace EchoCave.UI
             _hintButton = Require<Button>(root, "hint-button");
             _movesValue = Require<Label>(root, "moves-value");
             _levelValue = Require<Label>(root, "level-value");
+
+            // Optional: a UXML without the caption simply keeps showing whatever word it has.
+            _levelCaption = root.Q<Label>("level-caption");
             _pingCount = Require<Label>(root, "ping-count");
             _hintCount = Require<Label>(root, "hint-count");
 
@@ -84,6 +88,11 @@ namespace EchoCave.UI
         public void SetLevel(int levelNumber, int levelCount)
         {
             _levelValue.text = $"{levelNumber} / {levelCount}";
+        }
+
+        public void SetLevelCaption(string caption)
+        {
+            if (_levelCaption != null) _levelCaption.text = caption;
         }
 
         public void SetPings(int pingsLeft)

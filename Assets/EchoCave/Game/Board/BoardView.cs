@@ -57,6 +57,19 @@ namespace EchoCave.Game
             return Layout.TryWorldToCell(transform.InverseTransformPoint(world), out cell);
         }
 
+        // Where a bat is in the world, and how wide a cell is there, for the tutorial's ring. False when the bat is not on
+        // the board (it flew off).
+        public bool TryGetBatWorld(int batId, out Vector3 world, out float cellWorldSize)
+        {
+            world = default;
+            cellWorldSize = 0f;
+            if (Layout == null || !_views.TryGetValue(batId, out BatView view)) return false;
+
+            world = view.transform.position;
+            cellWorldSize = Layout.CellSize * transform.lossyScale.x;
+            return true;
+        }
+
         public void Spawn(Bat bat)
         {
             if (_views.ContainsKey(bat.Id)) throw new InvalidOperationException($"Bat {bat.Id} is already on the board view.");

@@ -16,6 +16,7 @@ namespace EchoCave.Game
         public bool MusicOn { get; private set; } = true;
         public int Hints { get; private set; }
         public int ReserveHints { get; private set; }
+        public bool TutorialSeen { get; private set; }
 
         // True when the store held something this version could not read, so the game started fresh.
         public bool RecoveredFromBadData { get; }
@@ -36,6 +37,7 @@ namespace EchoCave.Game
             MusicOn = content.MusicOn;
             Hints = content.Hints;
             ReserveHints = Math.Max(0, content.ReserveHints);
+            TutorialSeen = content.TutorialSeen;
             foreach (KeyValuePair<string, int> entry in content.RewardState) _rewardState[entry.Key] = entry.Value;
         }
 
@@ -50,6 +52,14 @@ namespace EchoCave.Game
             if (Hints == count) return;
 
             Hints = count;
+            Persist();
+        }
+
+        public void SetTutorialSeen(bool seen)
+        {
+            if (TutorialSeen == seen) return;
+
+            TutorialSeen = seen;
             Persist();
         }
 
@@ -101,12 +111,13 @@ namespace EchoCave.Game
             Hints = _startingHints;
             ReserveHints = 0;
             _rewardState.Clear();
+            TutorialSeen = false;
             Persist();
         }
 
         private void Persist()
         {
-            _store.Write(SaveSerializer.Serialize(Progress, SoundOn, MusicOn, Hints, ReserveHints, _rewardState));
+            _store.Write(SaveSerializer.Serialize(Progress, SoundOn, MusicOn, Hints, ReserveHints, _rewardState, TutorialSeen));
         }
     }
 }

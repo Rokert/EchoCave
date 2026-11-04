@@ -21,6 +21,13 @@ namespace EchoCave.Game
         // The spare hints kept aside while the stock is full.
         int ReserveHints { get; }
 
+        // True once the player has finished or skipped the tutorial. A save from before the tutorial reads as false, so
+        // players who already have a save see it once too, and can skip it.
+        bool TutorialSeen { get; }
+
+        // Saves the tutorial flag at once when it changed.
+        void SetTutorialSeen(bool seen);
+
         // Saves the hint count at once when it changed.
         void SetHints(int count);
 
@@ -36,7 +43,7 @@ namespace EchoCave.Game
         // Saves a switch at once when it changed.
         void SetAudio(AudioChannel channel, bool enabled);
 
-        // Forgets all progress and gives back the starting hints, with no reserve and no reward state. The audio
+        // Forgets all progress and gives back the starting hints, with no reserve, no reward state and the tutorial unseen. The audio
         // switches are kept: they are a preference, not an achievement.
         void Reset();
     }

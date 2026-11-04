@@ -41,6 +41,9 @@ namespace EchoCave.UI
         // levelNumber counts from 1: the player reads "level 3 / 10".
         void SetLevel(int levelNumber, int levelCount);
 
+        // The word above the number: "LEVEL" in the game, "LESSON" in the tutorial.
+        void SetLevelCaption(string caption);
+
         void SetPings(int pingsLeft);
 
         void SetPingState(PingButtonState state);

@@ -7,6 +7,9 @@ namespace EchoCave.Tests
     internal sealed class FakeMenuView : IMenuView
     {
         public event Action PlayPressed;
+        public event Action HowToPlayPressed;
+
+        public bool HowToPlayVisible;
 
         public bool Visible;
         public int ShowCount;
@@ -23,6 +26,10 @@ namespace EchoCave.Tests
             Visible = false;
             HideCount++;
         }
+
+        public void SetHowToPlayVisible(bool visible) => HowToPlayVisible = visible;
+
+        public void PressHowToPlay() => HowToPlayPressed?.Invoke();
 
         public void PressPlay() => PlayPressed?.Invoke();
 

@@ -4,6 +4,8 @@
     <Style src="../Styles/Hud.uss" />
     <Style src="../Styles/Popups.uss" />
     <Style src="../Styles/Menu.uss" />
+    <Style src="../Styles/Tutorial.uss" />
+    <ui:Template name="Tutorial" src="Tutorial.uxml" />
     <ui:Template name="Popups" src="Popups.uxml" />
     <ui:Template name="Menu" src="Menu.uxml" />
 
@@ -29,7 +31,7 @@
 
                     <ui:VisualElement class="hud-top__side hud-top__side--end" picking-mode="Ignore">
                         <ui:VisualElement class="moves-sign level-sign" picking-mode="Ignore">
-                            <ui:Label text="LEVEL" class="moves-sign__caption font-medium" picking-mode="Ignore" />
+                            <ui:Label name="level-caption" text="LEVEL" class="moves-sign__caption font-medium" picking-mode="Ignore" />
                             <ui:Label name="level-value" text="1" class="moves-sign__value font-bold" picking-mode="Ignore" />
                         </ui:VisualElement>
                     </ui:VisualElement>
@@ -60,6 +62,9 @@
 
             </ui:VisualElement>
         </ui:VisualElement>
+
+        <!-- Above the HUD and below the popups, so the pause popup covers it. Only its buttons catch a pointer. -->
+        <ui:Instance template="Tutorial" class="template-fill" picking-mode="Ignore" />
 
         <!-- Drawn last, so it sits above the HUD. Its scrim catches pointers; the wrapper around it does not. -->
         <ui:Instance template="Popups" class="template-fill" picking-mode="Ignore" />

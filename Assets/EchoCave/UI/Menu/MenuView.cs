@@ -8,9 +8,13 @@ namespace EchoCave.UI
     {
         private const string HiddenClass = "menu-hidden";
 
+        private const string ButtonHiddenClass = "menu-button-hidden";
+
         private readonly VisualElement _layer;
+        private readonly Button _howToPlay;
 
         public event Action PlayPressed;
+        public event Action HowToPlayPressed;
 
         // The version is shown small at the bottom, so a tester can say which build a comment is about.
         public MenuView(VisualElement root, string version)
@@ -19,7 +23,17 @@ namespace EchoCave.UI
 
             _layer = Require<VisualElement>(root, "menu-layer");
             Require<Button>(root, "play-button").clicked += () => PlayPressed?.Invoke();
+
+            // Optional: a UXML without the button simply has no way to replay the tutorial.
+            _howToPlay = root.Q<Button>("howto-button");
+            if (_howToPlay != null) _howToPlay.clicked += () => HowToPlayPressed?.Invoke();
+
             Require<Label>(root, "version-label").text = string.IsNullOrEmpty(version) ? string.Empty : "v" + version;
+        }
+
+        public void SetHowToPlayVisible(bool visible)
+        {
+            _howToPlay?.EnableInClassList(ButtonHiddenClass, !visible);
         }
 
         public void Show() => _layer.RemoveFromClassList(HiddenClass);

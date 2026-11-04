@@ -29,6 +29,7 @@ namespace EchoCave.UI
         private readonly VisualElement[] _stars = new VisualElement[StarCount];
         private readonly Button _soundToggle;
         private readonly Button _musicToggle;
+        private readonly Button _howToPlay;
         private readonly int _starStaggerMillis;
 
         // Fade and star tasks still waiting to run, so hiding the popup can cancel them.
@@ -65,8 +66,17 @@ namespace EchoCave.UI
             Wire(root, "pause-restart", PopupAction.Restart);
             Wire(root, "pause-menu", PopupAction.Menu);
 
+            // Optional: a UXML without the button simply has no way to replay the tutorial from the pause popup.
+            _howToPlay = root.Q<Button>("pause-howto");
+            if (_howToPlay != null) _howToPlay.clicked += () => ActionPressed?.Invoke(PopupAction.HowToPlay);
+
             _soundToggle.clicked += () => Flip(AudioChannel.Sound, _soundToggle);
             _musicToggle.clicked += () => Flip(AudioChannel.Music, _musicToggle);
+        }
+
+        public void SetHowToPlayVisible(bool visible)
+        {
+            _howToPlay?.EnableInClassList(HiddenClass, !visible);
         }
 
         public void Hide()

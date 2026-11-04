@@ -8,6 +8,9 @@ namespace EchoCave.UI
     // the pause button to the game. Plain C#; Dispose unsubscribes from everything.
     public sealed class HudPresenter : IDisposable
     {
+        public const string LevelCaption = "LEVEL";
+        public const string LessonCaption = "LESSON";
+
         private readonly IHudView _view;
         private readonly EventBus _events;
         private readonly Action _onPing;
@@ -40,6 +43,7 @@ namespace EchoCave.UI
             _view.PausePressed += _onTogglePause;
 
             _events.Subscribe<LevelStarted>(OnLevelStarted);
+            _events.Subscribe<LessonStarted>(OnLessonStarted);
             _events.Subscribe<MoveSpent>(OnMoveSpent);
             _events.Subscribe<PingUsed>(OnPingUsed);
             _events.Subscribe<EchoExpired>(OnEchoExpired);
@@ -65,6 +69,7 @@ namespace EchoCave.UI
             _view.PausePressed -= _onTogglePause;
 
             _events.Unsubscribe<LevelStarted>(OnLevelStarted);
+            _events.Unsubscribe<LessonStarted>(OnLessonStarted);
             _events.Unsubscribe<MoveSpent>(OnMoveSpent);
             _events.Unsubscribe<PingUsed>(OnPingUsed);
             _events.Unsubscribe<EchoExpired>(OnEchoExpired);
@@ -79,12 +84,24 @@ namespace EchoCave.UI
 
         private void OnLevelStarted(LevelStarted started)
         {
-            _pingsLeft = started.PingBudget;
+            ShowLevel(LevelCaption, started.LevelIndex + 1, _levelCount, started.MoveLimit, started.PingBudget);
+        }
+
+        // A tutorial lesson looks like a level to the HUD, with its own word and its own total.
+        private void OnLessonStarted(LessonStarted started)
+        {
+            ShowLevel(LessonCaption, started.LessonIndex + 1, started.LessonCount, started.MoveLimit, started.PingBudget);
+        }
+
+        private void ShowLevel(string caption, int number, int total, int moveLimit, int pingBudget)
+        {
+            _pingsLeft = pingBudget;
             _echoActive = false;
 
             _view.SetVisible(true);
-            _view.SetLevel(started.LevelIndex + 1, _levelCount);
-            _view.SetMoves(0, started.MoveLimit);
+            _view.SetLevelCaption(caption);
+            _view.SetLevel(number, total);
+            _view.SetMoves(0, moveLimit);
             _view.SetPings(_pingsLeft);
             _view.SetPingState(CurrentPingState());
             _view.SetPaused(false);

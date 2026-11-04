@@ -67,6 +67,10 @@
                     <ui:VisualElement class="pill-button__lip" picking-mode="Ignore" />
                     <ui:VisualElement class="pill-button__face" picking-mode="Ignore"><ui:Label text="Resume" class="pill-button__label font-semibold" picking-mode="Ignore" /></ui:VisualElement>
                 </ui:Button>
+                <ui:Button name="pause-howto" class="pill-button pill-button--secondary popup-hidden">
+                    <ui:VisualElement class="pill-button__lip" picking-mode="Ignore" />
+                    <ui:VisualElement class="pill-button__face" picking-mode="Ignore"><ui:Label text="How to play" class="pill-button__label font-semibold" picking-mode="Ignore" /></ui:VisualElement>
+                </ui:Button>
                 <ui:Button name="pause-restart" class="pill-button pill-button--secondary">
                     <ui:VisualElement class="pill-button__lip" picking-mode="Ignore" />
                     <ui:VisualElement class="pill-button__face" picking-mode="Ignore"><ui:Label text="Restart" class="pill-button__label font-semibold" picking-mode="Ignore" /></ui:VisualElement>

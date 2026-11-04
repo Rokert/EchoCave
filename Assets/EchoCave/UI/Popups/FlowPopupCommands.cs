@@ -15,6 +15,10 @@ namespace EchoCave.UI
 
         public bool HasNextLevel => _flow.LevelIndex + 1 < _flow.LevelCount;
 
+        public bool HasTutorial => _flow.HasTutorial;
+
+        public void HowToPlay() => _flow.RequestTutorial(thenStartGame: false);
+
         public void Retry() => _flow.RequestRetry();
 
         public void Next() => _flow.RequestNext();

@@ -20,6 +20,16 @@ namespace EchoCave.Game
         // so counters can update at the moment of the tap.
         public event Action<MoveResult> MoveExecuted;
 
+        // Raised when a tap lands on a bat and is accepted, before the move is resolved.
+        public event Action<int> BatTapped;
+
+        // Raised when a tap lands on a bat that CanTap refused.
+        public event Action TapRefused;
+
+        // Decides whether a tap on this bat id may move it. Null lets every tap through. The tutorial uses it to limit
+        // the first steps to one bat.
+        public Func<int, bool> CanTap { get; set; }
+
         public BoardPresenter(LevelSession session, MoveResolver resolver, CommandHistory history, IBoardView view)
         {
             _session = session ?? throw new ArgumentNullException(nameof(session));
@@ -42,6 +52,14 @@ namespace EchoCave.Game
             if (_busy) return;
             if (!_view.TryGetCell(world, out Cell cell)) return;
             if (!_session.Board.TryGetBat(cell, out Bat bat)) return;
+
+            if (CanTap != null && !CanTap(bat.Id))
+            {
+                TapRefused?.Invoke();
+                return;
+            }
+
+            BatTapped?.Invoke(bat.Id);
 
             var command = new MoveCommand(_session, _resolver, bat.Id);
             _history.Execute(command);

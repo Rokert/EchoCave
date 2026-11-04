@@ -26,12 +26,14 @@ namespace EchoCave.Game
 
             _events.Subscribe<LevelWon>(OnLevelWon);
             _events.Subscribe<AudioToggled>(OnAudioToggled);
+            _events.Subscribe<TutorialEnded>(OnTutorialEnded);
         }
 
         public void Dispose()
         {
             _events.Unsubscribe<LevelWon>(OnLevelWon);
             _events.Unsubscribe<AudioToggled>(OnAudioToggled);
+            _events.Unsubscribe<TutorialEnded>(OnTutorialEnded);
         }
 
         private void OnLevelWon(LevelWon won)
@@ -42,6 +44,12 @@ namespace EchoCave.Game
             int previousStars = _save.Progress.StarsOf(levelId);
             _save.RecordWin(levelId, won.MovesUsed, won.Stars);
             _rewards?.OnLevelWon(won.Stars, previousStars);
+        }
+
+        // Finishing or skipping the tutorial is remembered, so it does not start by itself again. Leaving it half way is not.
+        private void OnTutorialEnded(TutorialEnded ended)
+        {
+            if (ended.Seen) _save.SetTutorialSeen(true);
         }
 
         private void OnAudioToggled(AudioToggled toggled)

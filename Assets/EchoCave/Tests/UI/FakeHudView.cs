@@ -39,6 +39,10 @@ namespace EchoCave.Tests
             LevelCount = levelCount;
         }
 
+        public string LevelCaption = string.Empty;
+
+        public void SetLevelCaption(string caption) => LevelCaption = caption;
+
         public void SetPings(int pingsLeft) => Pings = pingsLeft;
 
         public void SetPingState(PingButtonState state) => PingState = state;

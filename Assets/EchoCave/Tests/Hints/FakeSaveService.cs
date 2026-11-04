@@ -12,6 +12,7 @@ namespace EchoCave.Tests
         public bool MusicOn { get; private set; } = true;
         public int Hints { get; private set; }
         public int ReserveHints { get; private set; }
+        public bool TutorialSeen { get; private set; }
         public int HintWrites;
         public int RewardStateWrites;
         private readonly Dictionary<string, int> _rewardState = new Dictionary<string, int>();
@@ -30,6 +31,8 @@ namespace EchoCave.Tests
         }
 
         public void SetReserveHints(int count) => ReserveHints = count;
+
+        public void SetTutorialSeen(bool seen) => TutorialSeen = seen;
 
         public int GetRewardState(string key) => _rewardState.TryGetValue(key, out int value) ? value : 0;
 
