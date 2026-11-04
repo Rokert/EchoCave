@@ -171,7 +171,7 @@ namespace EchoCave.Tests
             service.RecordWin(1, 5, 3);
 
             store.TryRead(out string stored);
-            StringAssert.Contains("\"version\":4", stored);
+            StringAssert.Contains("\"version\":5", stored);
             Assert.AreEqual(3, new SaveService(store, StartingHints).Progress.StarsOf(1));
         }
 

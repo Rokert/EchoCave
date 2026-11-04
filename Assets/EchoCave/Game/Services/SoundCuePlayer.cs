@@ -22,6 +22,7 @@ namespace EchoCave.Game
             _events.Subscribe<PingRefused>(OnPingRefused);
             _events.Subscribe<HintUsed>(OnHintUsed);
             _events.Subscribe<HintRefused>(OnHintRefused);
+            _events.Subscribe<HintRewarded>(OnHintRewarded);
             _events.Subscribe<MoveSpent>(OnMoveSpent);
             _events.Subscribe<LevelWon>(OnLevelWon);
             _events.Subscribe<LevelLost>(OnLevelLost);
@@ -34,6 +35,7 @@ namespace EchoCave.Game
             _events.Unsubscribe<PingRefused>(OnPingRefused);
             _events.Unsubscribe<HintUsed>(OnHintUsed);
             _events.Unsubscribe<HintRefused>(OnHintRefused);
+            _events.Unsubscribe<HintRewarded>(OnHintRewarded);
             _events.Unsubscribe<MoveSpent>(OnMoveSpent);
             _events.Unsubscribe<LevelWon>(OnLevelWon);
             _events.Unsubscribe<LevelLost>(OnLevelLost);
@@ -49,6 +51,9 @@ namespace EchoCave.Game
 
         // A refused hint sounds like a refused ping: the same "no".
         private void OnHintRefused(HintRefused refused) => _audio.Play(SoundCue.Refuse);
+
+        // A free hint arrived, whether it went to the stock or to the reserve.
+        private void OnHintRewarded(HintRewarded rewarded) => _audio.Play(SoundCue.HintEarned);
 
         // Published as the animation starts, so the whoosh and the thud begin with the movement.
         private void OnMoveSpent(MoveSpent spent)

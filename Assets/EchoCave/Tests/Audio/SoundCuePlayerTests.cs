@@ -64,6 +64,23 @@ namespace EchoCave.Tests
             CollectionAssert.AreEqual(new[] { SoundCue.Hint, SoundCue.Refuse, SoundCue.Refuse }, _audio.Played);
         }
 
+        [TestCase(HintRewardSource.Daily, 1, 0)]
+        [TestCase(HintRewardSource.Streak, 0, 1)]
+        public void AFreeHint_PlaysItsChime_WhetherItWentToTheStockOrTheReserve(HintRewardSource source, int toStock, int toReserve)
+        {
+            _bus.Publish(new HintRewarded(source, toStock, toReserve));
+
+            CollectionAssert.AreEqual(new[] { SoundCue.HintEarned }, _audio.Played);
+        }
+
+        [Test]
+        public void TheReserveChanging_PlaysNothing_OnlyTheRewardDoes()
+        {
+            _bus.Publish(new HintReserveChanged(1));
+
+            Assert.IsEmpty(_audio.Played);
+        }
+
         [Test]
         public void TheHintCountChanging_PlaysNothing_OnlyUsingOneDoes()
         {

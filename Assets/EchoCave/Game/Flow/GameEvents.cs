@@ -162,6 +162,33 @@ namespace EchoCave.Game
         }
     }
 
+    // The number of spare hints waiting in the reserve changed.
+    public readonly struct HintReserveChanged
+    {
+        public int Count { get; }
+
+        public HintReserveChanged(int count)
+        {
+            Count = count;
+        }
+    }
+
+    // A free hint arrived (a daily gift or a streak). Only published when at least one hint was kept; ToReserve says
+    // how many of them went to the reserve because the stock was full.
+    public readonly struct HintRewarded
+    {
+        public HintRewardSource Source { get; }
+        public int ToStock { get; }
+        public int ToReserve { get; }
+
+        public HintRewarded(HintRewardSource source, int toStock, int toReserve)
+        {
+            Source = source;
+            ToStock = toStock;
+            ToReserve = toReserve;
+        }
+    }
+
     // A ping did nothing; the reason says why, so the HUD can tell the player.
     public readonly struct PingRefused
     {

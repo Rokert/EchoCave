@@ -49,6 +49,12 @@ namespace EchoCave.UI
 
         void SetHintState(HintButtonState state);
 
+        // The spare hints waiting in the reserve: any above 0 shows a small "+1" tag on the hint button.
+        void SetHintReserve(int reserveCount);
+
+        // A short pop of the hint button: "a free hint just arrived".
+        void PulseHint();
+
         // While paused the button shows "resume" instead of "pause".
         void SetPaused(bool paused);
 

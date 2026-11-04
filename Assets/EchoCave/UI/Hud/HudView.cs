@@ -17,6 +17,7 @@ namespace EchoCave.UI
         private const string HintReadyClass = "hint-button--ready";
         private const string HintEmptyClass = "hint-button--empty";
         private const string HintAdClass = "hint-button--ad";
+        private const string HintReserveClass = "hint-button--reserve";
 
         private readonly VisualElement _hud;
         private readonly Button _pauseButton;
@@ -34,11 +35,18 @@ namespace EchoCave.UI
         private ValueAnimation<float> _pingShake;
         private ValueAnimation<float> _hintShake;
 
+        private readonly float _hintPulseScale;
+        private readonly int _hintPulseMillis;
+        private ValueAnimation<float> _hintPulse;
+
         public event Action PingPressed;
         public event Action HintPressed;
         public event Action PausePressed;
 
-        public HudView(VisualElement root, float shakeAmplitude, int shakeCount, int shakeMillis)
+        // hintPulseScale is how big the hint button swells when a free hint arrives, 1 being its normal size.
+        public HudView(
+            VisualElement root, float shakeAmplitude, int shakeCount, int shakeMillis, float hintPulseScale = 1.25f,
+            int hintPulseMillis = 420)
         {
             if (root == null) throw new ArgumentNullException(nameof(root));
 
@@ -55,6 +63,8 @@ namespace EchoCave.UI
             _shakeAmplitude = shakeAmplitude;
             _shakeCount = shakeCount;
             _shakeMillis = shakeMillis;
+            _hintPulseScale = hintPulseScale;
+            _hintPulseMillis = hintPulseMillis;
 
             _pauseButton.clicked += () => PausePressed?.Invoke();
             _pingButton.clicked += () => PingPressed?.Invoke();
@@ -98,6 +108,22 @@ namespace EchoCave.UI
             _hintButton.EnableInClassList(HintReadyClass, state == HintButtonState.Ready);
             _hintButton.EnableInClassList(HintEmptyClass, state == HintButtonState.Empty);
             _hintButton.EnableInClassList(HintAdClass, state == HintButtonState.WatchAd);
+        }
+
+        public void SetHintReserve(int reserveCount)
+        {
+            _hintButton.EnableInClassList(HintReserveClass, reserveCount > 0);
+        }
+
+        public void PulseHint()
+        {
+            _hintPulse?.Stop();
+            _hintPulse = _hintButton.experimental.animation.Start(0f, 1f, _hintPulseMillis, (element, t) =>
+            {
+                float size = 1f + (_hintPulseScale - 1f) * Mathf.Sin(t * Mathf.PI);
+                element.style.scale = new Scale(new Vector2(size, size));
+            }).KeepAlive();
+            _hintPulse.OnCompleted(() => _hintButton.style.scale = new Scale(Vector2.one));
         }
 
         public void SetPaused(bool paused)

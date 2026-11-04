@@ -18,7 +18,8 @@ namespace EchoCave.Game
         Star1,
         Star2,
         Star3,
-        Hint
+        Hint,
+        HintEarned
     }
 
     // The file name (without extension) each cue's clip has in Audio/Sfx, as the RokertSfx tool saves it.
@@ -42,6 +43,7 @@ namespace EchoCave.Game
                 case SoundCue.Star2: return "star_2";
                 case SoundCue.Star3: return "star_3";
                 case SoundCue.Hint: return "hint";
+                case SoundCue.HintEarned: return "hint_earned";
                 default: throw new ArgumentOutOfRangeException(nameof(cue), cue, null);
             }
         }
