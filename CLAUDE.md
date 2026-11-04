@@ -29,7 +29,7 @@ To edit RokertCore while developing: temporarily switch the dependency to `"file
 
 ## Art
 
-`Assets/Simasart/Hungry Bat` is art and prefabs only (no code). Reuse: bat, `bg_night`, UI (buttons, Complete popup, stars, bars, moves sign, toggles, icons), font `gomarice_rocks`. Do not use: fruits, fruit goal, bomb/lightning/potion icons. Missing: echo icon. The bat has a single front pose: show the direction with an arrow overlay, and a dark silhouette with "?" for hidden bats.
+All art is original (ROK-144): drawn in Penpot, exported as PNG into `Assets/EchoCave/Art/{Characters,Icons,UI,Backgrounds,Brand,Fonts}`. The old third-party pack is gone and was never in git history, so do not bring in third-party art (fonts under an open licence are fine, with their licence file next to them). Font: Fredoka (SIL OFL, `Art/Fonts/OFL.txt`). Sounds are original too (RokertSfx, D-030). Inventory, palette, export rules and credits are in `Docs/ART.md`. The bat has a single front pose: show the direction with an arrow overlay, and a dark silhouette with "?" for hidden bats.
 
 ## Pipeline gates
 
