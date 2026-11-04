@@ -34,6 +34,6 @@ Defined once in `UI/Styles/Theme.uss` (USS variables) and mirrored in Penpot:
 
 ## Credits and licences
 
-- Art and sounds: original, by the project's author.
+- Art and sounds: original, by the project's author, under CC BY-NC 4.0 (`LICENSE-ASSETS` at the repository root). The name, the logo, the app icon and the cover image (`Art/Brand`, and the logo, favicon and thumbnail of the web template) are not covered and stay all rights reserved.
 - Fredoka: SIL Open Font License 1.1 (`Art/Fonts/OFL.txt`).
-- DOTween (Demigiant, `Assets/Plugins/Demigiant`): used for view animations (D-014). Its own licence applies; whether the DLL may sit in a public repository is open (see the repository-readiness ticket).
+- DOTween (Demigiant, `Assets/Plugins/Demigiant`): used for view animations (D-014). It is the free version. Its licence (dotween.demigiant.com/license.php) allows commercial use and allows distributing unmodified copies in any medium, as long as the original copyright notices and `readme.txt` stay with them. So the DLL and its `readme.txt` are kept exactly as downloaded: never edit or repack them. The settings asset in `Assets/Resources` is ours, not part of the package.
