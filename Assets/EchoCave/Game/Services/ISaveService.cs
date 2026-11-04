@@ -18,14 +18,26 @@ namespace EchoCave.Game
         // Records a win and saves at once when it improved something.
         void RecordWin(int levelId, int moves, int stars);
 
+        // The spare hints kept aside while the stock is full.
+        int ReserveHints { get; }
+
         // Saves the hint count at once when it changed.
         void SetHints(int count);
+
+        // Saves the reserve at once when it changed.
+        void SetReserveHints(int count);
+
+        // The saved state of a hint reward, by its key; 0 when it was never saved.
+        int GetRewardState(string key);
+
+        // Saves the state of a hint reward at once when it changed.
+        void SetRewardState(string key, int value);
 
         // Saves a switch at once when it changed.
         void SetAudio(AudioChannel channel, bool enabled);
 
-        // Forgets all progress and gives back the starting hints. The audio switches are kept: they are a preference,
-        // not an achievement.
+        // Forgets all progress and gives back the starting hints, with no reserve and no reward state. The audio
+        // switches are kept: they are a preference, not an achievement.
         void Reset();
     }
 }

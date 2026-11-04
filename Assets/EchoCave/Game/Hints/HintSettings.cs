@@ -12,6 +12,14 @@ namespace EchoCave.Game
         [SerializeField, Min(1)] private int maxHints = 5;
         [Tooltip("Hints granted for one rewarded ad.")]
         [SerializeField, Min(1)] private int hintsPerAd = 1;
+        [Tooltip("Free hints kept aside when the stock is full. One more than this is lost. 0 turns the reserve off.")]
+        [SerializeField, Min(0)] private int reserveSlots = 1;
+        [Tooltip("Wins in a row with 3 stars, each on a level that never had 3 stars, that earn a free hint. A lost level or a win with fewer stars starts the count again.")]
+        [SerializeField, Min(1)] private int winStreakLength = 3;
+        [Tooltip("Free hints a completed streak gives.")]
+        [SerializeField, Min(1)] private int hintsPerStreak = 1;
+        [Tooltip("Free hints given the first time the game opens on a new day. The first day ever gives none: the starting hints are that day's gift.")]
+        [SerializeField, Min(1)] private int hintsPerDay = 1;
         [Tooltip("With no hints left, pressing the button offers a rewarded ad. Turn it off for a playtest build: the null ad provider grants every request, so the hints would be unlimited.")]
         [SerializeField] private bool refillWithAds = true;
 
@@ -19,6 +27,10 @@ namespace EchoCave.Game
         public int MaxHints => maxHints;
         public int HintsPerAd => hintsPerAd;
         public bool RefillWithAds => refillWithAds;
+        public int ReserveSlots => reserveSlots;
+        public int WinStreakLength => winStreakLength;
+        public int HintsPerStreak => hintsPerStreak;
+        public int HintsPerDay => hintsPerDay;
 
         private void OnValidate()
         {

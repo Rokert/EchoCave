@@ -24,7 +24,7 @@ namespace EchoCave.UI
         // can be refilled with an ad, a button with none left offers "AD" instead of looking dead.
         public HudPresenter(
             IHudView view, EventBus events, Action onPing, Action onHint, Action onTogglePause, int levelCount, int hintCount,
-            bool hintsCanBeRefilled)
+            bool hintsCanBeRefilled, int reserveCount = 0)
         {
             _view = view ?? throw new ArgumentNullException(nameof(view));
             _events = events ?? throw new ArgumentNullException(nameof(events));
@@ -46,10 +46,13 @@ namespace EchoCave.UI
             _events.Subscribe<PingRefused>(OnPingRefused);
             _events.Subscribe<HintsChanged>(OnHintsChanged);
             _events.Subscribe<HintRefused>(OnHintRefused);
+            _events.Subscribe<HintReserveChanged>(OnHintReserveChanged);
+            _events.Subscribe<HintRewarded>(OnHintRewarded);
             _events.Subscribe<PauseChanged>(OnPauseChanged);
             _events.Subscribe<MenuOpened>(OnMenuOpened);
 
             ShowHints();
+            _view.SetHintReserve(reserveCount);
 
             // Nothing to show until a level starts.
             _view.SetVisible(false);
@@ -68,6 +71,8 @@ namespace EchoCave.UI
             _events.Unsubscribe<PingRefused>(OnPingRefused);
             _events.Unsubscribe<HintsChanged>(OnHintsChanged);
             _events.Unsubscribe<HintRefused>(OnHintRefused);
+            _events.Unsubscribe<HintReserveChanged>(OnHintReserveChanged);
+            _events.Unsubscribe<HintRewarded>(OnHintRewarded);
             _events.Unsubscribe<PauseChanged>(OnPauseChanged);
             _events.Unsubscribe<MenuOpened>(OnMenuOpened);
         }
@@ -119,6 +124,17 @@ namespace EchoCave.UI
         private void OnHintRefused(HintRefused refused)
         {
             _view.ShakeHint();
+        }
+
+        private void OnHintReserveChanged(HintReserveChanged changed)
+        {
+            _view.SetHintReserve(changed.Count);
+        }
+
+        // A free hint arrived, in the stock or in the reserve: the button pops.
+        private void OnHintRewarded(HintRewarded rewarded)
+        {
+            _view.PulseHint();
         }
 
         private void ShowHints()

@@ -20,6 +20,8 @@ namespace EchoCave.Tests
         public int Hints = -1;
         public HintButtonState HintState = HintButtonState.Ready;
         public int HintShakeCount;
+        public int HintReserve = -1;
+        public int HintPulseCount;
         public bool Paused;
         public int ShakeCount;
 
@@ -44,6 +46,10 @@ namespace EchoCave.Tests
         public void SetHints(int hintsLeft) => Hints = hintsLeft;
 
         public void SetHintState(HintButtonState state) => HintState = state;
+
+        public void SetHintReserve(int reserveCount) => HintReserve = reserveCount;
+
+        public void PulseHint() => HintPulseCount++;
 
         public void SetPaused(bool paused) => Paused = paused;
 

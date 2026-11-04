@@ -12,14 +12,17 @@ namespace EchoCave.Game
         private readonly ISaveService _save;
         private readonly IAudioService _audio;
         private readonly IReadOnlyList<int> _levelIds;
+        private readonly HintRewardService _rewards;
 
+        // rewards is optional: without it a win is only saved.
         // levelIds[i] is the stable id of the level at catalog position i: progress is saved by id, the flow speaks in positions.
-        public ProgressRecorder(EventBus events, ISaveService save, IAudioService audio, IReadOnlyList<int> levelIds)
+        public ProgressRecorder(EventBus events, ISaveService save, IAudioService audio, IReadOnlyList<int> levelIds, HintRewardService rewards = null)
         {
             _events = events ?? throw new ArgumentNullException(nameof(events));
             _save = save ?? throw new ArgumentNullException(nameof(save));
             _audio = audio ?? throw new ArgumentNullException(nameof(audio));
             _levelIds = levelIds ?? throw new ArgumentNullException(nameof(levelIds));
+            _rewards = rewards;
 
             _events.Subscribe<LevelWon>(OnLevelWon);
             _events.Subscribe<AudioToggled>(OnAudioToggled);
@@ -33,7 +36,12 @@ namespace EchoCave.Game
 
         private void OnLevelWon(LevelWon won)
         {
-            _save.RecordWin(_levelIds[won.LevelIndex], won.MovesUsed, won.Stars);
+            int levelId = _levelIds[won.LevelIndex];
+
+            // The reward needs the stars the level had BEFORE this win, so it must see them before they are saved.
+            int previousStars = _save.Progress.StarsOf(levelId);
+            _save.RecordWin(levelId, won.MovesUsed, won.Stars);
+            _rewards?.OnLevelWon(won.Stars, previousStars);
         }
 
         private void OnAudioToggled(AudioToggled toggled)

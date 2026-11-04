@@ -9,9 +9,9 @@ namespace EchoCave.Game
     // never thrown, because a broken save must not stop the game from starting.
     public static class SaveSerializer
     {
-        // Version 4 adds the hint count. Version 3 added the sound and music switches, version 2 keyed levels by their
+        // Version 5 adds the reserve hints and the state of the hint rewards. Version 4 added the hint count. Version 3 added the sound and music switches, version 2 keyed levels by their
         // stable id (D-029) and version 1 by catalog position.
-        public const int CurrentVersion = 4;
+        public const int CurrentVersion = 5;
 
         // The ten levels of version 1 got ids 1 to 10 in catalog order, so position i was id i + 1.
         private const int LegacyIdOffset = 1;
@@ -31,7 +31,16 @@ namespace EchoCave.Game
             public bool soundOff;
             public bool musicOff;
             public int hints;
+            public int reserveHints;
+            public List<RewardEntry> rewardState = new List<RewardEntry>();
             public List<LevelEntry> levels = new List<LevelEntry>();
+        }
+
+        [Serializable]
+        private sealed class RewardEntry
+        {
+            public string key;
+            public int value;
         }
 
         [Serializable]
@@ -57,20 +66,30 @@ namespace EchoCave.Game
             public int moves;
         }
 
-        public static string Serialize(PlayerProgress progress, bool soundOn, bool musicOn, int hints)
+        public static string Serialize(
+            PlayerProgress progress, bool soundOn, bool musicOn, int hints, int reserveHints = 0,
+            IReadOnlyDictionary<string, int> rewardState = null)
         {
             if (progress == null) throw new ArgumentNullException(nameof(progress));
 
-            var file = new SaveFile { version = CurrentVersion, soundOff = !soundOn, musicOff = !musicOn, hints = hints };
+            var file = new SaveFile { version = CurrentVersion, soundOff = !soundOn, musicOff = !musicOn, hints = hints, reserveHints = reserveHints };
             foreach (LevelRecord record in progress.Records)
                 file.levels.Add(new LevelEntry { id = record.LevelId, stars = record.Stars, moves = record.BestMoves });
+
+            if (rewardState != null)
+            {
+                // Sorted, so the same save always writes the same text.
+                var keys = new List<string>(rewardState.Keys);
+                keys.Sort(StringComparer.Ordinal);
+                foreach (string key in keys) file.rewardState.Add(new RewardEntry { key = key, value = rewardState[key] });
+            }
 
             return JsonUtility.ToJson(file);
         }
 
         // False when the text is not a save this version understands; content is then a fresh save. Entries that
-        // make no sense are skipped. Versions 1 to 3 are read and converted; a save from before the hints existed
-        // gets startingHints.
+        // make no sense are skipped. Versions 1 to 4 are read and converted; a save from before the hints existed
+        // gets startingHints, and one from before the reserve has none.
         public static bool TryDeserialize(string json, int startingHints, out SaveContent content)
         {
             content = SaveContent.Fresh(startingHints);
@@ -105,7 +124,16 @@ namespace EchoCave.Game
             }
 
             int hints = version >= 4 ? Math.Max(0, file.hints) : startingHints;
-            content = new SaveContent(progress, !file.soundOff, !file.musicOff, hints);
+            int reserveHints = version >= 5 ? Math.Max(0, file.reserveHints) : 0;
+
+            var rewardState = new Dictionary<string, int>();
+            if (version >= 5 && file.rewardState != null)
+            {
+                foreach (RewardEntry entry in file.rewardState)
+                    if (entry != null && !string.IsNullOrEmpty(entry.key)) rewardState[entry.key] = entry.value;
+            }
+
+            content = new SaveContent(progress, !file.soundOff, !file.musicOff, hints, reserveHints, rewardState);
             return true;
         }
 

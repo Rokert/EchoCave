@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using EchoCave.Core;
 using EchoCave.Game;
 
@@ -10,7 +11,10 @@ namespace EchoCave.Tests
         public bool SoundOn { get; private set; } = true;
         public bool MusicOn { get; private set; } = true;
         public int Hints { get; private set; }
+        public int ReserveHints { get; private set; }
         public int HintWrites;
+        public int RewardStateWrites;
+        private readonly Dictionary<string, int> _rewardState = new Dictionary<string, int>();
 
         public FakeSaveService(int hints)
         {
@@ -23,6 +27,18 @@ namespace EchoCave.Tests
         {
             Hints = count;
             HintWrites++;
+        }
+
+        public void SetReserveHints(int count) => ReserveHints = count;
+
+        public int GetRewardState(string key) => _rewardState.TryGetValue(key, out int value) ? value : 0;
+
+        public void SetRewardState(string key, int value)
+        {
+            if (GetRewardState(key) == value) return;
+
+            _rewardState[key] = value;
+            RewardStateWrites++;
         }
 
         public void SetAudio(AudioChannel channel, bool enabled)

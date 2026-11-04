@@ -24,6 +24,11 @@ namespace EchoCave.UI
         [SerializeField, Min(1)] private int pingShakeCount = 3;
         [SerializeField, Min(50)] private int pingShakeMillis = 320;
 
+        [Header("Hint reward")]
+        [Tooltip("How big the hint button swells when a free hint arrives, 1 being its normal size.")]
+        [SerializeField, Min(1f)] private float hintPulseScale = 1.25f;
+        [SerializeField, Min(50)] private int hintPulseMillis = 420;
+
         [Header("Popups")]
         [Tooltip("Milliseconds between one earned star lighting up and the next.")]
         [SerializeField, Min(0)] private int starStaggerMillis = 280;
@@ -89,9 +94,10 @@ namespace EchoCave.UI
             LetPointerPassThrough(_hud);
 
             GameFlow flow = gameRoot.Flow;
-            var view = new HudView(root, pingShakeAmplitude, pingShakeCount, pingShakeMillis);
+            var view = new HudView(root, pingShakeAmplitude, pingShakeCount, pingShakeMillis, hintPulseScale, hintPulseMillis);
             _presenter = new HudPresenter(
-                view, EventBus.Global, flow.RequestPing, gameRoot.RequestHint, () => TogglePause(flow), flow.LevelCount, gameRoot.Hints.Count, gameRoot.HintsCanBeRefilled);
+                view, EventBus.Global, flow.RequestPing, gameRoot.RequestHint, () => TogglePause(flow), flow.LevelCount, gameRoot.Hints.Count, gameRoot.HintsCanBeRefilled,
+                gameRoot.Hints.ReserveCount);
 
             _audio = gameRoot.Audio;
             var popupsView = new PopupsView(root, starStaggerMillis);

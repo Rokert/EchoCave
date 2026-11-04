@@ -245,6 +245,35 @@
     background-color: var(--star-gold);
 }
 
+/* A spare hint waits in the reserve: a small gold "+1" tag on the opposite corner from the count. */
+.hint-button__reserve {
+    display: none;
+    position: absolute;
+    left: 0;
+    top: 0;
+    min-width: 56px;
+    height: 44px;
+    padding: 0 10px;
+    border-radius: 22px;
+    border-width: 4px;
+    border-color: var(--star-gold-dark);
+    background-color: var(--star-gold);
+    align-items: center;
+    justify-content: center;
+}
+
+.hint-button--reserve .hint-button__reserve {
+    display: flex;
+}
+
+.hint-button__reserve-label {
+    margin: 0;
+    padding: 0;
+    font-size: 26px;
+    color: var(--ui-text);
+    -unity-text-align: middle-center;
+}
+
 /* No hints left: everything goes dim, like the ping button. */
 .hint-button--empty .hint-button__disc {
     border-color: var(--bg-rock);

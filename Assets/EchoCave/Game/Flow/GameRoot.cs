@@ -38,6 +38,9 @@ namespace EchoCave.Game
         private SoundCuePlayer _cues;
         private IHintStock _hintStock;
         private HintRefill _hintRefill;
+        private HintRewardService _rewards;
+        private readonly IDayClock _clock = new SystemDayClock();
+        private bool _started;
         private IReadOnlyList<int> _levelIds;
 
         private void Awake()
@@ -53,7 +56,7 @@ namespace EchoCave.Game
             // Replace, not Register: with Reload Domain off the registry outlives a Play session.
             _ads = new NullAdService();
             _save = new SaveService(new PlayerPrefsSaveStore(), hintSettings.StartingHints);
-            _hintStock = new HintStock(_save, hintSettings.MaxHints, EventBus.Global);
+            _hintStock = new HintStock(_save, hintSettings.MaxHints, EventBus.Global, hintSettings.ReserveSlots);
             if (soundPlayer != null)
             {
                 _audio = new AudioService(soundPlayer);
@@ -82,7 +85,15 @@ namespace EchoCave.Game
         private void OnEnable()
         {
             tapInput.Tapped += OnTapped;
-            _recorder = new ProgressRecorder(EventBus.Global, _save, _audio, _levelIds);
+
+            // Each strategy picks up where the save left off: the streak so far, the last day a gift was given.
+            var strategies = new List<IHintRewardStrategy>
+            {
+                new DailyReward(hintSettings.HintsPerDay, _save.GetRewardState(DailyReward.StateKey)),
+                new StreakReward(hintSettings.WinStreakLength, hintSettings.HintsPerStreak, _save.GetRewardState(StreakReward.StateKey))
+            };
+            _rewards = new HintRewardService(strategies, _hintStock, _save, EventBus.Global, _clock);
+            _recorder = new ProgressRecorder(EventBus.Global, _save, _audio, _levelIds, _rewards);
             _cues = new SoundCuePlayer(EventBus.Global, _audio);
             boardView.BatRevealed += OnBatRevealed;
             EventBus.Global.Subscribe<LevelStarted>(OnLevelStarted);
@@ -92,6 +103,7 @@ namespace EchoCave.Game
         {
             tapInput.Tapped -= OnTapped;
             _recorder.Dispose();
+            _rewards.Dispose();
             _cues.Dispose();
             boardView.BatRevealed -= OnBatRevealed;
             EventBus.Global.Unsubscribe<LevelStarted>(OnLevelStarted);
@@ -103,6 +115,20 @@ namespace EchoCave.Game
             ServiceLocator.Unregister(_save);
             ServiceLocator.Unregister(_audio);
             ServiceLocator.Unregister(_analytics);
+        }
+
+        // The UI composes in its own Start, which runs first (UiRoot has an earlier execution order), so the HUD
+        // is listening when a daily gift arrives.
+        private void Start()
+        {
+            _started = true;
+            _rewards.CheckDay();
+        }
+
+        // A phone can stay in the background past midnight: the gift is checked again on the way back.
+        private void OnApplicationFocus(bool hasFocus)
+        {
+            if (hasFocus && _started) _rewards.CheckDay();
         }
 
         private void Update()

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using EchoCave.Core;
 
 namespace EchoCave.Game
@@ -8,11 +9,13 @@ namespace EchoCave.Game
     {
         private readonly ISaveStore _store;
         private readonly int _startingHints;
+        private readonly Dictionary<string, int> _rewardState = new Dictionary<string, int>();
 
         public PlayerProgress Progress { get; private set; }
         public bool SoundOn { get; private set; } = true;
         public bool MusicOn { get; private set; } = true;
         public int Hints { get; private set; }
+        public int ReserveHints { get; private set; }
 
         // True when the store held something this version could not read, so the game started fresh.
         public bool RecoveredFromBadData { get; }
@@ -32,6 +35,8 @@ namespace EchoCave.Game
             SoundOn = content.SoundOn;
             MusicOn = content.MusicOn;
             Hints = content.Hints;
+            ReserveHints = Math.Max(0, content.ReserveHints);
+            foreach (KeyValuePair<string, int> entry in content.RewardState) _rewardState[entry.Key] = entry.Value;
         }
 
         public void RecordWin(int levelId, int moves, int stars)
@@ -45,6 +50,32 @@ namespace EchoCave.Game
             if (Hints == count) return;
 
             Hints = count;
+            Persist();
+        }
+
+        public void SetReserveHints(int count)
+        {
+            if (count < 0) throw new ArgumentOutOfRangeException(nameof(count), count, "Cannot be negative.");
+            if (ReserveHints == count) return;
+
+            ReserveHints = count;
+            Persist();
+        }
+
+        public int GetRewardState(string key)
+        {
+            if (string.IsNullOrEmpty(key)) throw new ArgumentException("A reward state needs a key.", nameof(key));
+
+            return _rewardState.TryGetValue(key, out int value) ? value : 0;
+        }
+
+        public void SetRewardState(string key, int value)
+        {
+            if (GetRewardState(key) == value) return;
+
+            // 0 is what a missing key reads as, so it is not stored.
+            if (value == 0) _rewardState.Remove(key);
+            else _rewardState[key] = value;
             Persist();
         }
 
@@ -68,12 +99,14 @@ namespace EchoCave.Game
         {
             Progress = new PlayerProgress();
             Hints = _startingHints;
+            ReserveHints = 0;
+            _rewardState.Clear();
             Persist();
         }
 
         private void Persist()
         {
-            _store.Write(SaveSerializer.Serialize(Progress, SoundOn, MusicOn, Hints));
+            _store.Write(SaveSerializer.Serialize(Progress, SoundOn, MusicOn, Hints, ReserveHints, _rewardState));
         }
     }
 }
