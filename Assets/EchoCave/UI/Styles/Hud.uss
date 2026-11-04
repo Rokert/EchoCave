@@ -218,6 +218,33 @@
     translate: 0 6px;
 }
 
+/* The "AD" label only shows when a rewarded ad can refill the hints; the count hides then. */
+.hint-button__ad {
+    display: none;
+    margin: 0;
+    padding: 0;
+    font-size: 24px;
+    color: var(--ui-text);
+    -unity-text-align: middle-center;
+}
+
+.hint-button--ad .hint-button__count {
+    display: none;
+}
+
+.hint-button--ad .hint-button__ad {
+    display: flex;
+}
+
+/* Out of hints but an ad can bring one back: the bulb stays lit, with the dark gold border of a price tag. */
+.hint-button--ad .hint-button__disc {
+    border-color: var(--star-gold-dark);
+}
+
+.hint-button--ad .hint-button__badge {
+    background-color: var(--star-gold);
+}
+
 /* No hints left: everything goes dim, like the ping button. */
 .hint-button--empty .hint-button__disc {
     border-color: var(--bg-rock);

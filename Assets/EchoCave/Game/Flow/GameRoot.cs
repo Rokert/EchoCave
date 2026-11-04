@@ -27,6 +27,9 @@ namespace EchoCave.Game
         // The hint stock, for the HUD to show and for the ad refill to top up. Set in Awake.
         public IHintStock Hints => _hintStock;
 
+        // True when a rewarded ad can bring hints back, so the HUD can offer it.
+        public bool HintsCanBeRefilled => hintSettings.RefillWithAds;
+
         private IAdService _ads;
         private ISaveService _save;
         private IAudioService _audio;
@@ -34,6 +37,7 @@ namespace EchoCave.Game
         private ProgressRecorder _recorder;
         private SoundCuePlayer _cues;
         private IHintStock _hintStock;
+        private HintRefill _hintRefill;
         private IReadOnlyList<int> _levelIds;
 
         private void Awake()
@@ -72,6 +76,7 @@ namespace EchoCave.Game
 
             var echoStrategy = new RevealAllHiddenStrategy(echoSettings.RevealSeconds);
             Flow = new GameFlow(boardView, catalog.ToDefinitions(), new MoveResolver(), EventBus.Global, echoStrategy, _hintStock);
+            _hintRefill = new HintRefill(Flow, _hintStock, _ads, hintSettings.HintsPerAd, hintSettings.RefillWithAds);
         }
 
         private void OnEnable()
@@ -105,10 +110,10 @@ namespace EchoCave.Game
             Flow.Tick(Time.deltaTime);
         }
 
-        // What the hint button calls. The place where a hint that cannot be paid for can be topped up (an ad).
+        // What the hint button calls: a hint, or a rewarded ad first when none are left and the settings allow it.
         public void RequestHint()
         {
-            Flow.RequestHint();
+            _hintRefill.Request();
         }
 
         private void OnTapped(Vector2 world)

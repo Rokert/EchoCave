@@ -149,6 +149,19 @@ namespace EchoCave.Tests
         }
 
         [Test]
+        public void TheAdState_IsExclusive_WithTheOthers()
+        {
+            _view.SetHintState(HintButtonState.WatchAd);
+
+            Assert.IsTrue(_hintButton.ClassListContains("hint-button--ad"));
+            Assert.IsFalse(_hintButton.ClassListContains("hint-button--ready"));
+            Assert.IsFalse(_hintButton.ClassListContains("hint-button--empty"));
+
+            _view.SetHintState(HintButtonState.Ready);
+            Assert.IsFalse(_hintButton.ClassListContains("hint-button--ad"));
+        }
+
+        [Test]
         public void AMissingHintButton_IsReportedByName()
         {
             _hud.Remove(_hintButton);

@@ -15,7 +15,7 @@ namespace EchoCave.Game
     //
     // Each attempt gets its own EchoService, so a retry restores the pings. The echo clock only runs while
     // Playing, and a ping acts at once instead of waiting for a Tick (D-019).
-    public sealed class GameFlow
+    public sealed class GameFlow : IHintGate
     {
         private readonly IBoardView _view;
         private readonly IReadOnlyList<LevelDefinition> _levels;
@@ -178,25 +178,12 @@ namespace EchoCave.Game
         // spends nothing and tells the player: the HUD gets HintRefused with the reason and the bats shake.
         public void RequestHint()
         {
-            if (State != GameState.Playing || IsPaused) return;
-
-            if (_presenter.IsBusy)
+            switch (CheckHint())
             {
-                RefuseHint(HintRefusal.Busy);
-                return;
-            }
-
-            // Removing other bats never blocks a free bat (D-010), so the hinted one stays a good move until it is tapped.
-            if (_hintedBatId >= 0 && Session.Board.TryGetBat(_hintedBatId, out _))
-            {
-                RefuseHint(HintRefusal.AlreadyHinted);
-                return;
-            }
-
-            if (_hints.Count <= 0)
-            {
-                RefuseHint(HintRefusal.NoHintsLeft);
-                return;
+                case HintStatus.Unavailable: return;
+                case HintStatus.Busy: RefuseHint(HintRefusal.Busy); return;
+                case HintStatus.AlreadyHinted: RefuseHint(HintRefusal.AlreadyHinted); return;
+                case HintStatus.NoHintsLeft: RefuseHint(HintRefusal.NoHintsLeft); return;
             }
 
             HintPick? pick = _hintPicker.Pick(Session.Board);
@@ -221,6 +208,18 @@ namespace EchoCave.Game
             _hintedBatId = pick.Value.BatId;
             _view.ShowHint(pick.Value.BatId);
             _events.Publish(new HintUsed(_hints.Count, pick.Value.BatId));
+        }
+
+        // What a hint request would do right now, with no effect: nothing is spent and nothing is published.
+        public HintStatus CheckHint()
+        {
+            if (State != GameState.Playing || IsPaused) return HintStatus.Unavailable;
+            if (_presenter.IsBusy) return HintStatus.Busy;
+
+            // Removing other bats never blocks a free bat (D-010), so the hinted one stays a good move until it is tapped.
+            if (_hintedBatId >= 0 && Session.Board.TryGetBat(_hintedBatId, out _)) return HintStatus.AlreadyHinted;
+
+            return _hints.Count <= 0 ? HintStatus.NoHintsLeft : HintStatus.Ready;
         }
 
         private void RefuseHint(HintRefusal reason)

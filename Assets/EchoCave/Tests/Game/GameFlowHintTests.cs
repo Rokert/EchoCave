@@ -302,6 +302,45 @@ namespace EchoCave.Tests
         }
 
         [Test]
+        public void CheckHint_SaysWhatARequestWouldDo_WithoutDoingIt()
+        {
+            Assert.AreEqual(HintStatus.Unavailable, _flow.CheckHint(), "in the menu");
+
+            StartLevel(2);
+            Assert.AreEqual(HintStatus.Ready, _flow.CheckHint());
+
+            _flow.RequestPause();
+            Assert.AreEqual(HintStatus.Unavailable, _flow.CheckHint(), "paused");
+            _flow.RequestResume();
+
+            _flow.RequestHint();
+            Assert.AreEqual(HintStatus.AlreadyHinted, _flow.CheckHint());
+
+            _flow.HandleTap(Center(3, 0));
+            Assert.AreEqual(HintStatus.Busy, _flow.CheckHint());
+            _view.FinishAnimation();
+            _flow.Tick(0f);
+            Assert.AreEqual(HintStatus.Ready, _flow.CheckHint());
+
+            _save.SetHints(0);
+            Assert.AreEqual(HintStatus.NoHintsLeft, _flow.CheckHint());
+        }
+
+        [Test]
+        public void CheckHint_SpendsNothing_AndSaysNothing()
+        {
+            StartLevel(1);
+
+            for (int i = 0; i < 5; i++) _flow.CheckHint();
+
+            Assert.AreEqual(3, _save.Hints);
+            Assert.IsEmpty(_used);
+            Assert.IsEmpty(_refused);
+            Assert.AreEqual(0, _view.RejectedCount);
+            Assert.IsEmpty(_view.HintedBatIds);
+        }
+
+        [Test]
         public void ThePingAndTheHint_AreIndependent()
         {
             StartLevel(0);

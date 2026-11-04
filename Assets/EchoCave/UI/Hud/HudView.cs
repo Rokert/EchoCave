@@ -16,6 +16,7 @@ namespace EchoCave.UI
         private const string EmptyClass = "ping-button--empty";
         private const string HintReadyClass = "hint-button--ready";
         private const string HintEmptyClass = "hint-button--empty";
+        private const string HintAdClass = "hint-button--ad";
 
         private readonly VisualElement _hud;
         private readonly Button _pauseButton;
@@ -96,6 +97,7 @@ namespace EchoCave.UI
         {
             _hintButton.EnableInClassList(HintReadyClass, state == HintButtonState.Ready);
             _hintButton.EnableInClassList(HintEmptyClass, state == HintButtonState.Empty);
+            _hintButton.EnableInClassList(HintAdClass, state == HintButtonState.WatchAd);
         }
 
         public void SetPaused(bool paused)

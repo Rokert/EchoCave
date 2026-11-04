@@ -14,13 +14,17 @@ namespace EchoCave.UI
         private readonly Action _onHint;
         private readonly Action _onTogglePause;
         private readonly int _levelCount;
+        private readonly bool _hintsCanBeRefilled;
 
         private int _pingsLeft;
         private int _hintsLeft;
         private bool _echoActive;
 
-        // hintCount is what the player holds when the HUD is built; HintsChanged keeps it right afterwards.
-        public HudPresenter(IHudView view, EventBus events, Action onPing, Action onHint, Action onTogglePause, int levelCount, int hintCount)
+        // hintCount is what the player holds when the HUD is built; HintsChanged keeps it right afterwards. When hints
+        // can be refilled with an ad, a button with none left offers "AD" instead of looking dead.
+        public HudPresenter(
+            IHudView view, EventBus events, Action onPing, Action onHint, Action onTogglePause, int levelCount, int hintCount,
+            bool hintsCanBeRefilled)
         {
             _view = view ?? throw new ArgumentNullException(nameof(view));
             _events = events ?? throw new ArgumentNullException(nameof(events));
@@ -29,6 +33,7 @@ namespace EchoCave.UI
             _onTogglePause = onTogglePause ?? throw new ArgumentNullException(nameof(onTogglePause));
             _levelCount = levelCount;
             _hintsLeft = hintCount;
+            _hintsCanBeRefilled = hintsCanBeRefilled;
 
             _view.PingPressed += _onPing;
             _view.HintPressed += _onHint;
@@ -119,7 +124,13 @@ namespace EchoCave.UI
         private void ShowHints()
         {
             _view.SetHints(_hintsLeft);
-            _view.SetHintState(_hintsLeft > 0 ? HintButtonState.Ready : HintButtonState.Empty);
+            _view.SetHintState(HintState());
+        }
+
+        private HintButtonState HintState()
+        {
+            if (_hintsLeft > 0) return HintButtonState.Ready;
+            return _hintsCanBeRefilled ? HintButtonState.WatchAd : HintButtonState.Empty;
         }
 
         private void OnPauseChanged(PauseChanged changed)

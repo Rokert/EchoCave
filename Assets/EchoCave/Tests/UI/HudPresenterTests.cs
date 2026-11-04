@@ -27,7 +27,7 @@ namespace EchoCave.Tests
             _pauseCalls = 0;
             _view = new FakeHudView();
             _bus = new EventBus();
-            _presenter = new HudPresenter(_view, _bus, () => _pingCalls++, () => _hintCalls++, () => _pauseCalls++, LevelCount, StartingHints);
+            _presenter = new HudPresenter(_view, _bus, () => _pingCalls++, () => _hintCalls++, () => _pauseCalls++, LevelCount, StartingHints, false);
         }
 
         private void StartLevel(int moveLimit, int pingBudget)
@@ -205,11 +205,11 @@ namespace EchoCave.Tests
         {
             Action noop = () => { };
 
-            Assert.Throws<ArgumentNullException>(() => new HudPresenter(null, _bus, noop, noop, noop, LevelCount, StartingHints));
-            Assert.Throws<ArgumentNullException>(() => new HudPresenter(_view, null, noop, noop, noop, LevelCount, StartingHints));
-            Assert.Throws<ArgumentNullException>(() => new HudPresenter(_view, _bus, null, noop, noop, LevelCount, StartingHints));
-            Assert.Throws<ArgumentNullException>(() => new HudPresenter(_view, _bus, noop, null, noop, LevelCount, StartingHints));
-            Assert.Throws<ArgumentNullException>(() => new HudPresenter(_view, _bus, noop, noop, null, LevelCount, StartingHints));
+            Assert.Throws<ArgumentNullException>(() => new HudPresenter(null, _bus, noop, noop, noop, LevelCount, StartingHints, false));
+            Assert.Throws<ArgumentNullException>(() => new HudPresenter(_view, null, noop, noop, noop, LevelCount, StartingHints, false));
+            Assert.Throws<ArgumentNullException>(() => new HudPresenter(_view, _bus, null, noop, noop, LevelCount, StartingHints, false));
+            Assert.Throws<ArgumentNullException>(() => new HudPresenter(_view, _bus, noop, null, noop, LevelCount, StartingHints, false));
+            Assert.Throws<ArgumentNullException>(() => new HudPresenter(_view, _bus, noop, noop, null, LevelCount, StartingHints, false));
         }
 
         [Test]
@@ -238,7 +238,7 @@ namespace EchoCave.Tests
         public void StartingWithNoHints_ShowsTheButtonEmpty()
         {
             var view = new FakeHudView();
-            using (new HudPresenter(view, new EventBus(), () => { }, () => { }, () => { }, LevelCount, 0))
+            using (new HudPresenter(view, new EventBus(), () => { }, () => { }, () => { }, LevelCount, 0, false))
             {
                 Assert.AreEqual(0, view.Hints);
                 Assert.AreEqual(HintButtonState.Empty, view.HintState);
@@ -284,6 +284,41 @@ namespace EchoCave.Tests
             Assert.AreEqual(0, _hintCalls);
             Assert.AreEqual(3, _view.Hints);
             Assert.AreEqual(0, _view.HintShakeCount);
+        }
+
+        [Test]
+        public void WithNoHintsAndAnAdToWatch_TheButtonOffersTheAd_InsteadOfLookingDead()
+        {
+            var view = new FakeHudView();
+            using (new HudPresenter(view, new EventBus(), () => { }, () => { }, () => { }, LevelCount, 0, true))
+            {
+                Assert.AreEqual(HintButtonState.WatchAd, view.HintState);
+            }
+        }
+
+        [Test]
+        public void WithHintsLeft_TheButtonIsReady_EvenWhenAnAdCouldRefillIt()
+        {
+            var view = new FakeHudView();
+            using (new HudPresenter(view, new EventBus(), () => { }, () => { }, () => { }, LevelCount, 2, true))
+            {
+                Assert.AreEqual(HintButtonState.Ready, view.HintState);
+            }
+        }
+
+        [Test]
+        public void SpendingTheLastHint_SwitchesToTheAdOffer_AndAGrantSwitchesBack()
+        {
+            var view = new FakeHudView();
+            var bus = new EventBus();
+            using (new HudPresenter(view, bus, () => { }, () => { }, () => { }, LevelCount, 1, true))
+            {
+                bus.Publish(new HintsChanged(0));
+                Assert.AreEqual(HintButtonState.WatchAd, view.HintState);
+
+                bus.Publish(new HintsChanged(1));
+                Assert.AreEqual(HintButtonState.Ready, view.HintState);
+            }
         }
     }
 }

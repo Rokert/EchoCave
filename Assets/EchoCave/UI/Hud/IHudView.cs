@@ -20,7 +20,10 @@ namespace EchoCave.UI
         Ready,
 
         // No hints left.
-        Empty
+        Empty,
+
+        // No hints left, but a rewarded ad will give one: the button offers "AD" instead of a count.
+        WatchAd
     }
 
     // What the HUD presenter needs from the HUD view, so its tests can use a fake.
