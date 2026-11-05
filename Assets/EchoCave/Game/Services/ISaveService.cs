@@ -28,6 +28,15 @@ namespace EchoCave.Game
         // Saves the tutorial flag at once when it changed.
         void SetTutorialSeen(bool seen);
 
+        // The tries and the best results of every challenge, which is also the local leaderboard.
+        ChallengeProgress Challenges { get; }
+
+        // One more try at a challenge, saved at once. Returns the new total.
+        int AddChallengeAttempt(string challengeId);
+
+        // Keeps a solved challenge if it ranks among the best results, and saves at once when it did.
+        ChallengeSolveOutcome RecordChallengeSolve(string challengeId, ChallengeResult result);
+
         // Saves the hint count at once when it changed.
         void SetHints(int count);
 
@@ -43,7 +52,7 @@ namespace EchoCave.Game
         // Saves a switch at once when it changed.
         void SetAudio(AudioChannel channel, bool enabled);
 
-        // Forgets all progress and gives back the starting hints, with no reserve, no reward state and the tutorial unseen. The audio
+        // Forgets all progress, challenge results included, and gives back the starting hints, with no reserve, no reward state and the tutorial unseen. The audio
         // switches are kept: they are a preference, not an achievement.
         void Reset();
     }

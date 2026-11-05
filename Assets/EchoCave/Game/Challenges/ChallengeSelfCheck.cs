@@ -5,7 +5,8 @@ using Rokert.Core;
 
 namespace EchoCave.Game
 {
-    // Replays every attempt the player solves through the same Core code the server will use, and reports the verdict.
+    // Replays every attempt the player solves through the same Core code the server will use, reports the verdict and
+    // publishes it as ChallengeVerified, which is what the recorder keeps.
     // A client that sends a result its own replay rejects has a bug, and this is where it shows. Plain C#: the
     // composition root creates it on enable and disposes it on disable.
     public sealed class ChallengeSelfCheck : IDisposable
@@ -45,6 +46,8 @@ namespace EchoCave.Game
             }
 
             ReplayResult result = ChallengeReplay.Verify(_entries[solved.ChallengeIndex].Level, solved.Attempt, _resolver, _minSecondsPerTap);
+            _events.Publish(new ChallengeVerified(solved.ChallengeIndex, solved.ChallengeId, solved.Attempt, result));
+
             if (result.IsValid)
             {
                 _info($"[Challenge] {solved.ChallengeId} solved in {result.Moves} taps, {result.Pings} ping(s), {solved.Attempt.ActiveSeconds:0.0} s, attempt {solved.Attempt.Attempts}. The replay agrees.");

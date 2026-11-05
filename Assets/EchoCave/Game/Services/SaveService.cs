@@ -17,6 +17,7 @@ namespace EchoCave.Game
         public int Hints { get; private set; }
         public int ReserveHints { get; private set; }
         public bool TutorialSeen { get; private set; }
+        public ChallengeProgress Challenges { get; private set; }
 
         // True when the store held something this version could not read, so the game started fresh.
         public bool RecoveredFromBadData { get; }
@@ -38,12 +39,27 @@ namespace EchoCave.Game
             Hints = content.Hints;
             ReserveHints = Math.Max(0, content.ReserveHints);
             TutorialSeen = content.TutorialSeen;
+            Challenges = content.Challenges;
             foreach (KeyValuePair<string, int> entry in content.RewardState) _rewardState[entry.Key] = entry.Value;
         }
 
         public void RecordWin(int levelId, int moves, int stars)
         {
             if (Progress.RecordWin(levelId, stars, moves)) Persist();
+        }
+
+        public int AddChallengeAttempt(string challengeId)
+        {
+            int attempts = Challenges.AddAttempt(challengeId);
+            Persist();
+            return attempts;
+        }
+
+        public ChallengeSolveOutcome RecordChallengeSolve(string challengeId, ChallengeResult result)
+        {
+            ChallengeSolveOutcome outcome = Challenges.RecordSolve(challengeId, result);
+            if (outcome.Stored) Persist();
+            return outcome;
         }
 
         public void SetHints(int count)
@@ -112,12 +128,13 @@ namespace EchoCave.Game
             ReserveHints = 0;
             _rewardState.Clear();
             TutorialSeen = false;
+            Challenges = new ChallengeProgress();
             Persist();
         }
 
         private void Persist()
         {
-            _store.Write(SaveSerializer.Serialize(Progress, SoundOn, MusicOn, Hints, ReserveHints, _rewardState, TutorialSeen));
+            _store.Write(SaveSerializer.Serialize(Progress, SoundOn, MusicOn, Hints, ReserveHints, _rewardState, TutorialSeen, Challenges));
         }
     }
 }

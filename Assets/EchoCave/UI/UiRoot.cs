@@ -113,9 +113,11 @@ namespace EchoCave.UI
             _audio = gameRoot.Audio;
             var popupsView = new PopupsView(root, starStaggerMillis);
             _popupsView = popupsView;
+            // The challenge list brings the menu back when it closes; the menu is built just below.
             _popups = new PopupsPresenter(
                 popupsView, EventBus.Global, new FlowPopupCommands(flow),
-                _audio.IsEnabled(AudioChannel.Sound), _audio.IsEnabled(AudioChannel.Music));
+                _audio.IsEnabled(AudioChannel.Sound), _audio.IsEnabled(AudioChannel.Music),
+                flow.HasChallenges ? new GameChallengeSource(gameRoot) : null, () => _menuPresenter?.Show());
 
             _tutorialLayer = root.Q<VisualElement>("tutorial-layer");
             _tutorialView = new TutorialView(
@@ -126,7 +128,8 @@ namespace EchoCave.UI
             var menuView = new MenuView(root, Application.version);
             _menuPresenter = new MenuPresenter(
                 menuView, EventBus.Global, gameRoot.RequestPlay, flow.State == GameState.Menu,
-                flow.HasTutorial ? (Action)(() => flow.RequestTutorial(thenStartGame: false)) : null);
+                flow.HasTutorial ? (Action)(() => flow.RequestTutorial(thenStartGame: false)) : null,
+                flow.HasChallenges ? (Action)(() => _popups.OpenChallenges()) : null);
 
             _root.RegisterCallback<ClickEvent>(OnClick);
             popupsView.StarLit += OnStarLit;

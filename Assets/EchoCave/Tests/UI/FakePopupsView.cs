@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using EchoCave.Game;
 using EchoCave.UI;
 
@@ -9,7 +10,9 @@ namespace EchoCave.Tests
         None,
         Complete,
         Lost,
-        Pause
+        Pause,
+        ChallengeList,
+        ChallengeResult
     }
 
     // Stands in for PopupsView and records which popup it was last told to show, and with what.
@@ -17,6 +20,7 @@ namespace EchoCave.Tests
     {
         public event Action<PopupAction> ActionPressed;
         public event Action<AudioChannel, bool> ToggleChanged;
+        public event Action<int> ChallengePressed;
 
         public ShownPopup Shown = ShownPopup.None;
         public int HideCount;
@@ -27,6 +31,26 @@ namespace EchoCave.Tests
         public bool SoundOn;
         public bool MusicOn;
         public bool HowToPlayVisible;
+        public IReadOnlyList<ChallengeRowData> Rows;
+        public string Message;
+        public string ResultTitle;
+        public IReadOnlyList<string> ResultLines;
+
+        public void ShowChallenges(IReadOnlyList<ChallengeRowData> rows, string message)
+        {
+            Shown = ShownPopup.ChallengeList;
+            Rows = rows;
+            Message = message;
+        }
+
+        public void ShowChallengeResult(string title, IReadOnlyList<string> lines)
+        {
+            Shown = ShownPopup.ChallengeResult;
+            ResultTitle = title;
+            ResultLines = lines;
+        }
+
+        public void PressChallenge(int index) => ChallengePressed?.Invoke(index);
 
         public void SetHowToPlayVisible(bool visible) => HowToPlayVisible = visible;
 

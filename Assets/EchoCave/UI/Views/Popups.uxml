@@ -82,5 +82,35 @@
             </ui:VisualElement>
         </ui:VisualElement>
 
+        <!-- A solved challenge, or a run that was not counted -->
+        <ui:VisualElement name="challenge-popup" class="popup popup-hidden">
+            <ui:VisualElement class="popup__bat" picking-mode="Ignore" />
+            <ui:Label name="challenge-title" text="Challenge solved" class="popup__title font-bold" picking-mode="Ignore" />
+            <ui:VisualElement name="challenge-lines" class="challenge-lines" picking-mode="Ignore" />
+            <ui:VisualElement class="popup__buttons">
+                <ui:Button name="challenge-retry" class="pill-button">
+                    <ui:VisualElement class="pill-button__lip" picking-mode="Ignore" />
+                    <ui:VisualElement class="pill-button__face" picking-mode="Ignore"><ui:Label text="Try again" class="pill-button__label font-semibold" picking-mode="Ignore" /></ui:VisualElement>
+                </ui:Button>
+                <ui:Button name="challenge-menu" class="pill-button pill-button--secondary">
+                    <ui:VisualElement class="pill-button__lip" picking-mode="Ignore" />
+                    <ui:VisualElement class="pill-button__face" picking-mode="Ignore"><ui:Label text="Menu" class="pill-button__label font-semibold" picking-mode="Ignore" /></ui:VisualElement>
+                </ui:Button>
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!-- The list of challenges, opened from the menu. The rows are built by PopupsView. -->
+        <ui:VisualElement name="challenges-popup" class="popup popup-hidden">
+            <ui:Label text="Challenges" class="popup__title font-bold" picking-mode="Ignore" />
+            <ui:Label name="challenges-message" text="" class="popup__text font-medium popup-hidden" picking-mode="Ignore" />
+            <ui:ScrollView name="challenges-rows" class="challenges__rows" />
+            <ui:VisualElement class="popup__buttons">
+                <ui:Button name="challenges-close" class="pill-button pill-button--secondary">
+                    <ui:VisualElement class="pill-button__lip" picking-mode="Ignore" />
+                    <ui:VisualElement class="pill-button__face" picking-mode="Ignore"><ui:Label text="Back" class="pill-button__label font-semibold" picking-mode="Ignore" /></ui:VisualElement>
+                </ui:Button>
+            </ui:VisualElement>
+        </ui:VisualElement>
+
     </ui:VisualElement>
 </ui:UXML>

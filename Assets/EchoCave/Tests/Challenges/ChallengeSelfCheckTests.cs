@@ -75,6 +75,22 @@ namespace EchoCave.Tests
         }
 
         [Test]
+        public void EveryVerdict_IsPublished_ValidOrNot_SoTheRecorderCanKeepOnlyTheValidOnes()
+        {
+            var verdicts = new List<ChallengeVerified>();
+            _bus.Subscribe<ChallengeVerified>(v => verdicts.Add(v));
+
+            _bus.Publish(new ChallengeSolved(0, "challenge-001", Attempt(10f, ChallengeMove.Ping(), ChallengeMove.Tap(1), ChallengeMove.Tap(0))));
+            _bus.Publish(new ChallengeSolved(0, "challenge-001", Attempt(10f, ChallengeMove.Tap(1))));
+
+            Assert.AreEqual(2, verdicts.Count);
+            Assert.IsTrue(verdicts[0].Result.IsValid);
+            Assert.AreEqual(2, verdicts[0].Result.Moves);
+            Assert.IsFalse(verdicts[1].Result.IsValid);
+            Assert.AreEqual("challenge-001", verdicts[0].ChallengeId);
+        }
+
+        [Test]
         public void APositionThatIsNotInTheList_IsReported_NotThrown()
         {
             Assert.DoesNotThrow(() => _bus.Publish(new ChallengeSolved(7, "challenge-007", Attempt(10f))));
