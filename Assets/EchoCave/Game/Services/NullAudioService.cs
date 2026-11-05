@@ -17,5 +17,9 @@ namespace EchoCave.Game
         public void Play(SoundCue cue)
         {
         }
+
+        public void PlayMusic(MusicTrack track)
+        {
+        }
     }
 }

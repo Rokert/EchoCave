@@ -20,6 +20,10 @@ namespace EchoCave.Tests
             }
 
             public void Play(SoundCue cue) => Played.Add(cue);
+
+            public void PlayMusic(MusicTrack track)
+            {
+            }
         }
 
         private EventBus _bus;

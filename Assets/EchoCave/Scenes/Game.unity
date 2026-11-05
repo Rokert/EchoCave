@@ -274,6 +274,7 @@ MonoBehaviour:
   boardCamera: {fileID: 1907140417}
   tapInput: {fileID: 930681444}
   soundPlayer: {fileID: 153836486}
+  musicPlayer: {fileID: 1406299740}
   tutorialCatalog: {fileID: 11400000, guid: d416a5e512a0f42bdb70285db797b3e0, type: 2}
   tutorialSettings: {fileID: 11400000, guid: ab6297183f3e846cc939e50f4ce1795d, type: 2}
 --- !u!1 &930681443
@@ -392,6 +393,51 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 989717471}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1406299739
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1406299741}
+  - component: {fileID: 1406299740}
+  m_Layer: 0
+  m_Name: MusicPlayer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1406299740
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1406299739}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a8da0c0c9260464eb82769a8c7e5f60, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: EchoCave.Game::EchoCave.Game.MusicPlayer
+  bank: {fileID: 11400000, guid: 7ff7698e6d2b54a7390118fc2e5b4d23, type: 2}
+--- !u!4 &1406299741
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1406299739}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -724,3 +770,4 @@ SceneRoots:
   - {fileID: 102982046}
   - {fileID: 1845697725}
   - {fileID: 153836485}
+  - {fileID: 1406299741}

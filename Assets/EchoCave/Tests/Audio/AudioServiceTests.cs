@@ -14,6 +14,15 @@ namespace EchoCave.Tests
             public void Play(SoundCue cue) => Played.Add(cue);
         }
 
+        private sealed class RecordingMusic : IMusicOutput
+        {
+            public readonly List<string> Calls = new List<string>();
+
+            public void Play(MusicTrack track) => Calls.Add("play " + track);
+
+            public void Stop() => Calls.Add("stop");
+        }
+
         private RecordingOutput _output;
         private AudioService _audio;
 
@@ -65,6 +74,81 @@ namespace EchoCave.Tests
         }
 
         [Test]
+        public void Music_PlaysThroughTheMusicOutput_WhileTheMusicSwitchIsOn()
+        {
+            var music = new RecordingMusic();
+            var audio = new AudioService(_output, music);
+
+            audio.PlayMusic(MusicTrack.Menu);
+            audio.PlayMusic(MusicTrack.Cave);
+
+            CollectionAssert.AreEqual(new[] { "play Menu", "play Cave" }, music.Calls);
+        }
+
+        [Test]
+        public void WithMusicOff_TheMusicStops_TheNewTrackIsOnlyRemembered_AndItComesBackWhenSwitchedOn()
+        {
+            var music = new RecordingMusic();
+            var audio = new AudioService(_output, music);
+            audio.PlayMusic(MusicTrack.Cave);
+
+            audio.SetEnabled(AudioChannel.Music, false);
+            audio.PlayMusic(MusicTrack.Bright);
+            audio.SetEnabled(AudioChannel.Music, true);
+
+            CollectionAssert.AreEqual(new[] { "play Cave", "stop", "play Bright" }, music.Calls);
+        }
+
+        [Test]
+        public void SwitchingMusicOn_WithNothingChosenYet_PlaysNothing()
+        {
+            var music = new RecordingMusic();
+            var audio = new AudioService(_output, music);
+
+            audio.SetEnabled(AudioChannel.Music, false);
+            audio.SetEnabled(AudioChannel.Music, true);
+
+            CollectionAssert.AreEqual(new[] { "stop" }, music.Calls);
+        }
+
+        [Test]
+        public void TheSameMusicSwitchValueTwice_DoesNothingTheSecondTime()
+        {
+            var music = new RecordingMusic();
+            var audio = new AudioService(_output, music);
+            audio.PlayMusic(MusicTrack.Cave);
+
+            audio.SetEnabled(AudioChannel.Music, true);
+            audio.SetEnabled(AudioChannel.Music, false);
+            audio.SetEnabled(AudioChannel.Music, false);
+
+            CollectionAssert.AreEqual(new[] { "play Cave", "stop" }, music.Calls);
+        }
+
+        [Test]
+        public void TheSoundSwitch_DoesNotTouchTheMusic()
+        {
+            var music = new RecordingMusic();
+            var audio = new AudioService(_output, music);
+            audio.PlayMusic(MusicTrack.Cave);
+
+            audio.SetEnabled(AudioChannel.Sound, false);
+
+            CollectionAssert.AreEqual(new[] { "play Cave" }, music.Calls);
+        }
+
+        [Test]
+        public void WithNoMusicOutput_MusicCallsAreHarmless()
+        {
+            Assert.DoesNotThrow(() =>
+            {
+                _audio.PlayMusic(MusicTrack.Cave);
+                _audio.SetEnabled(AudioChannel.Music, false);
+                _audio.SetEnabled(AudioChannel.Music, true);
+            });
+        }
+
+        [Test]
         public void ANullOutput_IsRejected()
         {
             Assert.Throws<ArgumentNullException>(() => new AudioService(null));
@@ -76,6 +160,7 @@ namespace EchoCave.Tests
             var silent = new NullAudioService();
 
             Assert.DoesNotThrow(() => silent.Play(SoundCue.Ping));
+            Assert.DoesNotThrow(() => silent.PlayMusic(MusicTrack.Menu));
         }
     }
 }

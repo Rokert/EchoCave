@@ -18,6 +18,8 @@ namespace EchoCave.Game
         [SerializeField] private TapInput tapInput;
         [Tooltip("Plays the sounds. Without it the game runs silent.")]
         [SerializeField] private SoundPlayer soundPlayer;
+        [Tooltip("Plays the music. Without it the game has no music.")]
+        [SerializeField] private MusicPlayer musicPlayer;
 
         [Header("Tutorial")]
         [Tooltip("The tutorial lessons. Without it the game has no tutorial and no \"How to play\" button.")]
@@ -46,6 +48,7 @@ namespace EchoCave.Game
         private IAnalyticsService _analytics;
         private ProgressRecorder _recorder;
         private SoundCuePlayer _cues;
+        private MusicConductor _music;
         private IHintStock _hintStock;
         private HintRefill _hintRefill;
         private HintRewardService _rewards;
@@ -69,7 +72,8 @@ namespace EchoCave.Game
             _hintStock = new HintStock(_save, hintSettings.MaxHints, EventBus.Global, hintSettings.ReserveSlots);
             if (soundPlayer != null)
             {
-                _audio = new AudioService(soundPlayer);
+                if (musicPlayer == null) Debug.LogWarning("GameRoot has no Music Player assigned, so the game will have no music.", this);
+                _audio = new AudioService(soundPlayer, musicPlayer);
             }
             else
             {
@@ -106,6 +110,12 @@ namespace EchoCave.Game
             _rewards = new HintRewardService(strategies, _hintStock, _save, EventBus.Global, _clock);
             _recorder = new ProgressRecorder(EventBus.Global, _save, _audio, _levelIds, _rewards);
             _cues = new SoundCuePlayer(EventBus.Global, _audio);
+            if (musicPlayer != null && musicPlayer.Bank != null)
+            {
+                MusicBank music = musicPlayer.Bank;
+                foreach (string problem in music.FindProblems()) Debug.LogWarning($"MusicBank: {problem}", music);
+                _music = new MusicConductor(EventBus.Global, _audio, music.MenuTrack, music.PlayTracks, music.SecondsPerTrack);
+            }
             boardView.BatRevealed += OnBatRevealed;
             EventBus.Global.Subscribe<LevelStarted>(OnLevelStarted);
         }
@@ -116,6 +126,8 @@ namespace EchoCave.Game
             _recorder.Dispose();
             _rewards.Dispose();
             _cues.Dispose();
+            _music?.Dispose();
+            _music = null;
             boardView.BatRevealed -= OnBatRevealed;
             EventBus.Global.Unsubscribe<LevelStarted>(OnLevelStarted);
         }
@@ -145,6 +157,7 @@ namespace EchoCave.Game
         private void Update()
         {
             Flow.Tick(Time.deltaTime);
+            _music?.Tick(Time.unscaledDeltaTime);
         }
 
         // What the Play button calls. The very first time, and until the tutorial has been finished or skipped, Play
