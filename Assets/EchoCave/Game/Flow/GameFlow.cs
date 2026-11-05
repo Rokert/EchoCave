@@ -17,6 +17,11 @@ namespace EchoCave.Game
     // LevelIndex then counts lessons, and the lessons publish LessonStarted/Won/Lost instead of the level events, so
     // progress, stars, rewards and popups never see them. Lessons spend no hints from the stock and never offer an ad.
     //
+    // A challenge (D-036) runs in a mode of its own as well: IsChallenge swaps the catalog for the challenge list, and a
+    // ChallengeRun records every tap and ping and the seconds on the board. A challenge publishes ChallengeStarted,
+    // ChallengeSolved and ChallengeFailed instead of the level events, takes no hints and has no stars. A retry is a new
+    // attempt.
+    //
     // Each attempt gets its own EchoService, so a retry restores the pings. The echo clock only runs while
     // Playing, and a ping acts at once instead of waiting for a Tick (D-019).
     public sealed class GameFlow : IHintGate
@@ -29,6 +34,8 @@ namespace EchoCave.Game
         private readonly IHintStock _hints;
         private readonly HintPicker _hintPicker;
         private readonly IReadOnlyList<TutorialLesson> _lessons;
+        private readonly IReadOnlyList<ChallengeEntry> _challenges;
+        private readonly Func<long> _unixNow;
         private readonly StateMachine<FlowState> _machine = new StateMachine<FlowState>();
 
         private BoardPresenter _presenter;
@@ -45,10 +52,27 @@ namespace EchoCave.Game
         private bool _tutorialPending;
         private bool _startGameAfterTutorial;
 
+        // Set by RequestChallenge and consumed by BeginLevel, like the tutorial flag.
+        private bool _challengePending;
+        private ChallengeRun _challengeRun;
+        private int _challengeAttempts;
+
         // The catalog position, or the lesson number while IsTutorial.
         public int LevelIndex { get; private set; }
         public int LevelCount => _levels.Count;
-        public LevelDefinition CurrentLevel => IsTutorial ? _lessons[LevelIndex].Level : _levels[LevelIndex];
+        public LevelDefinition CurrentLevel => IsChallenge ? _challenges[ChallengeIndex].Level : IsTutorial ? _lessons[LevelIndex].Level : _levels[LevelIndex];
+
+        public bool HasChallenges => _challenges != null && _challenges.Count > 0;
+        public int ChallengeCount => _challenges != null ? _challenges.Count : 0;
+
+        // True while a challenge is being played instead of the catalog.
+        public bool IsChallenge { get; private set; }
+
+        // The position of the challenge being played; only meaningful while IsChallenge.
+        public int ChallengeIndex { get; private set; }
+
+        // Null unless a challenge is being played.
+        public string CurrentChallengeId => IsChallenge ? _challenges[ChallengeIndex].Id : null;
 
         // Null when the game was built without lessons.
         public TutorialRunner Tutorial { get; }
@@ -77,7 +101,9 @@ namespace EchoCave.Game
             EventBus events,
             IEchoStrategy echoStrategy,
             IHintStock hints = null,
-            IReadOnlyList<TutorialLesson> lessons = null)
+            IReadOnlyList<TutorialLesson> lessons = null,
+            IReadOnlyList<ChallengeEntry> challenges = null,
+            Func<long> unixNow = null)
         {
             _view = view ?? throw new ArgumentNullException(nameof(view));
             _levels = levels ?? throw new ArgumentNullException(nameof(levels));
@@ -108,6 +134,24 @@ namespace EchoCave.Game
                 Tutorial.Changed += OnTutorialChanged;
             }
 
+            if (challenges != null && challenges.Count > 0)
+            {
+                var ids = new List<string>(challenges.Count);
+                var challengeLevels = new List<LevelDefinition>(challenges.Count);
+                foreach (ChallengeEntry entry in challenges)
+                {
+                    ids.Add(entry.Id);
+                    challengeLevels.Add(entry.Level);
+                }
+
+                IReadOnlyList<string> challengeErrors = ChallengeCatalogRules.Validate(ids, challengeLevels, _resolver);
+                if (challengeErrors.Count > 0)
+                    throw new ArgumentException($"The challenges are invalid: {string.Join(" ", challengeErrors)}", nameof(challenges));
+
+                _challenges = challenges;
+                _unixNow = unixNow;
+            }
+
             var menu = new MenuState(this);
             var playing = new PlayingState(this);
             var won = new WonState(this);
@@ -133,7 +177,11 @@ namespace EchoCave.Game
             _machine.Tick();
 
             // After the transitions, so a level that was just won or lost stops its clock this frame.
-            if (State == GameState.Playing && !IsPaused) _echo.Tick(deltaSeconds);
+            if (State == GameState.Playing && !IsPaused)
+            {
+                _echo.Tick(deltaSeconds);
+                if (IsChallenge) _challengeRun.AddSeconds(deltaSeconds);
+            }
         }
 
         public void HandleTap(Vector2 world)
@@ -172,8 +220,8 @@ namespace EchoCave.Game
         // Won only. After the last level it returns to the menu.
         public void RequestNext()
         {
-            // The lessons move on through TutorialContinue.
-            if (IsTutorial) return;
+            // The lessons move on through TutorialContinue, and a challenge has no next one.
+            if (IsTutorial || IsChallenge) return;
 
             // A second press before the next Tick must not move on again and skip a level.
             if (State != GameState.Won || _nextRequested || _menuRequested) return;
@@ -220,6 +268,7 @@ namespace EchoCave.Game
                 case HintStatus.AlreadyHinted: RefuseHint(HintRefusal.AlreadyHinted); return;
                 case HintStatus.NoHintsLeft: RefuseHint(HintRefusal.NoHintsLeft); return;
                 case HintStatus.NotInLesson: RefuseHint(HintRefusal.NotInLesson); return;
+                case HintStatus.NotInChallenge: RefuseHint(HintRefusal.NotInChallenge); return;
             }
 
             HintPick? pick = _hintPicker.Pick(Session.Board);
@@ -252,6 +301,7 @@ namespace EchoCave.Game
         public HintStatus CheckHint()
         {
             if (State != GameState.Playing || IsPaused) return HintStatus.Unavailable;
+            if (IsChallenge) return HintStatus.NotInChallenge;
             if (IsTutorial && !CurrentTutorialLesson.FreeHint) return HintStatus.NotInLesson;
             if (_presenter.IsBusy) return HintStatus.Busy;
 
@@ -268,6 +318,20 @@ namespace EchoCave.Game
         {
             _events.Publish(new HintRefused(reason));
             _view.ShowRejected();
+        }
+
+        // Menu only. Starts the challenge at this position of the catalog; a retry is a new attempt at the same one.
+        // Ignored when the game has no challenges. Whether the player has unlocked them is the caller's rule.
+        public void RequestChallenge(int challengeIndex)
+        {
+            if (!HasChallenges) return;
+            if (challengeIndex < 0 || challengeIndex >= _challenges.Count)
+                throw new ArgumentOutOfRangeException(nameof(challengeIndex), challengeIndex, null);
+            if (State != GameState.Menu) return;
+
+            ChallengeIndex = challengeIndex;
+            _challengePending = true;
+            _playRequested = true;
         }
 
         // Starts the lessons from the first one. From the menu, from a level (paused or not) or from a won or lost
@@ -391,6 +455,8 @@ namespace EchoCave.Game
             SetPaused(false);
             Session = null;
             _view.Clear();
+            IsChallenge = false;
+            _challengeRun = null;
 
             // Back in the menu in the middle of the lessons: nothing was finished, so it is not marked as seen.
             if (IsTutorial)
@@ -412,12 +478,26 @@ namespace EchoCave.Game
             if (_tutorialPending)
             {
                 _tutorialPending = false;
+                IsChallenge = false;
+                _challengeRun = null;
                 IsTutorial = true;
                 LevelIndex = 0;
                 Tutorial.Start();
             }
+            else if (_challengePending)
+            {
+                _challengePending = false;
+                IsChallenge = true;
+                _challengeAttempts = 0;
+            }
 
             LevelDefinition level = CurrentLevel;
+            if (IsChallenge)
+            {
+                _challengeAttempts++;
+                _challengeRun = new ChallengeRun(CurrentChallengeId, _challengeAttempts);
+            }
+
             Session = LevelBuilder.Build(level);
             _presenter = new BoardPresenter(Session, _resolver, new CommandHistory(), _view);
             _presenter.MoveExecuted += OnMoveExecuted;
@@ -434,13 +514,21 @@ namespace EchoCave.Game
             _echo.Pinged += OnPinged;
             _echo.Expired += OnExpired;
 
-            if (IsTutorial) _events.Publish(new LessonStarted(LevelIndex, _lessons.Count, level.MoveLimit, level.PingBudget));
+            if (IsChallenge) _events.Publish(new ChallengeStarted(ChallengeIndex, _challenges.Count, CurrentChallengeId, level.MoveLimit, level.PingBudget, _challengeAttempts));
+            else if (IsTutorial) _events.Publish(new LessonStarted(LevelIndex, _lessons.Count, level.MoveLimit, level.PingBudget));
             else _events.Publish(new LevelStarted(LevelIndex, level.MoveLimit, level.PingBudget));
         }
 
         internal void ReportWon()
         {
             int moves = Session.MovesUsed;
+            if (IsChallenge)
+            {
+                long solvedAt = _unixNow != null ? _unixNow() : 0L;
+                _events.Publish(new ChallengeSolved(ChallengeIndex, CurrentChallengeId, _challengeRun.Build(solvedAt)));
+                return;
+            }
+
             if (IsTutorial)
             {
                 Tutorial.OnLevelWon();
@@ -461,13 +549,15 @@ namespace EchoCave.Game
             }
 
             _view.SetRevealed(hidden);
-            if (IsTutorial) _events.Publish(new LessonLost(LevelIndex, Session.MovesUsed));
+            if (IsChallenge) _events.Publish(new ChallengeFailed(ChallengeIndex, CurrentChallengeId, Session.MovesUsed));
+            else if (IsTutorial) _events.Publish(new LessonLost(LevelIndex, Session.MovesUsed));
             else _events.Publish(new LevelLost(LevelIndex, Session.MovesUsed));
         }
 
         private void OnMoveExecuted(MoveResult result)
         {
             _events.Publish(new MoveSpent(Session.MovesUsed, CurrentLevel.MoveLimit, result.Outcome));
+            if (IsChallenge) _challengeRun.RecordTap(result.Bat.Id);
             if (IsTutorial) Tutorial.OnMove(result.Outcome);
         }
 
@@ -494,6 +584,7 @@ namespace EchoCave.Game
         {
             _view.ShowPing(_echo.RevealedBatIds);
             _events.Publish(new PingUsed(_echo.PingsLeft, pulse.DurationSeconds));
+            if (IsChallenge) _challengeRun.RecordPing();
             if (IsTutorial) Tutorial.OnPinged();
         }
 

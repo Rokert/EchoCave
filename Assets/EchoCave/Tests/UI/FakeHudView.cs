@@ -19,6 +19,7 @@ namespace EchoCave.Tests
         public PingButtonState PingState = PingButtonState.Ready;
         public int Hints = -1;
         public HintButtonState HintState = HintButtonState.Ready;
+        public bool HintVisible = true;
         public int HintShakeCount;
         public int HintReserve = -1;
         public int HintPulseCount;
@@ -26,6 +27,8 @@ namespace EchoCave.Tests
         public int ShakeCount;
 
         public void SetVisible(bool visible) => Visible = visible;
+
+        public void SetHintVisible(bool visible) => HintVisible = visible;
 
         public void SetMoves(int movesUsed, int moveLimit)
         {

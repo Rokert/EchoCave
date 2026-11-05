@@ -21,6 +21,10 @@ namespace EchoCave.Game
         [Tooltip("Plays the music. Without it the game has no music.")]
         [SerializeField] private MusicPlayer musicPlayer;
 
+        [Header("Challenges")]
+        [Tooltip("The challenges. Without it the game has none.")]
+        [SerializeField] private ChallengeCatalog challengeCatalog;
+
         [Header("Tutorial")]
         [Tooltip("The tutorial lessons. Without it the game has no tutorial and no \"How to play\" button.")]
         [SerializeField] private TutorialCatalog tutorialCatalog;
@@ -35,6 +39,9 @@ namespace EchoCave.Game
         // The hint stock, for the HUD to show and for the ad refill to top up. Set in Awake.
         public IHintStock Hints => _hintStock;
 
+        // The challenge list, for the menu to show. Set in Awake; empty when the game has no challenges.
+        public IReadOnlyList<ChallengeEntry> Challenges => _challenges;
+
         // The board and its camera, for the tutorial overlay to find a bat on the screen.
         public BoardView Board => boardView;
         public Camera WorldCamera => boardCamera.GetComponent<Camera>();
@@ -48,6 +55,8 @@ namespace EchoCave.Game
         private IAnalyticsService _analytics;
         private ProgressRecorder _recorder;
         private SoundCuePlayer _cues;
+        private ChallengeSelfCheck _challengeCheck;
+        private IReadOnlyList<ChallengeEntry> _challenges = new ChallengeEntry[0];
         private MusicConductor _music;
         private IHintStock _hintStock;
         private HintRefill _hintRefill;
@@ -93,7 +102,10 @@ namespace EchoCave.Game
 
             var echoStrategy = new RevealAllHiddenStrategy(echoSettings.RevealSeconds);
             IReadOnlyList<TutorialLesson> lessons = tutorialCatalog != null ? tutorialCatalog.ToLessons() : null;
-            Flow = new GameFlow(boardView, catalog.ToDefinitions(), new MoveResolver(), EventBus.Global, echoStrategy, _hintStock, lessons);
+            if (challengeCatalog != null) _challenges = challengeCatalog.ToEntries();
+            Flow = new GameFlow(
+                boardView, catalog.ToDefinitions(), new MoveResolver(), EventBus.Global, echoStrategy, _hintStock, lessons,
+                _challenges, () => System.DateTimeOffset.UtcNow.ToUnixTimeSeconds());
             _hintRefill = new HintRefill(Flow, _hintStock, _ads, hintSettings.HintsPerAd, hintSettings.RefillWithAds);
         }
 
@@ -116,8 +128,15 @@ namespace EchoCave.Game
                 foreach (string problem in music.FindProblems()) Debug.LogWarning($"MusicBank: {problem}", music);
                 _music = new MusicConductor(EventBus.Global, _audio, music.MenuTrack, music.PlayTracks, music.SecondsPerTrack);
             }
+            if (_challenges.Count > 0)
+            {
+                _challengeCheck = new ChallengeSelfCheck(
+                    EventBus.Global, _challenges, new MoveResolver(), challengeCatalog.MinSecondsPerTap, Debug.Log, Debug.LogError);
+            }
+
             boardView.BatRevealed += OnBatRevealed;
             EventBus.Global.Subscribe<LevelStarted>(OnLevelStarted);
+            EventBus.Global.Subscribe<ChallengeStarted>(OnChallengeStarted);
         }
 
         private void OnDisable()
@@ -130,6 +149,9 @@ namespace EchoCave.Game
             _music = null;
             boardView.BatRevealed -= OnBatRevealed;
             EventBus.Global.Unsubscribe<LevelStarted>(OnLevelStarted);
+            EventBus.Global.Unsubscribe<ChallengeStarted>(OnChallengeStarted);
+            _challengeCheck?.Dispose();
+            _challengeCheck = null;
         }
 
         private void OnDestroy()
@@ -189,6 +211,31 @@ namespace EchoCave.Game
         private void OnLevelStarted(LevelStarted started)
         {
             boardCamera.Frame(boardView);
+        }
+
+        // A challenge board can be a different size from every level, so the camera frames it too.
+        private void OnChallengeStarted(ChallengeStarted started)
+        {
+            boardCamera.Frame(boardView);
+        }
+
+        // What the challenges menu calls (192-E): starts the challenge at this position, from the menu.
+        public void RequestChallenge(int index)
+        {
+            Flow.RequestChallenge(index);
+        }
+
+        // Developer entries, in the component's context menu while the game is running. The challenges menu replaces them.
+        [ContextMenu("Challenges/Play the first challenge")]
+        private void DebugPlayFirstChallenge()
+        {
+            if (Application.isPlaying) Flow.RequestChallenge(0);
+        }
+
+        [ContextMenu("Challenges/Back to the menu")]
+        private void DebugBackToMenu()
+        {
+            if (Application.isPlaying) Flow.RequestMenu();
         }
     }
 }

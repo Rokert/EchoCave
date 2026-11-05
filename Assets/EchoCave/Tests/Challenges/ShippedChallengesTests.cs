@@ -21,6 +21,17 @@ namespace EchoCave.Tests
         }
 
         [Test]
+        public void TheChallengeCatalog_HasNoProblems_AndStartsWithChallenge001()
+        {
+            string[] guids = AssetDatabase.FindAssets("t:ChallengeCatalog");
+            Assert.AreEqual(1, guids.Length, "Expected exactly one ChallengeCatalog (EchoCave > Challenges > Create challenge catalog).");
+            var catalog = AssetDatabase.LoadAssetAtPath<ChallengeCatalog>(AssetDatabase.GUIDToAssetPath(guids[0]));
+
+            Assert.IsEmpty(catalog.FindProblems(), string.Join("\n", catalog.FindProblems()));
+            Assert.AreEqual(ChallengeLevels.Challenge001Id, catalog.ToEntries()[0].Id);
+        }
+
+        [Test]
         public void ChallengeAssets_KeepLevelId0_SoTheyNeverEnterTheNumberedLevelProgress()
         {
             var asset = AssetDatabase.LoadAssetAtPath<LevelData>(Challenge001Path);

@@ -28,6 +28,8 @@ namespace EchoCave.Game
             _events.Subscribe<LevelLost>(OnLevelLost);
             _events.Subscribe<LessonWon>(OnLessonWon);
             _events.Subscribe<LessonLost>(OnLessonLost);
+            _events.Subscribe<ChallengeSolved>(OnChallengeSolved);
+            _events.Subscribe<ChallengeFailed>(OnChallengeFailed);
         }
 
         public void Dispose()
@@ -43,6 +45,8 @@ namespace EchoCave.Game
             _events.Unsubscribe<LevelLost>(OnLevelLost);
             _events.Unsubscribe<LessonWon>(OnLessonWon);
             _events.Unsubscribe<LessonLost>(OnLessonLost);
+            _events.Unsubscribe<ChallengeSolved>(OnChallengeSolved);
+            _events.Unsubscribe<ChallengeFailed>(OnChallengeFailed);
         }
 
         private void OnPingUsed(PingUsed used) => _audio.Play(SoundCue.Ping);
@@ -73,5 +77,10 @@ namespace EchoCave.Game
         private void OnLessonWon(LessonWon won) => _audio.Play(SoundCue.Win);
 
         private void OnLessonLost(LessonLost lost) => _audio.Play(SoundCue.Lose);
+
+        // A challenge sounds like a level too.
+        private void OnChallengeSolved(ChallengeSolved solved) => _audio.Play(SoundCue.Win);
+
+        private void OnChallengeFailed(ChallengeFailed failed) => _audio.Play(SoundCue.Lose);
     }
 }

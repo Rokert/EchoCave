@@ -33,6 +33,7 @@ namespace EchoCave.UI
 
             _events.Subscribe<LevelStarted>(OnLevelStarted);
             _events.Subscribe<LessonStarted>(OnLessonStarted);
+            _events.Subscribe<ChallengeStarted>(OnChallengeStarted);
             _events.Subscribe<LevelWon>(OnLevelWon);
             _events.Subscribe<LevelLost>(OnLevelLost);
             _events.Subscribe<PauseChanged>(OnPauseChanged);
@@ -49,6 +50,7 @@ namespace EchoCave.UI
 
             _events.Unsubscribe<LevelStarted>(OnLevelStarted);
             _events.Unsubscribe<LessonStarted>(OnLessonStarted);
+            _events.Unsubscribe<ChallengeStarted>(OnChallengeStarted);
             _events.Unsubscribe<LevelWon>(OnLevelWon);
             _events.Unsubscribe<LevelLost>(OnLevelLost);
             _events.Unsubscribe<PauseChanged>(OnPauseChanged);
@@ -63,6 +65,12 @@ namespace EchoCave.UI
 
         // A lesson has its own overlay for winning and losing, so only the popup that was open is closed.
         private void OnLessonStarted(LessonStarted started)
+        {
+            _view.Hide();
+        }
+
+        // A challenge has no popups of its own yet (192-E), so only the popup that was open is closed.
+        private void OnChallengeStarted(ChallengeStarted started)
         {
             _view.Hide();
         }

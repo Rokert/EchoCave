@@ -9,15 +9,24 @@ namespace EchoCave.Tests
     // Runs over every LevelData asset in the project, so a bad level fails the suite as soon as it is saved.
     public class ShippedLevelsTests
     {
+        // Challenges are LevelData too, but they keep level id 0 on purpose: a challenge is identified by its string id and
+        // never enters the saved progress of the numbered levels (D-036).
+        private const string ChallengesFolder = "Assets/EchoCave/Data/Challenges/";
+
         [Test]
-        public void EveryLevel_HasAUniquePositiveId()
+        public void EveryNumberedLevel_HasAUniquePositiveId()
         {
             var ids = new List<int>();
             foreach (string guid in AssetDatabase.FindAssets("t:LevelData"))
             {
-                var asset = AssetDatabase.LoadAssetAtPath<LevelData>(AssetDatabase.GUIDToAssetPath(guid));
+                string path = AssetDatabase.GUIDToAssetPath(guid);
+                if (path.StartsWith(ChallengesFolder)) continue;
+
+                var asset = AssetDatabase.LoadAssetAtPath<LevelData>(path);
                 if (asset != null) ids.Add(asset.LevelId);
             }
+
+            Assert.IsNotEmpty(ids, "No numbered levels were found, so nothing was checked.");
 
             Assert.IsEmpty(LevelIdRules.Validate(ids), "Level ids are what saved progress hangs on.");
         }

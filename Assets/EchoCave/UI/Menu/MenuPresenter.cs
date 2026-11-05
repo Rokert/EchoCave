@@ -28,6 +28,7 @@ namespace EchoCave.UI
             _events.Subscribe<MenuOpened>(OnMenuOpened);
             _events.Subscribe<LevelStarted>(OnLevelStarted);
             _events.Subscribe<LessonStarted>(OnLessonStarted);
+            _events.Subscribe<ChallengeStarted>(OnChallengeStarted);
 
             _view.SetHowToPlayVisible(_howToPlay != null);
 
@@ -42,6 +43,7 @@ namespace EchoCave.UI
             _events.Unsubscribe<MenuOpened>(OnMenuOpened);
             _events.Unsubscribe<LevelStarted>(OnLevelStarted);
             _events.Unsubscribe<LessonStarted>(OnLessonStarted);
+            _events.Unsubscribe<ChallengeStarted>(OnChallengeStarted);
         }
 
         // The menu goes away at once, so the button answers before the level has loaded.
@@ -65,5 +67,8 @@ namespace EchoCave.UI
 
         // A lesson is on screen too, so the menu must not cover it.
         private void OnLessonStarted(LessonStarted started) => _view.Hide();
+
+        // So is a challenge.
+        private void OnChallengeStarted(ChallengeStarted started) => _view.Hide();
     }
 }

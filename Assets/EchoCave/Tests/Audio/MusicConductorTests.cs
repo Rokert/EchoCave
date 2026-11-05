@@ -66,6 +66,14 @@ namespace EchoCave.Tests
         }
 
         [Test]
+        public void AChallenge_SwitchesToPlayMusicToo()
+        {
+            _bus.Publish(new ChallengeStarted(0, 1, "challenge-001", 0, 1, 1));
+
+            CollectionAssert.AreEqual(new[] { MusicTrack.Menu, MusicTrack.Cave }, _audio.Music);
+        }
+
+        [Test]
         public void ALesson_SwitchesToPlayMusicToo()
         {
             _bus.Publish(new LessonStarted(0, 5, 0, 0));

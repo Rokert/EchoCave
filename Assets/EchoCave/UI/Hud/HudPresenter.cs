@@ -10,6 +10,7 @@ namespace EchoCave.UI
     {
         public const string LevelCaption = "LEVEL";
         public const string LessonCaption = "LESSON";
+        public const string ChallengeCaption = "CHALLENGE";
 
         private readonly IHudView _view;
         private readonly EventBus _events;
@@ -44,6 +45,7 @@ namespace EchoCave.UI
 
             _events.Subscribe<LevelStarted>(OnLevelStarted);
             _events.Subscribe<LessonStarted>(OnLessonStarted);
+            _events.Subscribe<ChallengeStarted>(OnChallengeStarted);
             _events.Subscribe<MoveSpent>(OnMoveSpent);
             _events.Subscribe<PingUsed>(OnPingUsed);
             _events.Subscribe<EchoExpired>(OnEchoExpired);
@@ -70,6 +72,7 @@ namespace EchoCave.UI
 
             _events.Unsubscribe<LevelStarted>(OnLevelStarted);
             _events.Unsubscribe<LessonStarted>(OnLessonStarted);
+            _events.Unsubscribe<ChallengeStarted>(OnChallengeStarted);
             _events.Unsubscribe<MoveSpent>(OnMoveSpent);
             _events.Unsubscribe<PingUsed>(OnPingUsed);
             _events.Unsubscribe<EchoExpired>(OnEchoExpired);
@@ -93,7 +96,13 @@ namespace EchoCave.UI
             ShowLevel(LessonCaption, started.LessonIndex + 1, started.LessonCount, started.MoveLimit, started.PingBudget);
         }
 
-        private void ShowLevel(string caption, int number, int total, int moveLimit, int pingBudget)
+        // A challenge looks like a level to the HUD, numbered by its place in the challenge list.
+        private void OnChallengeStarted(ChallengeStarted started)
+        {
+            ShowLevel(ChallengeCaption, started.ChallengeIndex + 1, started.ChallengeCount, started.MoveLimit, started.PingBudget, hintsAvailable: false);
+        }
+
+        private void ShowLevel(string caption, int number, int total, int moveLimit, int pingBudget, bool hintsAvailable = true)
         {
             _pingsLeft = pingBudget;
             _echoActive = false;
@@ -104,6 +113,7 @@ namespace EchoCave.UI
             _view.SetMoves(0, moveLimit);
             _view.SetPings(_pingsLeft);
             _view.SetPingState(CurrentPingState());
+            _view.SetHintVisible(hintsAvailable);
             _view.SetPaused(false);
         }
 

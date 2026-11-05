@@ -52,6 +52,10 @@ namespace EchoCave.UI
 
         void SetHintState(HintButtonState state);
 
+        // Whether the hint button is there at all. A challenge has no hints, so it hides the button instead of leaving a
+        // button that only refuses.
+        void SetHintVisible(bool visible);
+
         // The spare hints waiting in the reserve: any above 0 shows a small "+1" tag on the hint button.
         void SetHintReserve(int reserveCount);
 
