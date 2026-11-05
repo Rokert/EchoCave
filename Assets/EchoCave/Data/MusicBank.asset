@@ -27,5 +27,5 @@ MonoBehaviour:
     volume: 0.6
   menuTrack: 0
   playTracks: 010000000200000003000000i
-  secondsPerTrack: 10
+  secondsPerTrack: 180
   crossfadeSeconds: 2.5
