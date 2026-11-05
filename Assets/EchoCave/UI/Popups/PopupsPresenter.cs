@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using EchoCave.Core;
 using EchoCave.Game;
 using Rokert.Core;
 
@@ -15,13 +17,24 @@ namespace EchoCave.UI
         private readonly IPopupsView _view;
         private readonly EventBus _events;
         private readonly IPopupCommands _commands;
+        private readonly IChallengeSource _challenges;
+        private readonly Action _challengesClosed;
+
+        // How many results the list shows under a challenge.
+        private const int TopResults = 3;
 
         private int _moveLimit;
         private bool _soundOn;
         private bool _musicOn;
 
-        public PopupsPresenter(IPopupsView view, EventBus events, IPopupCommands commands, bool soundOn = true, bool musicOn = true)
+        // challenges is optional: without it there is no challenge list. challengesClosed is called when the player leaves the
+        // list, so the menu can come back.
+        public PopupsPresenter(
+            IPopupsView view, EventBus events, IPopupCommands commands, bool soundOn = true, bool musicOn = true,
+            IChallengeSource challenges = null, Action challengesClosed = null)
         {
+            _challenges = challenges;
+            _challengesClosed = challengesClosed;
             _soundOn = soundOn;
             _musicOn = musicOn;
             _view = view ?? throw new ArgumentNullException(nameof(view));
@@ -30,10 +43,14 @@ namespace EchoCave.UI
 
             _view.ActionPressed += OnActionPressed;
             _view.ToggleChanged += OnToggleChanged;
+            _view.ChallengePressed += OnChallengePressed;
 
             _events.Subscribe<LevelStarted>(OnLevelStarted);
             _events.Subscribe<LessonStarted>(OnLessonStarted);
             _events.Subscribe<ChallengeStarted>(OnChallengeStarted);
+            _events.Subscribe<ChallengeFailed>(OnChallengeFailed);
+            _events.Subscribe<ChallengeResultSaved>(OnChallengeResultSaved);
+            _events.Subscribe<ChallengeVerified>(OnChallengeVerified);
             _events.Subscribe<LevelWon>(OnLevelWon);
             _events.Subscribe<LevelLost>(OnLevelLost);
             _events.Subscribe<PauseChanged>(OnPauseChanged);
@@ -47,10 +64,14 @@ namespace EchoCave.UI
         {
             _view.ActionPressed -= OnActionPressed;
             _view.ToggleChanged -= OnToggleChanged;
+            _view.ChallengePressed -= OnChallengePressed;
 
             _events.Unsubscribe<LevelStarted>(OnLevelStarted);
             _events.Unsubscribe<LessonStarted>(OnLessonStarted);
             _events.Unsubscribe<ChallengeStarted>(OnChallengeStarted);
+            _events.Unsubscribe<ChallengeFailed>(OnChallengeFailed);
+            _events.Unsubscribe<ChallengeResultSaved>(OnChallengeResultSaved);
+            _events.Unsubscribe<ChallengeVerified>(OnChallengeVerified);
             _events.Unsubscribe<LevelWon>(OnLevelWon);
             _events.Unsubscribe<LevelLost>(OnLevelLost);
             _events.Unsubscribe<PauseChanged>(OnPauseChanged);
@@ -69,10 +90,74 @@ namespace EchoCave.UI
             _view.Hide();
         }
 
-        // A challenge has no popups of its own yet (192-E), so only the popup that was open is closed.
+        // A challenge keeps its move limit for the lost popup, and closes whatever popup was open.
         private void OnChallengeStarted(ChallengeStarted started)
         {
+            _moveLimit = started.MoveLimit;
             _view.Hide();
+        }
+
+        // Only a challenge with a move limit can run out of moves.
+        private void OnChallengeFailed(ChallengeFailed failed)
+        {
+            _view.ShowLost(failed.MovesUsed, _moveLimit);
+        }
+
+        // The result was kept: how it went, and where it ranks among the results of this device.
+        private void OnChallengeResultSaved(ChallengeResultSaved saved)
+        {
+            var lines = new List<string>
+            {
+                ChallengeText.Result(saved.Result.Moves, saved.Result.Seconds),
+                ChallengeText.PingsUsed(saved.Result.Pings),
+                ChallengeText.Tries(saved.Attempts) + " so far",
+                ChallengeText.Rank(saved.Rank)
+            };
+            _view.ShowChallengeResult(saved.IsBest ? "New best!" : "Challenge solved", lines);
+        }
+
+        // A solved board the replay did not accept is not kept, but the player must not be left on an empty board.
+        private void OnChallengeVerified(ChallengeVerified verified)
+        {
+            if (verified.Result.IsValid) return;
+
+            _view.ShowChallengeResult(
+                "Not counted",
+                new List<string> { "The game could not confirm this run.", "Reason: " + verified.Result.Error });
+        }
+
+        // Opens the list of challenges (the menu's Challenges button). Nothing happens when the game has none.
+        public void OpenChallenges()
+        {
+            if (_challenges == null) return;
+
+            bool unlocked = _challenges.Unlocked;
+            var rows = new List<ChallengeRowData>(_challenges.Count);
+            for (int i = 0; i < _challenges.Count; i++)
+            {
+                IReadOnlyList<ChallengeResult> top = _challenges.TopOf(i, TopResults);
+                int attempts = _challenges.AttemptsOf(i);
+
+                string summary;
+                if (top.Count > 0) summary = "Best: " + ChallengeText.Result(top[0].Moves, top[0].Seconds) + " (" + ChallengeText.Tries(attempts) + ")";
+                else if (attempts > 0) summary = "Not solved yet (" + ChallengeText.Tries(attempts) + ")";
+                else summary = "Not tried yet";
+
+                var lines = new List<string>(top.Count);
+                for (int r = 0; r < top.Count; r++) lines.Add((r + 1) + ". " + ChallengeText.Result(top[r].Moves, top[r].Seconds));
+
+                rows.Add(new ChallengeRowData(_challenges.IdOf(i), summary, lines, unlocked));
+            }
+
+            _view.ShowChallenges(rows, unlocked ? string.Empty : ChallengeText.LockedMessage(_challenges.LevelsLeft));
+        }
+
+        private void OnChallengePressed(int index)
+        {
+            if (_challenges == null || !_challenges.Unlocked || index < 0 || index >= _challenges.Count) return;
+
+            _view.Hide();
+            _challenges.Play(index);
         }
 
         private void OnLevelWon(LevelWon won)
@@ -119,6 +204,9 @@ namespace EchoCave.UI
                     break;
                 case PopupAction.HowToPlay:
                     _commands.HowToPlay();
+                    break;
+                case PopupAction.CloseChallenges:
+                    _challengesClosed?.Invoke();
                     break;
             }
         }

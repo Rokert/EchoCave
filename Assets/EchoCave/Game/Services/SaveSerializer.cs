@@ -9,9 +9,9 @@ namespace EchoCave.Game
     // never thrown, because a broken save must not stop the game from starting.
     public static class SaveSerializer
     {
-        // Version 6 adds the tutorial-seen flag. Version 5 added the reserve hints and the state of the hint rewards. Version 4 added the hint count. Version 3 added the sound and music switches, version 2 keyed levels by their
+        // Version 7 adds the challenge tries and results. Version 6 added the tutorial-seen flag. Version 5 added the reserve hints and the state of the hint rewards. Version 4 added the hint count. Version 3 added the sound and music switches, version 2 keyed levels by their
         // stable id (D-029) and version 1 by catalog position.
-        public const int CurrentVersion = 6;
+        public const int CurrentVersion = 7;
 
         // The ten levels of version 1 got ids 1 to 10 in catalog order, so position i was id i + 1.
         private const int LegacyIdOffset = 1;
@@ -35,6 +35,24 @@ namespace EchoCave.Game
             public bool tutorialSeen;
             public List<RewardEntry> rewardState = new List<RewardEntry>();
             public List<LevelEntry> levels = new List<LevelEntry>();
+            public List<ChallengeEntry> challenges = new List<ChallengeEntry>();
+        }
+
+        [Serializable]
+        private sealed class ChallengeEntry
+        {
+            public string id;
+            public int attempts;
+            public List<ChallengeResultEntry> results = new List<ChallengeResultEntry>();
+        }
+
+        [Serializable]
+        private sealed class ChallengeResultEntry
+        {
+            public int moves;
+            public float seconds;
+            public int pings;
+            public long solvedAt;
         }
 
         [Serializable]
@@ -69,7 +87,7 @@ namespace EchoCave.Game
 
         public static string Serialize(
             PlayerProgress progress, bool soundOn, bool musicOn, int hints, int reserveHints = 0,
-            IReadOnlyDictionary<string, int> rewardState = null, bool tutorialSeen = false)
+            IReadOnlyDictionary<string, int> rewardState = null, bool tutorialSeen = false, ChallengeProgress challenges = null)
         {
             if (progress == null) throw new ArgumentNullException(nameof(progress));
 
@@ -85,11 +103,23 @@ namespace EchoCave.Game
                 foreach (string key in keys) file.rewardState.Add(new RewardEntry { key = key, value = rewardState[key] });
             }
 
+            if (challenges != null)
+            {
+                // Ordered by id, and each challenge's results best first, so the same save always writes the same text.
+                foreach (ChallengeRecord record in challenges.Records)
+                {
+                    var entry = new ChallengeEntry { id = record.ChallengeId, attempts = record.Attempts };
+                    foreach (ChallengeResult result in record.Results)
+                        entry.results.Add(new ChallengeResultEntry { moves = result.Moves, seconds = result.Seconds, pings = result.Pings, solvedAt = result.SolvedAtUnixSeconds });
+                    file.challenges.Add(entry);
+                }
+            }
+
             return JsonUtility.ToJson(file);
         }
 
         // False when the text is not a save this version understands; content is then a fresh save. Entries that
-        // make no sense are skipped. Versions 1 to 5 are read and converted; a save from before the hints existed
+        // make no sense are skipped. Versions 1 to 6 are read and converted; a save from before the hints existed
         // gets startingHints, one from before the reserve has none, and one from before the tutorial has not seen it.
         public static bool TryDeserialize(string json, int startingHints, out SaveContent content)
         {
@@ -136,7 +166,26 @@ namespace EchoCave.Game
 
             bool tutorialSeen = version >= 6 && file.tutorialSeen;
 
-            content = new SaveContent(progress, !file.soundOff, !file.musicOff, hints, reserveHints, rewardState, tutorialSeen);
+            // An entry with an id that is not valid, or a result that makes no sense, is skipped; the rest is kept.
+            var challenges = new ChallengeProgress();
+            if (version >= 7 && file.challenges != null)
+            {
+                foreach (ChallengeEntry entry in file.challenges)
+                {
+                    if (entry == null || !ChallengeCatalogRules.IsValidId(entry.id)) continue;
+
+                    var results = new List<ChallengeResult>();
+                    if (entry.results != null)
+                    {
+                        foreach (ChallengeResultEntry r in entry.results)
+                            if (r != null) results.Add(new ChallengeResult(r.moves, r.seconds, r.pings, r.solvedAt));
+                    }
+
+                    challenges.Restore(entry.id, entry.attempts, results);
+                }
+            }
+
+            content = new SaveContent(progress, !file.soundOff, !file.musicOff, hints, reserveHints, rewardState, tutorialSeen, challenges);
             return true;
         }
 

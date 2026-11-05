@@ -328,6 +328,43 @@ namespace EchoCave.Game
         }
     }
 
+    // The replay of a solved challenge gave its verdict. Only a valid one is kept and ranked.
+    public readonly struct ChallengeVerified
+    {
+        public int ChallengeIndex { get; }
+        public string ChallengeId { get; }
+        public ChallengeAttempt Attempt { get; }
+        public ReplayResult Result { get; }
+
+        public ChallengeVerified(int challengeIndex, string challengeId, ChallengeAttempt attempt, ReplayResult result)
+        {
+            ChallengeIndex = challengeIndex;
+            ChallengeId = challengeId;
+            Attempt = attempt;
+            Result = result;
+        }
+    }
+
+    // A verified result was saved. Rank is its place among the results of this device (1 is the best), IsBest says it
+    // beat the previous best or was the first, Attempts is the total number of tries so far, this one included.
+    public readonly struct ChallengeResultSaved
+    {
+        public string ChallengeId { get; }
+        public int Attempts { get; }
+        public ChallengeResult Result { get; }
+        public int Rank { get; }
+        public bool IsBest { get; }
+
+        public ChallengeResultSaved(string challengeId, int attempts, ChallengeResult result, int rank, bool isBest)
+        {
+            ChallengeId = challengeId;
+            Attempts = attempts;
+            Result = result;
+            Rank = rank;
+            IsBest = isBest;
+        }
+    }
+
     // A challenge with a move limit ran out of moves.
     public readonly struct ChallengeFailed
     {

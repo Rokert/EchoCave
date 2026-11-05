@@ -13,6 +13,7 @@ namespace EchoCave.Tests
         public int Hints { get; private set; }
         public int ReserveHints { get; private set; }
         public bool TutorialSeen { get; private set; }
+        public ChallengeProgress Challenges { get; private set; } = new ChallengeProgress();
         public int HintWrites;
         public int RewardStateWrites;
         private readonly Dictionary<string, int> _rewardState = new Dictionary<string, int>();
@@ -23,6 +24,10 @@ namespace EchoCave.Tests
         }
 
         public void RecordWin(int levelId, int moves, int stars) => Progress.RecordWin(levelId, stars, moves);
+
+        public int AddChallengeAttempt(string challengeId) => Challenges.AddAttempt(challengeId);
+
+        public ChallengeSolveOutcome RecordChallengeSolve(string challengeId, ChallengeResult result) => Challenges.RecordSolve(challengeId, result);
 
         public void SetHints(int count)
         {
@@ -50,6 +55,10 @@ namespace EchoCave.Tests
             else MusicOn = enabled;
         }
 
-        public void Reset() => Progress = new PlayerProgress();
+        public void Reset()
+        {
+            Progress = new PlayerProgress();
+            Challenges = new ChallengeProgress();
+        }
     }
 }

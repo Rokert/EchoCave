@@ -42,6 +42,18 @@ namespace EchoCave.Game
         // The challenge list, for the menu to show. Set in Awake; empty when the game has no challenges.
         public IReadOnlyList<ChallengeEntry> Challenges => _challenges;
 
+        // The best results on every challenge: this device's, for now. Set in Awake.
+        public IChallengeLeaderboard Leaderboard => _leaderboard;
+
+        // The challenges open once every numbered level has been won.
+        public bool ChallengesUnlocked => ChallengeAccess.IsUnlocked(_save.Progress, _levelIds);
+
+        // How many numbered levels are still to win before the challenges open.
+        public int ChallengeLevelsLeft => ChallengeAccess.LevelsLeft(_save.Progress, _levelIds);
+
+        // How many times the player has started this challenge, solved or not.
+        public int ChallengeAttempts(string challengeId) => _save.Challenges.Get(challengeId).Attempts;
+
         // The board and its camera, for the tutorial overlay to find a bat on the screen.
         public BoardView Board => boardView;
         public Camera WorldCamera => boardCamera.GetComponent<Camera>();
@@ -56,6 +68,8 @@ namespace EchoCave.Game
         private ProgressRecorder _recorder;
         private SoundCuePlayer _cues;
         private ChallengeSelfCheck _challengeCheck;
+        private ChallengeRecorder _challengeRecorder;
+        private IChallengeLeaderboard _leaderboard;
         private IReadOnlyList<ChallengeEntry> _challenges = new ChallengeEntry[0];
         private MusicConductor _music;
         private IHintStock _hintStock;
@@ -79,6 +93,7 @@ namespace EchoCave.Game
             _ads = new NullAdService();
             _save = new SaveService(new PlayerPrefsSaveStore(), hintSettings.StartingHints);
             _hintStock = new HintStock(_save, hintSettings.MaxHints, EventBus.Global, hintSettings.ReserveSlots);
+            _leaderboard = new LocalChallengeLeaderboard(_save);
             if (soundPlayer != null)
             {
                 if (musicPlayer == null) Debug.LogWarning("GameRoot has no Music Player assigned, so the game will have no music.", this);
@@ -99,6 +114,7 @@ namespace EchoCave.Game
             ServiceLocator.Replace<ISaveService>(_save);
             ServiceLocator.Replace<IAudioService>(_audio);
             ServiceLocator.Replace<IAnalyticsService>(_analytics);
+            ServiceLocator.Replace<IChallengeLeaderboard>(_leaderboard);
 
             var echoStrategy = new RevealAllHiddenStrategy(echoSettings.RevealSeconds);
             IReadOnlyList<TutorialLesson> lessons = tutorialCatalog != null ? tutorialCatalog.ToLessons() : null;
@@ -132,6 +148,7 @@ namespace EchoCave.Game
             {
                 _challengeCheck = new ChallengeSelfCheck(
                     EventBus.Global, _challenges, new MoveResolver(), challengeCatalog.MinSecondsPerTap, Debug.Log, Debug.LogError);
+                _challengeRecorder = new ChallengeRecorder(EventBus.Global, _save);
             }
 
             boardView.BatRevealed += OnBatRevealed;
@@ -152,6 +169,8 @@ namespace EchoCave.Game
             EventBus.Global.Unsubscribe<ChallengeStarted>(OnChallengeStarted);
             _challengeCheck?.Dispose();
             _challengeCheck = null;
+            _challengeRecorder?.Dispose();
+            _challengeRecorder = null;
         }
 
         private void OnDestroy()
@@ -160,6 +179,7 @@ namespace EchoCave.Game
             ServiceLocator.Unregister(_save);
             ServiceLocator.Unregister(_audio);
             ServiceLocator.Unregister(_analytics);
+            ServiceLocator.Unregister(_leaderboard);
         }
 
         // The UI composes in its own Start, which runs first (UiRoot has an earlier execution order), so the HUD
@@ -219,10 +239,14 @@ namespace EchoCave.Game
             boardCamera.Frame(boardView);
         }
 
-        // What the challenges menu calls (192-E): starts the challenge at this position, from the menu.
-        public void RequestChallenge(int index)
+        // What the challenge list calls: starts the challenge at this position, from the menu, once the challenges are
+        // unlocked. Returns false when they are not.
+        public bool RequestChallenge(int index)
         {
+            if (!ChallengesUnlocked) return false;
+
             Flow.RequestChallenge(index);
+            return true;
         }
 
         // Developer entries, in the component's context menu while the game is running. The challenges menu replaces them.

@@ -12,9 +12,11 @@ namespace EchoCave.UI
 
         private readonly VisualElement _layer;
         private readonly Button _howToPlay;
+        private readonly Button _challenges;
 
         public event Action PlayPressed;
         public event Action HowToPlayPressed;
+        public event Action ChallengesPressed;
 
         // The version is shown small at the bottom, so a tester can say which build a comment is about.
         public MenuView(VisualElement root, string version)
@@ -28,12 +30,21 @@ namespace EchoCave.UI
             _howToPlay = root.Q<Button>("howto-button");
             if (_howToPlay != null) _howToPlay.clicked += () => HowToPlayPressed?.Invoke();
 
+            // Optional too: a UXML without the button simply has no way into the challenges.
+            _challenges = root.Q<Button>("challenges-button");
+            if (_challenges != null) _challenges.clicked += () => ChallengesPressed?.Invoke();
+
             Require<Label>(root, "version-label").text = string.IsNullOrEmpty(version) ? string.Empty : "v" + version;
         }
 
         public void SetHowToPlayVisible(bool visible)
         {
             _howToPlay?.EnableInClassList(ButtonHiddenClass, !visible);
+        }
+
+        public void SetChallengesVisible(bool visible)
+        {
+            _challenges?.EnableInClassList(ButtonHiddenClass, !visible);
         }
 
         public void Show() => _layer.RemoveFromClassList(HiddenClass);

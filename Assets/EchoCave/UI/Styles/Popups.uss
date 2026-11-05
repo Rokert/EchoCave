@@ -149,3 +149,58 @@
     font-size: 40px;
     color: var(--ui-text);
 }
+
+/* --- challenges: the result lines and the list of rows --- */
+
+.challenge-lines {
+    align-items: center;
+    margin-top: 8px;
+}
+
+.challenges__rows {
+    width: 100%;
+    max-height: 640px;
+    margin-top: 16px;
+}
+
+.challenge-row {
+    width: 100%;
+    padding: 20px 24px 24px 24px;
+    margin: 8px 0;
+    align-items: center;
+    background-color: rgba(20, 16, 43, 0.08);
+    border-radius: 36px;
+}
+
+.challenge-row__title {
+    margin: 0;
+    padding: 0;
+    font-size: 44px;
+    color: var(--ui-text);
+    -unity-text-align: middle-center;
+}
+
+.challenge-row__summary {
+    margin: 6px 0 0 0;
+    padding: 0;
+    font-size: 30px;
+    color: var(--ui-text);
+    -unity-text-align: middle-center;
+}
+
+.challenge-row__line {
+    margin: 2px 0 0 0;
+    padding: 0;
+    font-size: 26px;
+    color: var(--bat-belly);
+    -unity-text-align: middle-center;
+}
+
+.challenge-row .pill-button {
+    margin-top: 14px;
+}
+
+/* A challenge that is not open yet: the button looks dimmed and does nothing. */
+.pill-button--locked {
+    opacity: 0.45;
+}

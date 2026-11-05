@@ -32,11 +32,22 @@ namespace EchoCave.UI
         private readonly Button _howToPlay;
         private readonly int _starStaggerMillis;
 
+        // The challenge popups are optional: a UXML without them simply has no challenge screens.
+        private readonly VisualElement _challengeResult;
+        private readonly VisualElement _challengeList;
+        private readonly Label _challengeTitle;
+        private readonly VisualElement _challengeLines;
+        private readonly Label _challengeMessage;
+        private readonly ScrollView _challengeRows;
+
         // Fade and star tasks still waiting to run, so hiding the popup can cancel them.
         private readonly List<IVisualElementScheduledItem> _pending = new List<IVisualElementScheduledItem>();
 
         public event Action<PopupAction> ActionPressed;
         public event Action<AudioChannel, bool> ToggleChanged;
+
+        // Play was pressed on a challenge of the list, by its position.
+        public event Action<int> ChallengePressed;
 
         // Raised as each earned star lights, with its position (0 to 2), so a sound can follow it.
         public event Action<int> StarLit;
@@ -70,6 +81,24 @@ namespace EchoCave.UI
             _howToPlay = root.Q<Button>("pause-howto");
             if (_howToPlay != null) _howToPlay.clicked += () => ActionPressed?.Invoke(PopupAction.HowToPlay);
 
+            _challengeResult = root.Q<VisualElement>("challenge-popup");
+            _challengeList = root.Q<VisualElement>("challenges-popup");
+            if (_challengeResult != null && _challengeList != null)
+            {
+                _challengeTitle = Require<Label>(root, "challenge-title");
+                _challengeLines = Require<VisualElement>(root, "challenge-lines");
+                _challengeMessage = Require<Label>(root, "challenges-message");
+                _challengeRows = Require<ScrollView>(root, "challenges-rows");
+                Wire(root, "challenge-retry", PopupAction.Retry);
+                Wire(root, "challenge-menu", PopupAction.Menu);
+                Wire(root, "challenges-close", PopupAction.CloseChallenges);
+            }
+            else
+            {
+                _challengeResult = null;
+                _challengeList = null;
+            }
+
             _soundToggle.clicked += () => Flip(AudioChannel.Sound, _soundToggle);
             _musicToggle.clicked += () => Flip(AudioChannel.Music, _musicToggle);
         }
@@ -85,9 +114,7 @@ namespace EchoCave.UI
 
             _layer.AddToClassList(HiddenClass);
             _layer.RemoveFromClassList(ShownClass);
-            _complete.AddToClassList(HiddenClass);
-            _lost.AddToClassList(HiddenClass);
-            _pause.AddToClassList(HiddenClass);
+            foreach (VisualElement popup in Popups()) popup.AddToClassList(HiddenClass);
         }
 
         public void ShowComplete(int stars, int movesUsed, int moveLimit, bool hasNext)
@@ -114,6 +141,79 @@ namespace EchoCave.UI
             Reveal(_pause);
         }
 
+        public void ShowChallengeResult(string title, IReadOnlyList<string> lines)
+        {
+            if (_challengeResult == null) return;
+
+            _challengeTitle.text = title;
+            _challengeLines.Clear();
+            foreach (string line in lines) _challengeLines.Add(Text(line, "popup__text", "font-medium"));
+            Reveal(_challengeResult);
+        }
+
+        public void ShowChallenges(IReadOnlyList<ChallengeRowData> rows, string message)
+        {
+            if (_challengeList == null) return;
+
+            _challengeMessage.text = message ?? string.Empty;
+            _challengeMessage.EnableInClassList(HiddenClass, string.IsNullOrEmpty(message));
+
+            _challengeRows.contentContainer.Clear();
+            for (int i = 0; i < rows.Count; i++) _challengeRows.contentContainer.Add(BuildRow(i, rows[i]));
+
+            Reveal(_challengeList);
+        }
+
+        // One card per challenge: its name, how it went, the best results and the Play button. The button is built here
+        // with the same classes the UXML gives the others, so it looks and sounds like them.
+        private VisualElement BuildRow(int index, ChallengeRowData row)
+        {
+            var card = new VisualElement();
+            card.AddToClassList("challenge-row");
+            card.Add(Text(row.Title, "challenge-row__title", "font-bold"));
+            card.Add(Text(row.Summary, "challenge-row__summary", "font-medium"));
+            foreach (string line in row.Lines) card.Add(Text(line, "challenge-row__line", "font-medium"));
+
+            var button = new Button();
+            button.AddToClassList("pill-button");
+            var lip = new VisualElement { pickingMode = PickingMode.Ignore };
+            lip.AddToClassList("pill-button__lip");
+            var face = new VisualElement { pickingMode = PickingMode.Ignore };
+            face.AddToClassList("pill-button__face");
+            face.Add(Text(row.CanPlay ? "Play" : "Locked", "pill-button__label", "font-semibold"));
+            button.Add(lip);
+            button.Add(face);
+
+            if (row.CanPlay)
+            {
+                button.clicked += () => ChallengePressed?.Invoke(index);
+            }
+            else
+            {
+                button.AddToClassList("pill-button--locked");
+                button.SetEnabled(false);
+            }
+
+            card.Add(button);
+            return card;
+        }
+
+        private static Label Text(string text, params string[] classes)
+        {
+            var label = new Label(text) { pickingMode = PickingMode.Ignore };
+            foreach (string name in classes) label.AddToClassList(name);
+            return label;
+        }
+
+        private IEnumerable<VisualElement> Popups()
+        {
+            yield return _complete;
+            yield return _lost;
+            yield return _pause;
+            if (_challengeResult != null) yield return _challengeResult;
+            if (_challengeList != null) yield return _challengeList;
+        }
+
         private static string MovesText(int movesUsed, int moveLimit)
         {
             return moveLimit > 0 ? $"Moves {movesUsed} / {moveLimit}" : $"Moves {movesUsed}";
@@ -124,9 +224,7 @@ namespace EchoCave.UI
         {
             CancelPending();
 
-            _complete.EnableInClassList(HiddenClass, popup != _complete);
-            _lost.EnableInClassList(HiddenClass, popup != _lost);
-            _pause.EnableInClassList(HiddenClass, popup != _pause);
+            foreach (VisualElement other in Popups()) other.EnableInClassList(HiddenClass, other != popup);
 
             _layer.RemoveFromClassList(HiddenClass);
             _layer.RemoveFromClassList(ShownClass);

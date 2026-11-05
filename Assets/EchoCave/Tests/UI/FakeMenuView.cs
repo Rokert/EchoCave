@@ -8,8 +8,10 @@ namespace EchoCave.Tests
     {
         public event Action PlayPressed;
         public event Action HowToPlayPressed;
+        public event Action ChallengesPressed;
 
         public bool HowToPlayVisible;
+        public bool ChallengesVisible;
 
         public bool Visible;
         public int ShowCount;
@@ -28,6 +30,10 @@ namespace EchoCave.Tests
         }
 
         public void SetHowToPlayVisible(bool visible) => HowToPlayVisible = visible;
+
+        public void SetChallengesVisible(bool visible) => ChallengesVisible = visible;
+
+        public void PressChallenges() => ChallengesPressed?.Invoke();
 
         public void PressHowToPlay() => HowToPlayPressed?.Invoke();
 

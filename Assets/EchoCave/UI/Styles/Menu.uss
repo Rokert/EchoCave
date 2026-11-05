@@ -19,7 +19,8 @@
     display: none;
 }
 
-#howto-button {
+#howto-button,
+#challenges-button {
     margin-top: 28px;
 }
 
