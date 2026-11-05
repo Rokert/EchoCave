@@ -18,11 +18,17 @@ namespace EchoCave.Editor
             public SolveResult Result;
             public StarThresholds Suggested;
             public LevelMetrics Metrics;
+            public ChallengeDifficulty Challenge;
+            public bool HasChallenge;
         }
 
         private readonly List<Row> _rows = new List<Row>();
         private readonly MoveResolver _resolver = new MoveResolver();
         private int _twoStarSlack = 2;
+
+        // The blind player plays each level this many times, with a fixed seed so the numbers do not move between runs.
+        private const int ChallengeTrials = 400;
+        private const int ChallengeSeed = 1;
         private Vector2 _scroll;
         private LevelGenerationPlan _plan;
         private string _planReport = string.Empty;
@@ -162,6 +168,14 @@ namespace EchoCave.Editor
                 EditorGUILayout.LabelField(
                     $"Min moves {result.MinMoves}   |   Waves {result.Waves.Count}   |   Hidden bats {CountHidden(row.Definition)}   |   " +
                     $"Traps {row.Metrics.BlockedAtStart}   |   Difficulty {row.Metrics.Difficulty}");
+                if (row.HasChallenge)
+                {
+                    ChallengeDifficulty c = row.Challenge;
+                    EditorGUILayout.LabelField(
+                        $"Blind player wastes {c.ExpectedBlindBounces:0.0} taps   |   Flawless by luck {c.ChanceOfFlawlessBlindRun:P1}   |   " +
+                        $"Pings {c.PingBudget}   |   Challenge score {c.Score:0.0}");
+                }
+
                 EditorGUILayout.LabelField($"Solution: {string.Join(" > ", result.Solution)}");
 
                 if (!result.FitsMoveLimit)
@@ -235,7 +249,10 @@ namespace EchoCave.Editor
                 {
                     row.Result = new LevelSolver(_resolver).Solve(definition);
                     if (row.Result.IsSolvable)
+                    {
                         LevelMetrics.TryMeasure(definition, _resolver, out row.Metrics);
+                        row.HasChallenge = ChallengeDifficulty.TryMeasure(definition, _resolver, ChallengeTrials, ChallengeSeed, out row.Challenge);
+                    }
 
                     if (row.Result.IsSolvable)
                         row.Suggested = StarThresholds.Suggest(row.Result.MinMoves, definition.MoveLimit, _twoStarSlack);
