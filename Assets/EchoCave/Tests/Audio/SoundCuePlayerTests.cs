@@ -59,6 +59,17 @@ namespace EchoCave.Tests
         }
 
         [Test]
+        public void ASolvedChallenge_PlaysTheWinJingle_AndAFailedOneTheLoseSound()
+        {
+            var attempt = new ChallengeAttempt("challenge-001", new ChallengeMove[0], 1f, 1, 0);
+
+            _bus.Publish(new ChallengeSolved(0, "challenge-001", attempt));
+            _bus.Publish(new ChallengeFailed(0, "challenge-001", 5));
+
+            CollectionAssert.AreEqual(new[] { SoundCue.Win, SoundCue.Lose }, _audio.Played);
+        }
+
+        [Test]
         public void AHint_PlaysItsChime_AndARefusedHintTheSameNoAsARefusedPing()
         {
             _bus.Publish(new HintUsed(2, 0));

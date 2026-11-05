@@ -34,6 +34,7 @@ namespace EchoCave.Game
             _events.Subscribe<MenuOpened>(OnMenuOpened);
             _events.Subscribe<LevelStarted>(OnLevelStarted);
             _events.Subscribe<LessonStarted>(OnLessonStarted);
+            _events.Subscribe<ChallengeStarted>(OnChallengeStarted);
 
             _audio.PlayMusic(_menuTrack);
         }
@@ -43,6 +44,7 @@ namespace EchoCave.Game
             _events.Unsubscribe<MenuOpened>(OnMenuOpened);
             _events.Unsubscribe<LevelStarted>(OnLevelStarted);
             _events.Unsubscribe<LessonStarted>(OnLessonStarted);
+            _events.Unsubscribe<ChallengeStarted>(OnChallengeStarted);
         }
 
         // Counts play time. Called every frame with the real time that passed (a paused game still plays music).
@@ -69,6 +71,9 @@ namespace EchoCave.Game
         private void OnLevelStarted(LevelStarted started) => EnterPlay();
 
         private void OnLessonStarted(LessonStarted started) => EnterPlay();
+
+        // A challenge is playing too.
+        private void OnChallengeStarted(ChallengeStarted started) => EnterPlay();
 
         private void EnterPlay()
         {

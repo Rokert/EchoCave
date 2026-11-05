@@ -19,7 +19,10 @@ namespace EchoCave.Game
         NoHintsLeft,
 
         // A tutorial lesson with no hint of its own: the button is for a later lesson.
-        NotInLesson
+        NotInLesson,
+
+        // A challenge has no hints.
+        NotInChallenge
     }
 
     // What the hint refill needs from the game flow, so it can be tested without one.

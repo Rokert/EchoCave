@@ -275,6 +275,7 @@ MonoBehaviour:
   tapInput: {fileID: 930681444}
   soundPlayer: {fileID: 153836486}
   musicPlayer: {fileID: 1406299740}
+  challengeCatalog: {fileID: 11400000, guid: a2925843f888b4c5dacf8058b7559813, type: 2}
   tutorialCatalog: {fileID: 11400000, guid: d416a5e512a0f42bdb70285db797b3e0, type: 2}
   tutorialSettings: {fileID: 11400000, guid: ab6297183f3e846cc939e50f4ce1795d, type: 2}
 --- !u!1 &930681443

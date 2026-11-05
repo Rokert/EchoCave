@@ -119,6 +119,11 @@ namespace EchoCave.UI
             _hintButton.EnableInClassList(HintAdClass, state == HintButtonState.WatchAd);
         }
 
+        public void SetHintVisible(bool visible)
+        {
+            _hintButton.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
+        }
+
         public void SetHintReserve(int reserveCount)
         {
             _hintButton.EnableInClassList(HintReserveClass, reserveCount > 0);

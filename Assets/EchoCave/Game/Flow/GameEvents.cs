@@ -127,7 +127,10 @@ namespace EchoCave.Game
         AlreadyHinted,
 
         // A tutorial lesson that does not teach hints yet.
-        NotInLesson
+        NotInLesson,
+
+        // A challenge has no hints.
+        NotInChallenge
     }
 
     // A hint was spent and the chosen bat is pulsing.
@@ -277,6 +280,66 @@ namespace EchoCave.Game
         public TutorialEnded(TutorialEnd reason)
         {
             Reason = reason;
+        }
+    }
+
+    // A challenge began (the first time, or a new attempt after a retry). Challenges use their own events, so progress, stars,
+    // rewards and the level popups never count them.
+    public readonly struct ChallengeStarted
+    {
+        public int ChallengeIndex { get; }
+
+        // How many challenges there are, for the HUD's "1 / 3".
+        public int ChallengeCount { get; }
+
+        public string ChallengeId { get; }
+
+        // 0 means no move limit.
+        public int MoveLimit { get; }
+
+        public int PingBudget { get; }
+
+        // Which try this is in the current session, counting from 1.
+        public int Attempt { get; }
+
+        public ChallengeStarted(int challengeIndex, int challengeCount, string challengeId, int moveLimit, int pingBudget, int attempt)
+        {
+            ChallengeIndex = challengeIndex;
+            ChallengeCount = challengeCount;
+            ChallengeId = challengeId;
+            MoveLimit = moveLimit;
+            PingBudget = pingBudget;
+            Attempt = attempt;
+        }
+    }
+
+    // The board of a challenge was cleared. The attempt is the list of everything the player did, ready to be replayed.
+    public readonly struct ChallengeSolved
+    {
+        public int ChallengeIndex { get; }
+        public string ChallengeId { get; }
+        public ChallengeAttempt Attempt { get; }
+
+        public ChallengeSolved(int challengeIndex, string challengeId, ChallengeAttempt attempt)
+        {
+            ChallengeIndex = challengeIndex;
+            ChallengeId = challengeId;
+            Attempt = attempt;
+        }
+    }
+
+    // A challenge with a move limit ran out of moves.
+    public readonly struct ChallengeFailed
+    {
+        public int ChallengeIndex { get; }
+        public string ChallengeId { get; }
+        public int MovesUsed { get; }
+
+        public ChallengeFailed(int challengeIndex, string challengeId, int movesUsed)
+        {
+            ChallengeIndex = challengeIndex;
+            ChallengeId = challengeId;
+            MovesUsed = movesUsed;
         }
     }
 

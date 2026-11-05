@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using EchoCave.Core;
 using EchoCave.Game;
 using UnityEditor;
@@ -12,6 +13,8 @@ namespace EchoCave.Editor
     {
         public const string Folder = "Assets/EchoCave/Data/Challenges";
         private static readonly MoveResolver Resolver = new MoveResolver();
+
+        public const string CatalogPath = "Assets/EchoCave/Data/ChallengeCatalog.asset";
 
         public static string PathOf(string challengeId) => $"{Folder}/{challengeId}.asset";
 
@@ -35,6 +38,33 @@ namespace EchoCave.Editor
             AssetDatabase.CreateAsset(asset, path);
             AssetDatabase.SaveAssets();
             Report(asset, recipe, "created");
+        }
+
+        // The list the game plays: challenge-001 for now. An existing catalog is never rewritten, only checked.
+        [MenuItem("EchoCave/Challenges/Create challenge catalog")]
+        private static void CreateCatalog()
+        {
+            var level = AssetDatabase.LoadAssetAtPath<LevelData>(PathOf(ChallengeLevels.Challenge001Id));
+            if (level == null)
+            {
+                Debug.LogError("[Challenges] Create challenge-001 first (EchoCave > Challenges > Create challenge-001).");
+                return;
+            }
+
+            var catalog = AssetDatabase.LoadAssetAtPath<ChallengeCatalog>(CatalogPath);
+            string what = "already exists";
+            if (catalog == null)
+            {
+                catalog = ScriptableObject.CreateInstance<ChallengeCatalog>();
+                catalog.SetEntries(new[] { new ChallengeCatalog.Entry { challengeId = ChallengeLevels.Challenge001Id, level = level } });
+                AssetDatabase.CreateAsset(catalog, CatalogPath);
+                AssetDatabase.SaveAssets();
+                what = "created";
+            }
+
+            IReadOnlyList<string> problems = catalog.FindProblems();
+            if (problems.Count == 0) Debug.Log($"[Challenges] Challenge catalog {what}: {catalog.Count} challenge(s), no problems. Assign it to the Challenge Catalog field of GameRoot.", catalog);
+            else Debug.LogError($"[Challenges] Challenge catalog {what}, but it has problems:\n{string.Join("\n", problems)}", catalog);
         }
 
         [MenuItem("EchoCave/Challenges/Check challenge assets")]
