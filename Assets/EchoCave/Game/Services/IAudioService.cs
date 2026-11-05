@@ -11,5 +11,9 @@ namespace EchoCave.Game
 
         // Plays the sound of a cue, unless the sound switch is off.
         void Play(SoundCue cue);
+
+        // Makes this track the music. It plays (with a crossfade from the one before) while the music switch is on;
+        // with the switch off it is only remembered, and comes back when the switch is turned on.
+        void PlayMusic(MusicTrack track);
     }
 }

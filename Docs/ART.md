@@ -27,6 +27,10 @@ Defined once in `UI/Styles/Theme.uss` (USS variables) and mirrored in Penpot:
 - The parallax layers are assigned as `Texture2D`, not as sprites.
 - Name the PNG like the Unity asset (`Arrow Shape.png`) and re-export over the file, keeping its `.meta`.
 
+## Music
+
+Four 12 s seamless loops in `Assets/EchoCave/Audio/Music`, made with RokertSfx (loop mode; the presets `music_*.json` live in that repo and are the source): `music_menu`, `music_play`, `music_play_bright`, `music_play_dream`. Import each clip with Load Type Streaming and Compression Format Vorbis (`ShippedMusicTests` checks it). Volumes, the playlist and the time per track are in the `MusicBank` asset (D-035).
+
 ## Gotchas
 
 - Unity imports new PNGs as Sprite Mode Multiple and may auto-slice them. For art used as one sprite, set Single. Switching a sprite that a prefab already uses between Single and Multiple changes its sub-asset id (`fileID`), so the prefab then needs the new one (Single is `21300000`).
@@ -34,6 +38,6 @@ Defined once in `UI/Styles/Theme.uss` (USS variables) and mirrored in Penpot:
 
 ## Credits and licences
 
-- Art and sounds: original, by the project's author, under CC BY-NC 4.0 (`LICENSE-ASSETS` at the repository root). The name, the logo, the app icon and the cover image (`Art/Brand`, and the logo, favicon and thumbnail of the web template) are not covered and stay all rights reserved.
+- Art, sounds and music: original, by the project's author, under CC BY-NC 4.0 (`LICENSE-ASSETS` at the repository root). The name, the logo, the app icon and the cover image (`Art/Brand`, and the logo, favicon and thumbnail of the web template) are not covered and stay all rights reserved.
 - Fredoka: SIL Open Font License 1.1 (`Art/Fonts/OFL.txt`).
 - DOTween (Demigiant, `Assets/Plugins/Demigiant`): used for view animations (D-014). It is the free version. Its licence (dotween.demigiant.com/license.php) allows commercial use and allows distributing unmodified copies in any medium, as long as the original copyright notices and `readme.txt` stay with them. So the DLL and its `readme.txt` are kept exactly as downloaded: never edit or repack them. The settings asset in `Assets/Resources` is ours, not part of the package.
