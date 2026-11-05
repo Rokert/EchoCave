@@ -1,11 +1,11 @@
 {
   "dependencies": {
     "com.rokert.core": {
-      "version": "https://github.com/Rokert/RokertCore.git#v0.1.1",
+      "version": "https://github.com/Rokert/RokertCore.git#v0.1.2",
       "depth": 0,
       "source": "git",
       "dependencies": {},
-      "hash": "85a4c40ed95312ade2e2152aa04380c19ac1ab8b"
+      "hash": "6f917d3f5bb0025e04f87444b224d92a018f9ab3"
     },
     "com.unity.2d.animation": {
       "version": "16.0.1",

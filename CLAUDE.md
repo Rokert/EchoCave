@@ -9,7 +9,7 @@ Concept: tap a bat and it flies in a straight line off the board; if another bat
 - `Docs/ARCHITECTURE.md` — what exists and why (layers, assemblies, patterns). Update it when a system/pattern changes.
 - `Docs/DECISIONS.md` — decision log (ADR-lite). Add an entry for any non-trivial choice; don't silently reverse one.
 - [Linear — EchoCave](https://linear.app/rokert/project/echocave-b2f32e840edd) — the backlog (team `Rokert`, project `P-ROK-7`). Never file tickets in markdown.
-- `com.rokert.core` docs: `Documentation~/PATTERNS.md` in the RokertCore repo (`/Users/developer/Documents/UnityProjects/RokertCore`).
+- `com.rokert.core` docs: `Documentation~/PATTERNS.md` in the RokertCore repo (`../RokertCore` next to this project).
 
 ## Architecture rules (see `Docs/ARCHITECTURE.md`)
 
