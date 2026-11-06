@@ -65,11 +65,13 @@
 
         <!-- Above the HUD and below the popups, so the pause popup covers it. Only its buttons catch a pointer. -->
         <ui:Instance template="Tutorial" class="template-fill" picking-mode="Ignore" />
-
-        <!-- Drawn last, so it sits above the HUD. Its scrim catches pointers; the wrapper around it does not. -->
-        <ui:Instance template="Popups" class="template-fill" picking-mode="Ignore" />
     </ui:VisualElement>
 
     <!-- A sibling of the HUD, which is hidden while the menu shows. -->
     <ui:Instance template="Menu" class="template-fill" picking-mode="Ignore" />
+
+    <!-- Drawn last, so it sits above the HUD, the tutorial and the menu. It is not inside the HUD because the HUD is hidden
+         while the menu shows, and the challenge list opens from the menu. Its scrim catches pointers; the wrapper around it
+         does not. -->
+    <ui:Instance name="popups-root" template="Popups" class="template-fill" picking-mode="Ignore" />
 </ui:UXML>

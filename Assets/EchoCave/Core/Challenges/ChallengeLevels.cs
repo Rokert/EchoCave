@@ -38,12 +38,55 @@ namespace EchoCave.Core
                 .SequenceEqual(b.Bats.Select(x => (x.Cell.X, x.Cell.Y, x.Direction, x.IsHidden)));
         }
 
-        public static LevelDefinition BuildChallenge001(MoveResolver resolver)
+        // challenge-002: the hardest roll of a denser board, 48 bats on 9x9 with one ping and nothing to spare.
+        public const string Challenge002Id = "challenge-002";
+        public const int Challenge002Seed = 175;
+        public static LevelSpec Challenge002Spec => new LevelSpec(9, 9, 48, 48, 1, -1, 0, 0, 100000, 2);
+
+        // challenge-003: a smaller 8x8 board with 36 hidden bats and no ping at all, so the only way to learn an arrow
+        // is to spend a tap on a bounce.
+        public const string Challenge003Id = "challenge-003";
+        public const int Challenge003Seed = 11;
+        public static LevelSpec Challenge003Spec => new LevelSpec(8, 8, 36, 36, 0, -1, 0, 0, 100000, 2);
+
+        // Every challenge there is, in the order the catalog lists them.
+        public static readonly string[] AllIds = { Challenge001Id, Challenge002Id, Challenge003Id };
+
+        public static LevelSpec SpecOf(string challengeId)
+        {
+            switch (challengeId)
+            {
+                case Challenge001Id: return Challenge001Spec;
+                case Challenge002Id: return Challenge002Spec;
+                case Challenge003Id: return Challenge003Spec;
+                default: throw new ArgumentException($"Unknown challenge id \"{challengeId}\".", nameof(challengeId));
+            }
+        }
+
+        public static int SeedOf(string challengeId)
+        {
+            switch (challengeId)
+            {
+                case Challenge001Id: return Challenge001Seed;
+                case Challenge002Id: return Challenge002Seed;
+                case Challenge003Id: return Challenge003Seed;
+                default: throw new ArgumentException($"Unknown challenge id \"{challengeId}\".", nameof(challengeId));
+            }
+        }
+
+        public static LevelDefinition Build(string challengeId, MoveResolver resolver)
         {
             if (resolver == null) throw new ArgumentNullException(nameof(resolver));
 
-            LevelDefinition level = new LevelGenerator(resolver).Generate(Challenge001Spec, Challenge001Seed, 0, GenerationAttempts);
-            return level ?? throw new InvalidOperationException($"{Challenge001Id}: the generator found no layout for seed {Challenge001Seed}.");
+            int seed = SeedOf(challengeId);
+            LevelDefinition level = new LevelGenerator(resolver).Generate(SpecOf(challengeId), seed, 0, GenerationAttempts);
+            return level ?? throw new InvalidOperationException($"{challengeId}: the generator found no layout for seed {seed}.");
         }
+
+        public static LevelDefinition BuildChallenge001(MoveResolver resolver) => Build(Challenge001Id, resolver);
+
+        public static LevelDefinition BuildChallenge002(MoveResolver resolver) => Build(Challenge002Id, resolver);
+
+        public static LevelDefinition BuildChallenge003(MoveResolver resolver) => Build(Challenge003Id, resolver);
     }
 }

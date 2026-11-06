@@ -113,5 +113,72 @@ namespace EchoCave.Tests
             Assert.AreEqual(40, result.Moves);
             Assert.AreEqual(1, result.Pings);
         }
+
+        // The numbers of challenge-002 and challenge-003 as they were found (docs/CHALLENGES.md). A different generator
+        // would give different levels under the same ids, so these fail on purpose.
+        [TestCase(ChallengeLevels.Challenge002Id, 9, 48, 1, 18, 39, 25.0)]
+        [TestCase(ChallengeLevels.Challenge003Id, 8, 36, 0, 20, 30, 20.0)]
+        public void TheOtherChallenges_AreThePinnedLevels_AndVeryHardToPlayBlind(
+            string id, int size, int bats, int pings, int waves, int blockedAtStart, double minBlindBounces)
+        {
+            LevelDefinition level = ChallengeLevels.Build(id, Resolver);
+
+            Assert.AreEqual(size, level.Width);
+            Assert.AreEqual(size, level.Height);
+            Assert.AreEqual(bats, level.Bats.Count);
+            Assert.IsTrue(level.Bats.All(b => b.IsHidden), "every bat is hidden");
+            Assert.AreEqual(pings, level.PingBudget);
+            Assert.IsFalse(level.HasMoveLimit);
+            Assert.IsEmpty(LevelValidator.Validate(level));
+
+            SolveResult solved = new LevelSolver(Resolver).Solve(level);
+            Assert.IsTrue(solved.IsSolvable);
+            Assert.AreEqual(bats, solved.MinMoves);
+            Assert.AreEqual(waves, solved.Waves.Count);
+            Assert.IsTrue(LevelMetrics.TryMeasure(level, Resolver, out LevelMetrics metrics));
+            Assert.AreEqual(blockedAtStart, metrics.BlockedAtStart);
+
+            Assert.IsTrue(ChallengeDifficulty.TryMeasure(level, Resolver, 3000, 5, out ChallengeDifficulty d));
+            Assert.Greater(d.ExpectedBlindBounces, minBlindBounces);
+            Assert.Less(d.ChanceOfFlawlessBlindRun, 0.001);
+        }
+
+        [Test]
+        public void EveryChallenge_IsADifferentLevel()
+        {
+            var levels = ChallengeLevels.AllIds.Select(id => ChallengeLevels.Build(id, Resolver)).ToArray();
+
+            for (int i = 0; i < levels.Length; i++)
+            for (int j = i + 1; j < levels.Length; j++)
+                Assert.IsFalse(ChallengeLevels.SameLevel(levels[i], levels[j]), $"{ChallengeLevels.AllIds[i]} and {ChallengeLevels.AllIds[j]}");
+
+        }
+
+        [Test]
+        public void AnUnknownChallengeId_IsRejected()
+        {
+            Assert.Throws<System.ArgumentException>(() => ChallengeLevels.Build("challenge-999", Resolver));
+            Assert.Throws<System.ArgumentException>(() => ChallengeLevels.SpecOf("challenge-999"));
+            Assert.Throws<System.ArgumentException>(() => ChallengeLevels.SeedOf("challenge-999"));
+        }
+
+        [Test]
+        public void ThePerfectOrder_OfEveryChallenge_ReplaysAsAValidAttempt()
+        {
+            foreach (string id in ChallengeLevels.AllIds)
+            {
+                LevelDefinition level = ChallengeLevels.Build(id, Resolver);
+                SolveResult solved = new LevelSolver(Resolver).Solve(level);
+                var moves = new System.Collections.Generic.List<ChallengeMove>();
+                if (level.PingBudget > 0) moves.Add(ChallengeMove.Ping());
+                moves.AddRange(solved.Solution.Select(ChallengeMove.Tap));
+
+                ReplayResult result = ChallengeReplay.Verify(
+                    level, new ChallengeAttempt(id, moves, 90f, 1, 0), Resolver, 0.25f);
+
+                Assert.IsTrue(result.IsValid, id + ": " + result.Message);
+                Assert.AreEqual(level.Bats.Count, result.Moves, id);
+            }
+        }
     }
 }

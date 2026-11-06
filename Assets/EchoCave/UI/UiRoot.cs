@@ -46,6 +46,7 @@ namespace EchoCave.UI
         private VisualElement _safeArea;
         private HudPresenter _presenter;
         private VisualElement _menu;
+        private VisualElement _popupsRoot;
         private VisualElement _root;
         private PopupsView _popupsView;
         private IAudioService _audio;
@@ -101,6 +102,7 @@ namespace EchoCave.UI
             _hud = root.Q<VisualElement>("hud-root");
             _safeArea = root.Q<VisualElement>("safe-area");
             _menu = root.Q<VisualElement>("menu-layer");
+            _popupsRoot = root.Q<VisualElement>("popups-root");
 
             LetPointerPassThrough(_hud);
 
@@ -145,6 +147,7 @@ namespace EchoCave.UI
             if (_popupsView != null) _popupsView.StarLit -= OnStarLit;
             _popupsView = null;
             _root = null;
+            _popupsRoot = null;
 
             _presenter?.Dispose();
             _presenter = null;
@@ -207,6 +210,13 @@ namespace EchoCave.UI
             _hud.EnableInClassList(PortraitClass, !landscape);
             _menu.EnableInClassList(LandscapeClass, landscape);
             _menu.EnableInClassList(PortraitClass, !landscape);
+
+            // The popups sit outside the HUD, so they get the orientation class themselves (the card is smaller in landscape).
+            if (_popupsRoot != null)
+            {
+                _popupsRoot.EnableInClassList(LandscapeClass, landscape);
+                _popupsRoot.EnableInClassList(PortraitClass, !landscape);
+            }
 
             ScreenInsets insets = ScreenInsets.FromSafeArea(Screen.safeArea, screen).InPanelUnits(scale.PixelsPerUnit(screen));
             _safeArea.style.paddingLeft = insets.Left;

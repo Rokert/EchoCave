@@ -57,5 +57,21 @@ namespace EchoCave.Tests
             view.SetChallengesVisible(true);
             Assert.IsFalse(button.ClassListContains("menu-button-hidden"));
         }
+
+        // The HUD is hidden (display none) while the menu shows, and the challenge list opens from the menu: a popup
+        // inside the HUD would be built and never seen. This is what happened the first time.
+        [Test]
+        public void ThePopups_AndTheMenu_AreNotInsideTheHud_WhichIsHiddenInTheMenu()
+        {
+            VisualElement root = Load("Hud.uxml");
+            VisualElement hud = root.Q("hud-root");
+
+            Assert.IsNotNull(hud);
+            Assert.IsNotNull(root.Q("popup-layer"), "the document has no popups");
+            Assert.IsNotNull(root.Q("menu-layer"), "the document has no menu");
+            Assert.IsNull(hud.Q("popup-layer"), "the popups are inside the HUD, so they cannot show from the menu");
+            Assert.IsNull(hud.Q("menu-layer"), "the menu is inside the HUD");
+            Assert.IsNotNull(root.Q("popups-root"), "UiRoot gives the popups their orientation class through this name");
+        }
     }
 }

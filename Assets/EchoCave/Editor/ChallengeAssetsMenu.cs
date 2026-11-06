@@ -18,49 +18,75 @@ namespace EchoCave.Editor
 
         public static string PathOf(string challengeId) => $"{Folder}/{challengeId}.asset";
 
-        [MenuItem("EchoCave/Challenges/Create challenge-001")]
-        private static void CreateChallenge001()
+        // Creates the asset of every challenge that has none yet, and checks the ones that already exist.
+        [MenuItem("EchoCave/Challenges/Create missing challenge assets")]
+        private static void CreateMissing()
         {
-            LevelDefinition recipe = ChallengeLevels.BuildChallenge001(Resolver);
-            string path = PathOf(ChallengeLevels.Challenge001Id);
-
-            var existing = AssetDatabase.LoadAssetAtPath<LevelData>(path);
-            if (existing != null)
-            {
-                Report(existing, recipe, "already exists");
-                return;
-            }
-
             if (!AssetDatabase.IsValidFolder(Folder)) AssetDatabase.CreateFolder("Assets/EchoCave/Data", "Challenges");
 
-            var asset = ScriptableObject.CreateInstance<LevelData>();
-            asset.Configure(recipe);
-            AssetDatabase.CreateAsset(asset, path);
-            AssetDatabase.SaveAssets();
-            Report(asset, recipe, "created");
+            foreach (string id in ChallengeLevels.AllIds)
+            {
+                LevelDefinition recipe = ChallengeLevels.Build(id, Resolver);
+                string path = PathOf(id);
+
+                var existing = AssetDatabase.LoadAssetAtPath<LevelData>(path);
+                if (existing != null)
+                {
+                    Report(id, existing, recipe, "already exists");
+                    continue;
+                }
+
+                var asset = ScriptableObject.CreateInstance<LevelData>();
+                asset.Configure(recipe);
+                AssetDatabase.CreateAsset(asset, path);
+                AssetDatabase.SaveAssets();
+                Report(id, asset, recipe, "created");
+            }
         }
 
-        // The list the game plays: challenge-001 for now. An existing catalog is never rewritten, only checked.
-        [MenuItem("EchoCave/Challenges/Create challenge catalog")]
-        private static void CreateCatalog()
+        // The list the game plays. A new catalog holds every challenge; an existing one only gets the missing ones added
+        // at the end, so no challenge is ever moved or rewritten.
+        [MenuItem("EchoCave/Challenges/Create or update challenge catalog")]
+        private static void CreateOrUpdateCatalog()
         {
-            var level = AssetDatabase.LoadAssetAtPath<LevelData>(PathOf(ChallengeLevels.Challenge001Id));
-            if (level == null)
+            var levels = new List<ChallengeCatalog.Entry>();
+            foreach (string id in ChallengeLevels.AllIds)
             {
-                Debug.LogError("[Challenges] Create challenge-001 first (EchoCave > Challenges > Create challenge-001).");
-                return;
+                var level = AssetDatabase.LoadAssetAtPath<LevelData>(PathOf(id));
+                if (level == null)
+                {
+                    Debug.LogError($"[Challenges] {id} has no asset. Run EchoCave > Challenges > Create missing challenge assets first.");
+                    return;
+                }
+
+                levels.Add(new ChallengeCatalog.Entry { challengeId = id, level = level });
             }
 
             var catalog = AssetDatabase.LoadAssetAtPath<ChallengeCatalog>(CatalogPath);
-            string what = "already exists";
+            string what;
             if (catalog == null)
             {
                 catalog = ScriptableObject.CreateInstance<ChallengeCatalog>();
-                catalog.SetEntries(new[] { new ChallengeCatalog.Entry { challengeId = ChallengeLevels.Challenge001Id, level = level } });
+                catalog.SetEntries(levels);
                 AssetDatabase.CreateAsset(catalog, CatalogPath);
-                AssetDatabase.SaveAssets();
                 what = "created";
             }
+            else
+            {
+                int added = 0;
+                foreach (ChallengeCatalog.Entry entry in levels)
+                {
+                    if (catalog.Has(entry.challengeId)) continue;
+
+                    catalog.Append(entry);
+                    added++;
+                }
+
+                if (added > 0) EditorUtility.SetDirty(catalog);
+                what = added > 0 ? $"updated ({added} added)" : "already up to date";
+            }
+
+            AssetDatabase.SaveAssets();
 
             IReadOnlyList<string> problems = catalog.FindProblems();
             if (problems.Count == 0) Debug.Log($"[Challenges] Challenge catalog {what}: {catalog.Count} challenge(s), no problems. Assign it to the Challenge Catalog field of GameRoot.", catalog);
@@ -70,27 +96,30 @@ namespace EchoCave.Editor
         [MenuItem("EchoCave/Challenges/Check challenge assets")]
         private static void Check()
         {
-            var asset = AssetDatabase.LoadAssetAtPath<LevelData>(PathOf(ChallengeLevels.Challenge001Id));
-            if (asset == null)
+            foreach (string id in ChallengeLevels.AllIds)
             {
-                Debug.LogError($"[Challenges] {ChallengeLevels.Challenge001Id} has no asset. Create it with EchoCave > Challenges > Create challenge-001.");
-                return;
-            }
+                var asset = AssetDatabase.LoadAssetAtPath<LevelData>(PathOf(id));
+                if (asset == null)
+                {
+                    Debug.LogError($"[Challenges] {id} has no asset. Create it with EchoCave > Challenges > Create missing challenge assets.");
+                    continue;
+                }
 
-            Report(asset, ChallengeLevels.BuildChallenge001(Resolver), "checked");
+                Report(id, asset, ChallengeLevels.Build(id, Resolver), "checked");
+            }
         }
 
-        private static void Report(LevelData asset, LevelDefinition recipe, string what)
+        private static void Report(string id, LevelData asset, LevelDefinition recipe, string what)
         {
             if (!ChallengeLevels.SameLevel(asset.ToDefinition(), recipe))
             {
-                Debug.LogError($"[Challenges] {ChallengeLevels.Challenge001Id} {what}, but the asset is NOT the level of its recipe. " +
+                Debug.LogError($"[Challenges] {id} {what}, but the asset is NOT the level of its recipe. " +
                                "A changed challenge would reset its leaderboard: restore the asset from git, or make a new challenge id.", asset);
                 return;
             }
 
             ChallengeDifficulty.TryMeasure(recipe, Resolver, 3000, 5, out ChallengeDifficulty d);
-            Debug.Log($"[Challenges] {ChallengeLevels.Challenge001Id} {what}: {d.Bats} bats, {d.Hidden} hidden, {d.PingBudget} ping(s), " +
+            Debug.Log($"[Challenges] {id} {what}: {d.Bats} bats, {d.Hidden} hidden, {d.PingBudget} ping(s), " +
                       $"{d.Waves} waves, a blind player wastes {d.ExpectedBlindBounces:0.0} taps, flawless by luck {d.ChanceOfFlawlessBlindRun:P2}.", asset);
         }
     }
