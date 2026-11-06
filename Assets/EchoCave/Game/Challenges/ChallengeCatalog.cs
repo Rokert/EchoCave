@@ -52,6 +52,19 @@ namespace EchoCave.Game
             return result;
         }
 
+        internal bool Has(string id)
+        {
+            foreach (Entry entry in entries)
+                if (entry.challengeId == id) return true;
+            return false;
+        }
+
+        // Appends at the end: an existing challenge is never moved.
+        internal void Append(Entry entry)
+        {
+            entries.Add(entry);
+        }
+
         internal void SetEntries(IEnumerable<Entry> newEntries)
         {
             entries = new List<Entry>(newEntries);
