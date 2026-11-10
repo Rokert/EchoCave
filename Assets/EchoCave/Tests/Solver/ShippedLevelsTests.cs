@@ -46,6 +46,32 @@ namespace EchoCave.Tests
             for (int i = 0; i < 10; i++) Assert.AreEqual(i + 1, ids[i], $"catalog position {i}");
         }
 
+        // A challenge is about hidden arrows and pings, so none may open before the player has won the first numbered level
+        // that has a hidden bat. If the levels change, this fails and the thresholds have to be looked at again.
+        [Test]
+        public void NoChallengeOpens_BeforeTheFirstLevelWithAHiddenBatIsWon()
+        {
+            string[] guids = AssetDatabase.FindAssets("t:LevelCatalog");
+            Assert.AreEqual(1, guids.Length, "Expected exactly one LevelCatalog.");
+            var levels = AssetDatabase.LoadAssetAtPath<LevelCatalog>(AssetDatabase.GUIDToAssetPath(guids[0])).ToDefinitions();
+
+            int firstHidden = -1;
+            for (int i = 0; i < levels.Count && firstHidden < 0; i++)
+                foreach (BatDefinition bat in levels[i].Bats)
+                    if (bat.IsHidden) { firstHidden = i + 1; break; }
+
+            Assert.Greater(firstHidden, 0, "No numbered level has a hidden bat, so there is nothing to compare with.");
+
+            foreach (string id in ChallengeLevels.AllIds)
+                Assert.GreaterOrEqual(ChallengeLevels.DefaultLevelsToUnlock(id), firstHidden, $"{id} default threshold");
+
+            string[] catalogs = AssetDatabase.FindAssets("t:ChallengeCatalog");
+            Assert.AreEqual(1, catalogs.Length, "Expected exactly one ChallengeCatalog.");
+            var challenges = AssetDatabase.LoadAssetAtPath<ChallengeCatalog>(AssetDatabase.GUIDToAssetPath(catalogs[0]));
+            foreach (ChallengeEntry entry in challenges.ToEntries())
+                Assert.GreaterOrEqual(entry.LevelsToUnlock, firstHidden, $"{entry.Id} threshold in the shipped catalog");
+        }
+
         [Test]
         public void EveryLevel_IsValid_Solvable_AndFitsItsMoveLimit()
         {

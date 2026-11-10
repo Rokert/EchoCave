@@ -24,9 +24,9 @@ namespace EchoCave.Tests
         }
 
         [Test]
-        public void TheDefaultThresholds_AreOneFiveAndTen_AndEveryChallengeHasOne()
+        public void TheDefaultThresholds_AreFourSevenAndTen_AndEveryChallengeHasOne()
         {
-            CollectionAssert.AreEqual(new[] { 1, 5, 10 }, new List<int>
+            CollectionAssert.AreEqual(new[] { 4, 7, 10 }, new List<int>
             {
                 ChallengeLevels.DefaultLevelsToUnlock(ChallengeLevels.Challenge001Id),
                 ChallengeLevels.DefaultLevelsToUnlock(ChallengeLevels.Challenge002Id),
