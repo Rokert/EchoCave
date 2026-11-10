@@ -45,11 +45,31 @@ namespace EchoCave.Game
         // The best results on every challenge: this device's, for now. Set in Awake.
         public IChallengeLeaderboard Leaderboard => _leaderboard;
 
-        // The challenges open once every numbered level has been won.
-        public bool ChallengesUnlocked => ChallengeAccess.IsUnlocked(_save.Progress, _levelIds);
+        // A challenge opens once the player has won as many numbered levels as its own threshold asks for.
+        public bool IsChallengeUnlocked(int index) =>
+            ChallengeAccess.IsUnlocked(_save.Progress, _levelIds, _challenges[index].LevelsToUnlock);
 
-        // How many numbered levels are still to win before the challenges open.
-        public int ChallengeLevelsLeft => ChallengeAccess.LevelsLeft(_save.Progress, _levelIds);
+        // How many numbered levels are still to win before this challenge opens.
+        public int ChallengeLevelsLeft(int index) =>
+            ChallengeAccess.LevelsLeft(_save.Progress, _levelIds, _challenges[index].LevelsToUnlock);
+
+        // How many challenges are open now.
+        public int UnlockedChallengeCount
+        {
+            get
+            {
+                int open = 0;
+                for (int i = 0; i < _challenges.Count; i++)
+                    if (IsChallengeUnlocked(i)) open++;
+                return open;
+            }
+        }
+
+        // True while a challenge is open that the player has not yet seen in the list: the menu shows NEW.
+        public bool HasNewChallenges => UnlockedChallengeCount > _save.ChallengesSeen;
+
+        // The player opened the list: everything open now counts as seen.
+        public void MarkChallengesSeen() => _save.SetChallengesSeen(UnlockedChallengeCount);
 
         // How many times the player has started this challenge, solved or not.
         public int ChallengeAttempts(string challengeId) => _save.Challenges.Get(challengeId).Attempts;
@@ -246,11 +266,11 @@ namespace EchoCave.Game
             boardCamera.Frame(boardView);
         }
 
-        // What the challenge list calls: starts the challenge at this position, from the menu, once the challenges are
-        // unlocked. Returns false when they are not.
+        // What the challenge list calls: starts the challenge at this position, from the menu, once it is unlocked.
+        // Returns false when it is not (or there is no such challenge).
         public bool RequestChallenge(int index)
         {
-            if (!ChallengesUnlocked) return false;
+            if (index < 0 || index >= _challenges.Count || !IsChallengeUnlocked(index)) return false;
 
             Flow.RequestChallenge(index);
             return true;

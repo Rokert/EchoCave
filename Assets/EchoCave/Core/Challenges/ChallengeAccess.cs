@@ -3,38 +3,57 @@ using System.Collections.Generic;
 
 namespace EchoCave.Core
 {
-    // When the challenges open: once the player has won every numbered level. A level that is added later closes the
-    // challenges again until it is won, which is what "finished the game" means.
+    // When each challenge opens: once the player has won a given number of the numbered levels (the challenge's own
+    // threshold, kept in the catalog). A threshold higher than the number of levels is capped at it, so a challenge can
+    // always be reached by winning every level.
     public static class ChallengeAccess
     {
-        // levelIds are the stable ids of the levels in the catalog. A game with no levels never unlocks them.
-        public static bool IsUnlocked(PlayerProgress progress, IReadOnlyList<int> levelIds)
+        // How many of the levels (the stable ids in the catalog) the player has won, with any number of stars.
+        public static int LevelsWon(PlayerProgress progress, IReadOnlyList<int> levelIds)
         {
             if (progress == null) throw new ArgumentNullException(nameof(progress));
+            if (levelIds == null) throw new ArgumentNullException(nameof(levelIds));
+
+            int won = 0;
+            foreach (int id in levelIds)
+            {
+                if (progress.IsCompleted(id)) won++;
+            }
+
+            return won;
+        }
+
+        // A game with no levels never opens a challenge.
+        public static bool IsUnlocked(PlayerProgress progress, IReadOnlyList<int> levelIds, int levelsToUnlock)
+        {
+            if (levelsToUnlock < 0) throw new ArgumentOutOfRangeException(nameof(levelsToUnlock), levelsToUnlock, "Cannot be negative.");
             if (levelIds == null) throw new ArgumentNullException(nameof(levelIds));
             if (levelIds.Count == 0) return false;
 
-            foreach (int id in levelIds)
-            {
-                if (!progress.IsCompleted(id)) return false;
-            }
-
-            return true;
+            return LevelsLeft(progress, levelIds, levelsToUnlock) == 0;
         }
 
-        // How many levels are still to win, for a message like "Win 3 more levels".
-        public static int LevelsLeft(PlayerProgress progress, IReadOnlyList<int> levelIds)
+        // How many levels are still to win before the challenge opens, for a message like "Win 3 more levels".
+        public static int LevelsLeft(PlayerProgress progress, IReadOnlyList<int> levelIds, int levelsToUnlock)
         {
-            if (progress == null) throw new ArgumentNullException(nameof(progress));
-            if (levelIds == null) throw new ArgumentNullException(nameof(levelIds));
+            if (levelsToUnlock < 0) throw new ArgumentOutOfRangeException(nameof(levelsToUnlock), levelsToUnlock, "Cannot be negative.");
 
-            int left = 0;
-            foreach (int id in levelIds)
+            int needed = levelIds != null ? Math.Min(levelsToUnlock, levelIds.Count) : 0;
+            return Math.Max(0, needed - LevelsWon(progress, levelIds));
+        }
+
+        // How many of the challenges (one threshold each) are open.
+        public static int UnlockedCount(PlayerProgress progress, IReadOnlyList<int> levelIds, IReadOnlyList<int> thresholds)
+        {
+            if (thresholds == null) throw new ArgumentNullException(nameof(thresholds));
+
+            int open = 0;
+            foreach (int threshold in thresholds)
             {
-                if (!progress.IsCompleted(id)) left++;
+                if (IsUnlocked(progress, levelIds, threshold)) open++;
             }
 
-            return left;
+            return open;
         }
     }
 }

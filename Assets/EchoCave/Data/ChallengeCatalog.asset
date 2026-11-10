@@ -15,8 +15,11 @@ MonoBehaviour:
   entries:
   - challengeId: challenge-001
     level: {fileID: 11400000, guid: d705f28e7d08d4e62814494da96dc5ba, type: 2}
+    levelsToUnlock: 1
   - challengeId: challenge-002
     level: {fileID: 11400000, guid: 22acc99f501f8458b97efd805fc8ad52, type: 2}
+    levelsToUnlock: 5
   - challengeId: challenge-003
     level: {fileID: 11400000, guid: a464f1e50925b4699b80c76e67a7a0c7, type: 2}
+    levelsToUnlock: 10
   minSecondsPerTap: 0.15

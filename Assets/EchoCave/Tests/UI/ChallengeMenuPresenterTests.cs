@@ -61,5 +61,43 @@ namespace EchoCave.Tests
 
             Assert.AreEqual(0, opened);
         }
+
+        [Test]
+        public void TheNewTag_ShowsWhileAChallengeIsUnseen_AndGoesWhenTheMenuIsShownAgain()
+        {
+            bool isNew = true;
+            using (var presenter = new MenuPresenter(_view, _bus, () => { }, true, challenges: () => { }, challengesAreNew: () => isNew))
+            {
+                Assert.IsTrue(_view.ChallengesNew);
+
+                isNew = false;
+                presenter.Show();
+
+                Assert.IsFalse(_view.ChallengesNew);
+            }
+        }
+
+        [Test]
+        public void TheNewTag_IsRefreshedWhenTheFlowReturnsToTheMenu()
+        {
+            bool isNew = false;
+            using (new MenuPresenter(_view, _bus, () => { }, false, challenges: () => { }, challengesAreNew: () => isNew))
+            {
+                isNew = true;
+
+                _bus.Publish(new MenuOpened());
+
+                Assert.IsTrue(_view.ChallengesNew);
+            }
+        }
+
+        [Test]
+        public void WithoutAChallengesAction_ThereIsNoNewTag()
+        {
+            using (new MenuPresenter(_view, _bus, () => { }, true, challengesAreNew: () => true))
+            {
+                Assert.IsFalse(_view.ChallengesNew);
+            }
+        }
     }
 }

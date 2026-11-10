@@ -120,5 +120,54 @@ namespace EchoCave.Tests
             Assert.AreEqual(first, second);
             Assert.Less(first.IndexOf("a-1"), first.IndexOf("b-2"), "ordered by id");
         }
+
+        [Test]
+        public void TheSeenCount_IsSaved_ReadBack_AndForgottenByReset()
+        {
+            var store = new InMemorySaveStore();
+            var service = new SaveService(store, StartingHints);
+            Assert.AreEqual(0, service.ChallengesSeen);
+
+            service.SetChallengesSeen(2);
+            Assert.AreEqual(2, new SaveService(store, StartingHints).ChallengesSeen);
+
+            service.Reset();
+            Assert.AreEqual(0, service.ChallengesSeen);
+            Assert.AreEqual(0, new SaveService(store, StartingHints).ChallengesSeen);
+        }
+
+        [Test]
+        public void ASaveFromVersion7_ReadsASeenCountOfZero_SoTheMenuShowsNew()
+        {
+            var store = new InMemorySaveStore();
+            store.Write("{\"version\":7,\"hints\":2,\"challengesSeen\":5,\"levels\":[],\"challenges\":[]}");
+
+            Assert.AreEqual(0, new SaveService(store, StartingHints).ChallengesSeen);
+        }
+
+        [Test]
+        public void ANegativeSeenCount_IsRejected_AndOneInTheFileReadsAsZero()
+        {
+            var store = new InMemorySaveStore();
+            var service = new SaveService(store, StartingHints);
+            Assert.Throws<System.ArgumentOutOfRangeException>(() => service.SetChallengesSeen(-1));
+
+            store.Write("{\"version\":8,\"hints\":2,\"challengesSeen\":-3,\"levels\":[],\"challenges\":[]}");
+            Assert.AreEqual(0, new SaveService(store, StartingHints).ChallengesSeen);
+        }
+
+        [Test]
+        public void SettingTheSameSeenCount_WritesNothingNew()
+        {
+            var store = new InMemorySaveStore();
+            var service = new SaveService(store, StartingHints);
+            service.SetChallengesSeen(1);
+            store.TryRead(out string before);
+
+            service.SetChallengesSeen(1);
+
+            store.TryRead(out string after);
+            Assert.AreEqual(before, after);
+        }
     }
 }

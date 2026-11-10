@@ -33,6 +33,10 @@ namespace EchoCave.Tests
 
         public void SetChallengesVisible(bool visible) => ChallengesVisible = visible;
 
+        public bool ChallengesNew;
+
+        public void SetChallengesNew(bool isNew) => ChallengesNew = isNew;
+
         public void PressChallenges() => ChallengesPressed?.Invoke();
 
         public void PressHowToPlay() => HowToPlayPressed?.Invoke();

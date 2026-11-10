@@ -33,6 +33,14 @@ namespace EchoCave.UI
 
         public static string Rank(int rank) => "Rank " + rank + " on this device";
 
+        // What a win says when it opens challenges: "A challenge is open! Find it in the menu."
+        public static string UnlockedNote(int opened)
+        {
+            return opened == 1
+                ? "New challenge unlocked! Find it in the menu."
+                : opened + " new challenges unlocked! Find them in the menu.";
+        }
+
         public static string LockedMessage(int levelsLeft)
         {
             return levelsLeft == 1 ? "Win 1 more level to unlock" : "Win " + levelsLeft + " more levels to unlock";

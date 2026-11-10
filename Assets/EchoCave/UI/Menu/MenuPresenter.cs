@@ -13,18 +13,23 @@ namespace EchoCave.UI
         private readonly Action _play;
         private readonly Action _howToPlay;
         private readonly Action _challenges;
+        private readonly Func<bool> _challengesAreNew;
 
         // startInMenu is the flow's state at the moment the UI is built: the flow raises MenuOpened in its
         // constructor, before any subscriber exists.
         // howToPlay is optional: without it the button stays hidden.
         // challenges is optional too: it opens the list of challenges, and the button stays hidden without it.
-        public MenuPresenter(IMenuView view, EventBus events, Action play, bool startInMenu, Action howToPlay = null, Action challenges = null)
+        // challengesAreNew is optional: it says whether a challenge is open that the player has not seen, for the NEW tag.
+        public MenuPresenter(
+            IMenuView view, EventBus events, Action play, bool startInMenu, Action howToPlay = null, Action challenges = null,
+            Func<bool> challengesAreNew = null)
         {
             _view = view ?? throw new ArgumentNullException(nameof(view));
             _events = events ?? throw new ArgumentNullException(nameof(events));
             _play = play ?? throw new ArgumentNullException(nameof(play));
             _howToPlay = howToPlay;
             _challenges = challenges;
+            _challengesAreNew = challengesAreNew;
 
             _view.PlayPressed += OnPlayPressed;
             _view.HowToPlayPressed += OnHowToPlayPressed;
@@ -37,7 +42,7 @@ namespace EchoCave.UI
             _view.SetHowToPlayVisible(_howToPlay != null);
             _view.SetChallengesVisible(_challenges != null);
 
-            if (startInMenu) _view.Show();
+            if (startInMenu) Show();
             else _view.Hide();
         }
 
@@ -77,9 +82,13 @@ namespace EchoCave.UI
         }
 
         // Shows the menu again, for whatever covered it (the challenge list) to call when it is done.
-        public void Show() => _view.Show();
+        public void Show()
+        {
+            _view.SetChallengesNew(_challengesAreNew != null && _challenges != null && _challengesAreNew());
+            _view.Show();
+        }
 
-        private void OnMenuOpened(MenuOpened opened) => _view.Show();
+        private void OnMenuOpened(MenuOpened opened) => Show();
 
         private void OnLevelStarted(LevelStarted started) => _view.Hide();
 

@@ -59,7 +59,7 @@ namespace EchoCave.Editor
                     return;
                 }
 
-                levels.Add(new ChallengeCatalog.Entry { challengeId = id, level = level });
+                levels.Add(new ChallengeCatalog.Entry { challengeId = id, level = level, levelsToUnlock = ChallengeLevels.DefaultLevelsToUnlock(id) });
             }
 
             var catalog = AssetDatabase.LoadAssetAtPath<ChallengeCatalog>(CatalogPath);
@@ -82,8 +82,16 @@ namespace EchoCave.Editor
                     added++;
                 }
 
-                if (added > 0) EditorUtility.SetDirty(catalog);
-                what = added > 0 ? $"updated ({added} added)" : "already up to date";
+                // An entry made before the thresholds existed reads 0, which would open it from the start.
+                int filled = catalog.FillZeroThresholds(id =>
+                {
+                    foreach (string known in ChallengeLevels.AllIds)
+                        if (known == id) return ChallengeLevels.DefaultLevelsToUnlock(id);
+                    return 0;
+                });
+
+                if (added > 0 || filled > 0) EditorUtility.SetDirty(catalog);
+                what = added > 0 || filled > 0 ? $"updated ({added} added, {filled} thresholds set)" : "already up to date";
             }
 
             AssetDatabase.SaveAssets();

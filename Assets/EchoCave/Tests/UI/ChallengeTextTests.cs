@@ -50,5 +50,12 @@ namespace EchoCave.Tests
             Assert.AreEqual("Win 1 more level to unlock", ChallengeText.LockedMessage(1));
             Assert.AreEqual("Win 4 more levels to unlock", ChallengeText.LockedMessage(4));
         }
+
+        [Test]
+        public void TheUnlockedNote_SaysOneOrSeveral()
+        {
+            Assert.AreEqual("New challenge unlocked! Find it in the menu.", ChallengeText.UnlockedNote(1));
+            Assert.AreEqual("2 new challenges unlocked! Find them in the menu.", ChallengeText.UnlockedNote(2));
+        }
     }
 }

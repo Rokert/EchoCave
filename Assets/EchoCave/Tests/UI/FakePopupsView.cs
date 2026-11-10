@@ -34,6 +34,7 @@ namespace EchoCave.Tests
         public IReadOnlyList<ChallengeRowData> Rows;
         public string Message;
         public string ResultTitle;
+        public string CompleteNote = string.Empty;
         public IReadOnlyList<string> ResultLines;
 
         public void ShowChallenges(IReadOnlyList<ChallengeRowData> rows, string message)
@@ -49,6 +50,8 @@ namespace EchoCave.Tests
             ResultTitle = title;
             ResultLines = lines;
         }
+
+        public void SetCompleteNote(string note) => CompleteNote = note;
 
         public void PressChallenge(int index) => ChallengePressed?.Invoke(index);
 

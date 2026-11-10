@@ -61,6 +61,10 @@ namespace EchoCave.UI
         // The challenge list. A message (empty for none) is shown above it, for example why the challenges are locked.
         void ShowChallenges(IReadOnlyList<ChallengeRowData> rows, string message);
 
+        // A line under the stars of the level complete popup, for news such as a challenge that just opened. Empty hides
+        // it. Set it before ShowComplete.
+        void SetCompleteNote(string note);
+
         // A solved challenge: a title and a few lines. Also used to say a run was not counted.
         void ShowChallengeResult(string title, IReadOnlyList<string> lines);
 

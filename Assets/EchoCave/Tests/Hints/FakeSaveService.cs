@@ -39,6 +39,10 @@ namespace EchoCave.Tests
 
         public void SetTutorialSeen(bool seen) => TutorialSeen = seen;
 
+        public int ChallengesSeen { get; private set; }
+
+        public void SetChallengesSeen(int count) => ChallengesSeen = count;
+
         public int GetRewardState(string key) => _rewardState.TryGetValue(key, out int value) ? value : 0;
 
         public void SetRewardState(string key, int value)

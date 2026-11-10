@@ -131,7 +131,8 @@ namespace EchoCave.UI
             _menuPresenter = new MenuPresenter(
                 menuView, EventBus.Global, gameRoot.RequestPlay, flow.State == GameState.Menu,
                 flow.HasTutorial ? (Action)(() => flow.RequestTutorial(thenStartGame: false)) : null,
-                flow.HasChallenges ? (Action)(() => _popups.OpenChallenges()) : null);
+                flow.HasChallenges ? (Action)OpenChallenges : null,
+                () => gameRoot.HasNewChallenges);
 
             _root.RegisterCallback<ClickEvent>(OnClick);
             popupsView.StarLit += OnStarLit;
@@ -139,6 +140,13 @@ namespace EchoCave.UI
             tapInput.SetBlocker(new UiPointerBlocker(document));
 
             ApplyLayout();
+        }
+
+        // Opening the list marks what is open as seen, so the NEW tag is gone when the menu comes back.
+        private void OpenChallenges()
+        {
+            gameRoot.MarkChallengesSeen();
+            _popups.OpenChallenges();
         }
 
         private void Decompose()

@@ -16,6 +16,7 @@
                 <ui:VisualElement class="star" picking-mode="Ignore"><ui:VisualElement name="complete-star-2" class="star__fill" picking-mode="Ignore" /></ui:VisualElement>
             </ui:VisualElement>
             <ui:Label name="complete-moves" text="Moves" class="popup__text font-medium" picking-mode="Ignore" />
+            <ui:Label name="complete-note" text="" class="popup__text popup__note font-bold popup-hidden" picking-mode="Ignore" />
             <ui:VisualElement class="popup__buttons">
                 <ui:Button name="complete-replay" class="pill-button pill-button--secondary">
                     <ui:VisualElement class="pill-button__lip" picking-mode="Ignore" />

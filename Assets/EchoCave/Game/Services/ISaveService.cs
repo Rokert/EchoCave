@@ -28,6 +28,12 @@ namespace EchoCave.Game
         // Saves the tutorial flag at once when it changed.
         void SetTutorialSeen(bool seen);
 
+        // How many open challenges the player has already seen in the list; the menu shows NEW while more are open.
+        int ChallengesSeen { get; }
+
+        // Saves the seen count at once when it changed. Never negative.
+        void SetChallengesSeen(int count);
+
         // The tries and the best results of every challenge, which is also the local leaderboard.
         ChallengeProgress Challenges { get; }
 

@@ -9,9 +9,9 @@ namespace EchoCave.Game
     // never thrown, because a broken save must not stop the game from starting.
     public static class SaveSerializer
     {
-        // Version 7 adds the challenge tries and results. Version 6 added the tutorial-seen flag. Version 5 added the reserve hints and the state of the hint rewards. Version 4 added the hint count. Version 3 added the sound and music switches, version 2 keyed levels by their
+        // Version 8 adds how many open challenges the player has seen. Version 7 added the challenge tries and results. Version 6 added the tutorial-seen flag. Version 5 added the reserve hints and the state of the hint rewards. Version 4 added the hint count. Version 3 added the sound and music switches, version 2 keyed levels by their
         // stable id (D-029) and version 1 by catalog position.
-        public const int CurrentVersion = 7;
+        public const int CurrentVersion = 8;
 
         // The ten levels of version 1 got ids 1 to 10 in catalog order, so position i was id i + 1.
         private const int LegacyIdOffset = 1;
@@ -33,6 +33,7 @@ namespace EchoCave.Game
             public int hints;
             public int reserveHints;
             public bool tutorialSeen;
+            public int challengesSeen;
             public List<RewardEntry> rewardState = new List<RewardEntry>();
             public List<LevelEntry> levels = new List<LevelEntry>();
             public List<ChallengeEntry> challenges = new List<ChallengeEntry>();
@@ -87,11 +88,13 @@ namespace EchoCave.Game
 
         public static string Serialize(
             PlayerProgress progress, bool soundOn, bool musicOn, int hints, int reserveHints = 0,
-            IReadOnlyDictionary<string, int> rewardState = null, bool tutorialSeen = false, ChallengeProgress challenges = null)
+            IReadOnlyDictionary<string, int> rewardState = null, bool tutorialSeen = false, ChallengeProgress challenges = null,
+            int challengesSeen = 0)
         {
             if (progress == null) throw new ArgumentNullException(nameof(progress));
 
-            var file = new SaveFile { version = CurrentVersion, soundOff = !soundOn, musicOff = !musicOn, hints = hints, reserveHints = reserveHints, tutorialSeen = tutorialSeen };
+            var file = new SaveFile { version = CurrentVersion, soundOff = !soundOn, musicOff = !musicOn, hints = hints, reserveHints = reserveHints, tutorialSeen = tutorialSeen,
+                challengesSeen = Math.Max(0, challengesSeen) };
             foreach (LevelRecord record in progress.Records)
                 file.levels.Add(new LevelEntry { id = record.LevelId, stars = record.Stars, moves = record.BestMoves });
 
@@ -185,7 +188,8 @@ namespace EchoCave.Game
                 }
             }
 
-            content = new SaveContent(progress, !file.soundOff, !file.musicOff, hints, reserveHints, rewardState, tutorialSeen, challenges);
+            content = new SaveContent(progress, !file.soundOff, !file.musicOff, hints, reserveHints, rewardState, tutorialSeen, challenges,
+                version >= 8 ? Math.Max(0, file.challengesSeen) : 0);
             return true;
         }
 
