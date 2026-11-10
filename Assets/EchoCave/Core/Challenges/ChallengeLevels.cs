@@ -52,14 +52,16 @@ namespace EchoCave.Core
         // Every challenge there is, in the order the catalog lists them.
         public static readonly string[] AllIds = { Challenge001Id, Challenge002Id, Challenge003Id };
 
-        // How many numbered levels a player wins before each challenge opens: the first early, the others as a reward for
-        // getting further. Only what the editor menu writes into a new catalog entry; the catalog asset is what the game reads.
+        // How many numbered levels a player wins before each challenge opens. A challenge is about hidden arrows and the ping
+        // budget, so the first opens once the player has won the first level that has a hidden bat (level 4); the others come
+        // as a reward for getting further. Only what the editor menu writes into a new catalog entry; the catalog asset is
+        // what the game reads.
         public static int DefaultLevelsToUnlock(string challengeId)
         {
             switch (challengeId)
             {
-                case Challenge001Id: return 1;
-                case Challenge002Id: return 5;
+                case Challenge001Id: return 4;
+                case Challenge002Id: return 7;
                 case Challenge003Id: return 10;
                 default: throw new ArgumentException($"Unknown challenge id \"{challengeId}\".", nameof(challengeId));
             }
