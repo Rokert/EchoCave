@@ -19,9 +19,11 @@ namespace EchoCave.UI
 
         public string IdOf(int index) => _game.Challenges[index].Id;
 
-        public bool Unlocked => _game.ChallengesUnlocked;
+        public bool IsUnlocked(int index) => _game.IsChallengeUnlocked(index);
 
-        public int LevelsLeft => _game.ChallengeLevelsLeft;
+        public int LevelsLeftOf(int index) => _game.ChallengeLevelsLeft(index);
+
+        public int UnlockedCount => _game.UnlockedChallengeCount;
 
         public int AttemptsOf(int index) => _game.ChallengeAttempts(IdOf(index));
 

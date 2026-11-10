@@ -73,5 +73,40 @@ namespace EchoCave.Tests
             Assert.IsNull(hud.Q("menu-layer"), "the menu is inside the HUD");
             Assert.IsNotNull(root.Q("popups-root"), "UiRoot gives the popups their orientation class through this name");
         }
+
+        [Test]
+        public void TheCompleteNote_ExistsInTheShippedPopups_StartsHidden_AndShowsWhenSet()
+        {
+            VisualElement root = Load("Popups.uxml");
+            var view = new PopupsView(root, 0);
+            Label note = root.Q<Label>("complete-note");
+
+            Assert.IsNotNull(note, "the complete popup has no complete-note");
+            Assert.IsTrue(note.ClassListContains("popup-hidden"));
+
+            view.SetCompleteNote("New challenge unlocked! Find it in the menu.");
+            Assert.IsFalse(note.ClassListContains("popup-hidden"));
+            Assert.AreEqual("New challenge unlocked! Find it in the menu.", note.text);
+
+            view.SetCompleteNote(string.Empty);
+            Assert.IsTrue(note.ClassListContains("popup-hidden"));
+        }
+
+        [Test]
+        public void TheChallengesBadge_ExistsInTheShippedMenu_StartsHidden_AndFollowsTheNewFlag()
+        {
+            VisualElement root = Load("Menu.uxml");
+            var view = new MenuView(root, "0.1.4");
+            Label badge = root.Q<Label>("challenges-badge");
+
+            Assert.IsNotNull(badge, "the menu has no challenges-badge");
+            Assert.IsTrue(badge.ClassListContains("menu-button-hidden"));
+
+            view.SetChallengesNew(true);
+            Assert.IsFalse(badge.ClassListContains("menu-button-hidden"));
+
+            view.SetChallengesNew(false);
+            Assert.IsTrue(badge.ClassListContains("menu-button-hidden"));
+        }
     }
 }

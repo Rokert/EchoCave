@@ -10,11 +10,14 @@ namespace EchoCave.UI
 
         string IdOf(int index);
 
-        // Whether the player has won every numbered level.
-        bool Unlocked { get; }
+        // Whether the challenge is open: the player has won as many numbered levels as it asks for.
+        bool IsUnlocked(int index);
 
-        // How many numbered levels are still to win.
-        int LevelsLeft { get; }
+        // How many numbered levels are still to win before it opens.
+        int LevelsLeftOf(int index);
+
+        // How many challenges are open now.
+        int UnlockedCount { get; }
 
         int AttemptsOf(int index);
 

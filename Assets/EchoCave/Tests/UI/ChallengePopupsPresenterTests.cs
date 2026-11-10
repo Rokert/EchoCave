@@ -13,11 +13,17 @@ namespace EchoCave.Tests
         private sealed class FakeSource : IChallengeSource
         {
             public int Count { get; set; } = 2;
-            public bool Unlocked { get; set; } = true;
-            public int LevelsLeft { get; set; }
+            public readonly HashSet<int> Locked = new HashSet<int>();
+            public readonly Dictionary<int, int> LevelsLeft = new Dictionary<int, int>();
             public readonly Dictionary<int, int> Attempts = new Dictionary<int, int>();
             public readonly Dictionary<int, List<ChallengeResult>> Top = new Dictionary<int, List<ChallengeResult>>();
             public readonly List<int> Played = new List<int>();
+
+            public bool IsUnlocked(int index) => !Locked.Contains(index);
+
+            public int LevelsLeftOf(int index) => LevelsLeft.TryGetValue(index, out int n) ? n : 0;
+
+            public int UnlockedCount => Count - Locked.Count;
 
             public string IdOf(int index) => "challenge-" + (index + 1).ToString("000");
 
@@ -87,19 +93,75 @@ namespace EchoCave.Tests
         }
 
         [Test]
-        public void LockedChallenges_SayWhy_AndCannotBePlayed()
+        public void ALockedChallenge_SaysWhatItTakes_AndCannotBePlayed_WhileTheOthersCan()
         {
-            _source.Unlocked = false;
-            _source.LevelsLeft = 4;
+            _source.Locked.Add(0);
+            _source.LevelsLeft[0] = 4;
+            _source.Top[0] = new List<ChallengeResult> { Result(45, 200f) };
 
             _presenter.OpenChallenges();
 
-            Assert.AreEqual("Win 4 more levels to unlock", _view.Message);
+            Assert.AreEqual(string.Empty, _view.Message);
             Assert.IsFalse(_view.Rows[0].CanPlay);
+            Assert.AreEqual("Win 4 more levels to unlock", _view.Rows[0].Summary);
+            Assert.IsEmpty(_view.Rows[0].Lines, "a closed challenge shows no results");
+            Assert.IsTrue(_view.Rows[1].CanPlay);
 
             _view.PressChallenge(0);
             Assert.IsEmpty(_source.Played);
             Assert.AreEqual(ShownPopup.ChallengeList, _view.Shown, "the list stays open");
+
+            _view.PressChallenge(1);
+            CollectionAssert.AreEqual(new[] { 1 }, _source.Played);
+        }
+
+        [Test]
+        public void AWinThatOpensAChallenge_SaysSoOnTheLevelCompletePopup_OnlyOnce()
+        {
+            _source.Locked.Add(0);
+            _presenter.OpenChallenges();
+            _source.Locked.Remove(0);
+
+            _bus.Publish(new LevelWon(0, 5, 3));
+            Assert.AreEqual("New challenge unlocked! Find it in the menu.", _view.CompleteNote);
+            Assert.AreEqual(ShownPopup.Complete, _view.Shown);
+
+            _bus.Publish(new LevelWon(1, 5, 3));
+            Assert.AreEqual(string.Empty, _view.CompleteNote, "nothing new the second time");
+        }
+
+        [Test]
+        public void SeveralChallengesOpeningAtOnce_AreCounted()
+        {
+            _source.Locked.Add(0);
+            _source.Locked.Add(1);
+            _presenter.OpenChallenges();
+            _source.Locked.Clear();
+
+            _bus.Publish(new LevelWon(0, 5, 3));
+
+            Assert.AreEqual("2 new challenges unlocked! Find them in the menu.", _view.CompleteNote);
+        }
+
+        [Test]
+        public void AWinThatOpensNothing_HasNoNote()
+        {
+            _bus.Publish(new LevelWon(0, 5, 3));
+
+            Assert.AreEqual(string.Empty, _view.CompleteNote);
+        }
+
+        [Test]
+        public void WithoutChallenges_ALevelWinNeverHasANote()
+        {
+            var view = new FakePopupsView();
+            using (new PopupsPresenter(view, _bus, _commands))
+            {
+                _bus.Publish(new LevelWon(0, 5, 3));
+
+                Assert.AreEqual(string.Empty, view.CompleteNote);
+                Assert.AreEqual(ShownPopup.Complete, view.Shown);
+            }
         }
 
         [Test]

@@ -15,6 +15,9 @@ namespace EchoCave.UI
         // The "Challenges" button only shows when the game has challenges.
         void SetChallengesVisible(bool visible);
 
+        // The NEW tag on the Challenges button: a challenge is open that the player has not seen in the list yet.
+        void SetChallengesNew(bool isNew);
+
         void Show();
         void Hide();
     }

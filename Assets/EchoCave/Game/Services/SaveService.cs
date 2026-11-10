@@ -17,6 +17,7 @@ namespace EchoCave.Game
         public int Hints { get; private set; }
         public int ReserveHints { get; private set; }
         public bool TutorialSeen { get; private set; }
+        public int ChallengesSeen { get; private set; }
         public ChallengeProgress Challenges { get; private set; }
 
         // True when the store held something this version could not read, so the game started fresh.
@@ -39,6 +40,7 @@ namespace EchoCave.Game
             Hints = content.Hints;
             ReserveHints = Math.Max(0, content.ReserveHints);
             TutorialSeen = content.TutorialSeen;
+            ChallengesSeen = content.ChallengesSeen;
             Challenges = content.Challenges;
             foreach (KeyValuePair<string, int> entry in content.RewardState) _rewardState[entry.Key] = entry.Value;
         }
@@ -76,6 +78,15 @@ namespace EchoCave.Game
             if (TutorialSeen == seen) return;
 
             TutorialSeen = seen;
+            Persist();
+        }
+
+        public void SetChallengesSeen(int count)
+        {
+            if (count < 0) throw new ArgumentOutOfRangeException(nameof(count), count, "Cannot be negative.");
+            if (ChallengesSeen == count) return;
+
+            ChallengesSeen = count;
             Persist();
         }
 
@@ -128,13 +139,14 @@ namespace EchoCave.Game
             ReserveHints = 0;
             _rewardState.Clear();
             TutorialSeen = false;
+            ChallengesSeen = 0;
             Challenges = new ChallengeProgress();
             Persist();
         }
 
         private void Persist()
         {
-            _store.Write(SaveSerializer.Serialize(Progress, SoundOn, MusicOn, Hints, ReserveHints, _rewardState, TutorialSeen, Challenges));
+            _store.Write(SaveSerializer.Serialize(Progress, SoundOn, MusicOn, Hints, ReserveHints, _rewardState, TutorialSeen, Challenges, ChallengesSeen));
         }
     }
 }

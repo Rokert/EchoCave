@@ -17,6 +17,7 @@
         <ui:Button name="challenges-button" class="pill-button pill-button--secondary menu-button-hidden">
             <ui:VisualElement class="pill-button__lip" picking-mode="Ignore" />
             <ui:VisualElement class="pill-button__face" picking-mode="Ignore"><ui:Label text="Challenges" class="pill-button__label font-semibold" picking-mode="Ignore" /></ui:VisualElement>
+            <ui:Label name="challenges-badge" text="NEW" class="menu__badge font-bold menu-button-hidden" picking-mode="Ignore" />
         </ui:Button>
         <ui:Label name="version-label" text="" class="menu__version font-medium" picking-mode="Ignore" />
     </ui:VisualElement>

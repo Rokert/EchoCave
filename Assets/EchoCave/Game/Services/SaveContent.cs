@@ -19,9 +19,13 @@ namespace EchoCave.Game
         public bool TutorialSeen { get; }
         public ChallengeProgress Challenges { get; }
 
+        // How many open challenges the player has already seen in the list, so the menu can show NEW for the rest.
+        public int ChallengesSeen { get; }
+
         public SaveContent(
             PlayerProgress progress, bool soundOn, bool musicOn, int hints, int reserveHints = 0,
-            IReadOnlyDictionary<string, int> rewardState = null, bool tutorialSeen = false, ChallengeProgress challenges = null)
+            IReadOnlyDictionary<string, int> rewardState = null, bool tutorialSeen = false, ChallengeProgress challenges = null,
+            int challengesSeen = 0)
         {
             Progress = progress ?? throw new ArgumentNullException(nameof(progress));
             SoundOn = soundOn;
@@ -31,6 +35,7 @@ namespace EchoCave.Game
             RewardState = rewardState ?? NoRewardState;
             TutorialSeen = tutorialSeen;
             Challenges = challenges ?? new ChallengeProgress();
+            ChallengesSeen = Math.Max(0, challengesSeen);
         }
 
         // What a player with no save has: no progress, both switches on, the starting hints, no reserve, no reward state, the tutorial unseen.

@@ -13,6 +13,7 @@ namespace EchoCave.UI
         private readonly VisualElement _layer;
         private readonly Button _howToPlay;
         private readonly Button _challenges;
+        private readonly Label _challengesBadge;
 
         public event Action PlayPressed;
         public event Action HowToPlayPressed;
@@ -34,6 +35,9 @@ namespace EchoCave.UI
             _challenges = root.Q<Button>("challenges-button");
             if (_challenges != null) _challenges.clicked += () => ChallengesPressed?.Invoke();
 
+            // The NEW tag is optional too.
+            _challengesBadge = root.Q<Label>("challenges-badge");
+
             Require<Label>(root, "version-label").text = string.IsNullOrEmpty(version) ? string.Empty : "v" + version;
         }
 
@@ -45,6 +49,11 @@ namespace EchoCave.UI
         public void SetChallengesVisible(bool visible)
         {
             _challenges?.EnableInClassList(ButtonHiddenClass, !visible);
+        }
+
+        public void SetChallengesNew(bool isNew)
+        {
+            _challengesBadge?.EnableInClassList(ButtonHiddenClass, !isNew);
         }
 
         public void Show() => _layer.RemoveFromClassList(HiddenClass);

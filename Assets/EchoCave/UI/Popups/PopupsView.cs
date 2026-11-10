@@ -25,6 +25,7 @@ namespace EchoCave.UI
         private readonly VisualElement _pause;
         private readonly Label _completeMoves;
         private readonly Label _completeNextLabel;
+        private readonly Label _completeNote;
         private readonly Label _lostMoves;
         private readonly VisualElement[] _stars = new VisualElement[StarCount];
         private readonly Button _soundToggle;
@@ -63,6 +64,9 @@ namespace EchoCave.UI
             _completeMoves = Require<Label>(root, "complete-moves");
             _completeNextLabel = Require<Label>(root, "complete-next-label");
             _lostMoves = Require<Label>(root, "lost-moves");
+
+            // Optional: a UXML without the line simply has no news line on the level complete popup.
+            _completeNote = root.Q<Label>("complete-note");
             _soundToggle = Require<Button>(root, "sound-toggle");
             _musicToggle = Require<Button>(root, "music-toggle");
             for (int i = 0; i < StarCount; i++) _stars[i] = Require<VisualElement>(root, "complete-star-" + i);
@@ -115,6 +119,14 @@ namespace EchoCave.UI
             _layer.AddToClassList(HiddenClass);
             _layer.RemoveFromClassList(ShownClass);
             foreach (VisualElement popup in Popups()) popup.AddToClassList(HiddenClass);
+        }
+
+        public void SetCompleteNote(string note)
+        {
+            if (_completeNote == null) return;
+
+            _completeNote.text = note ?? string.Empty;
+            _completeNote.EnableInClassList(HiddenClass, string.IsNullOrEmpty(note));
         }
 
         public void ShowComplete(int stars, int movesUsed, int moveLimit, bool hasNext)

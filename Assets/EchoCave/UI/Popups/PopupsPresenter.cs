@@ -24,6 +24,9 @@ namespace EchoCave.UI
         private const int TopResults = 3;
 
         private int _moveLimit;
+
+        // How many challenges were open the last time the player was told, so a win that opens one says so once.
+        private int _knownUnlocked;
         private bool _soundOn;
         private bool _musicOn;
 
@@ -55,6 +58,8 @@ namespace EchoCave.UI
             _events.Subscribe<LevelLost>(OnLevelLost);
             _events.Subscribe<PauseChanged>(OnPauseChanged);
             _events.Subscribe<MenuOpened>(OnMenuOpened);
+
+            _knownUnlocked = _challenges != null ? _challenges.UnlockedCount : 0;
 
             _view.SetHowToPlayVisible(_commands.HasTutorial);
             _view.Hide();
@@ -131,7 +136,6 @@ namespace EchoCave.UI
         {
             if (_challenges == null) return;
 
-            bool unlocked = _challenges.Unlocked;
             var rows = new List<ChallengeRowData>(_challenges.Count);
             for (int i = 0; i < _challenges.Count; i++)
             {
@@ -146,15 +150,24 @@ namespace EchoCave.UI
                 var lines = new List<string>(top.Count);
                 for (int r = 0; r < top.Count; r++) lines.Add((r + 1) + ". " + ChallengeText.Result(top[r].Moves, top[r].Seconds));
 
+                // A closed challenge says what it takes to open it, in place of how it went.
+                bool unlocked = _challenges.IsUnlocked(i);
+                if (!unlocked)
+                {
+                    summary = ChallengeText.LockedMessage(_challenges.LevelsLeftOf(i));
+                    lines.Clear();
+                }
+
                 rows.Add(new ChallengeRowData(_challenges.IdOf(i), summary, lines, unlocked));
             }
 
-            _view.ShowChallenges(rows, unlocked ? string.Empty : ChallengeText.LockedMessage(_challenges.LevelsLeft));
+            _knownUnlocked = _challenges.UnlockedCount;
+            _view.ShowChallenges(rows, string.Empty);
         }
 
         private void OnChallengePressed(int index)
         {
-            if (_challenges == null || !_challenges.Unlocked || index < 0 || index >= _challenges.Count) return;
+            if (_challenges == null || index < 0 || index >= _challenges.Count || !_challenges.IsUnlocked(index)) return;
 
             _view.Hide();
             _challenges.Play(index);
@@ -162,6 +175,16 @@ namespace EchoCave.UI
 
         private void OnLevelWon(LevelWon won)
         {
+            // The save has the win by now (the progress recorder listens first), so a challenge that this win opened shows.
+            string note = string.Empty;
+            if (_challenges != null)
+            {
+                int unlocked = _challenges.UnlockedCount;
+                if (unlocked > _knownUnlocked) note = ChallengeText.UnlockedNote(unlocked - _knownUnlocked);
+                _knownUnlocked = unlocked;
+            }
+
+            _view.SetCompleteNote(note);
             _view.ShowComplete(won.Stars, won.MovesUsed, _moveLimit, _commands.HasNextLevel);
         }
 

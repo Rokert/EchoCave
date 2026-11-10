@@ -16,6 +16,9 @@ namespace EchoCave.Game
             [Tooltip("1 to 64 lowercase letters, digits, - or _. Never changed once players have results on it.")]
             public string challengeId;
             public LevelData level;
+
+            [Tooltip("How many numbered levels the player must win before this challenge opens. 0 opens it from the start.")]
+            [Min(0)] public int levelsToUnlock;
         }
 
         [SerializeField] private List<Entry> entries = new List<Entry>();
@@ -37,7 +40,13 @@ namespace EchoCave.Game
                 levels.Add(entry.level != null ? entry.level.ToDefinition() : null);
             }
 
-            return ChallengeCatalogRules.Validate(ids, levels, new MoveResolver());
+            var problems = new List<string>(ChallengeCatalogRules.Validate(ids, levels, new MoveResolver()));
+            foreach (Entry entry in entries)
+            {
+                if (entry.levelsToUnlock < 0) problems.Add($"\"{entry.challengeId}\": levelsToUnlock is {entry.levelsToUnlock}; it cannot be negative.");
+            }
+
+            return problems;
         }
 
         // Throws, listing every problem, when the catalog is not usable: a bad challenge should stop the game at startup.
@@ -48,7 +57,7 @@ namespace EchoCave.Game
                 throw new InvalidOperationException("The challenge catalog has problems:\n" + string.Join("\n", problems));
 
             var result = new List<ChallengeEntry>(entries.Count);
-            foreach (Entry entry in entries) result.Add(new ChallengeEntry(entry.challengeId, entry.level.ToDefinition()));
+            foreach (Entry entry in entries) result.Add(new ChallengeEntry(entry.challengeId, entry.level.ToDefinition(), entry.levelsToUnlock));
             return result;
         }
 
@@ -57,6 +66,27 @@ namespace EchoCave.Game
             foreach (Entry entry in entries)
                 if (entry.challengeId == id) return true;
             return false;
+        }
+
+        // Gives every entry that still has a threshold of 0 the default for its id (an entry saved before the threshold
+        // existed reads 0). Returns how many it changed.
+        internal int FillZeroThresholds(Func<string, int> defaultOf)
+        {
+            int changed = 0;
+            for (int i = 0; i < entries.Count; i++)
+            {
+                Entry entry = entries[i];
+                if (entry.levelsToUnlock != 0) continue;
+
+                int value = defaultOf(entry.challengeId);
+                if (value == 0) continue;
+
+                entry.levelsToUnlock = value;
+                entries[i] = entry;
+                changed++;
+            }
+
+            return changed;
         }
 
         // Appends at the end: an existing challenge is never moved.

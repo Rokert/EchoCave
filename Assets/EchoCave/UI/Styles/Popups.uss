@@ -83,6 +83,13 @@
     -unity-text-align: middle-center;
 }
 
+/* News under the stars (a challenge that just opened): it stands out from the plain text and wraps inside the card. */
+.popup__note {
+    color: var(--bat-belly);
+    white-space: normal;
+    max-width: 100%;
+}
+
 .popup__buttons {
     flex-direction: row;
     flex-wrap: wrap;
