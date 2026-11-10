@@ -27,7 +27,10 @@ How to build, publish and run the 20-30 person playtest (ROK-138, D-025).
 
 A tester's first day gives no daily hint (the starting hints are that day's gift), so the daily gift only shows on a second day of play. A save from an older build is still read: the tester keeps their stars and starts with the starting hints and no reserve.
 
+5. Is the music liked? Ask whether they noticed it, whether it fits the game, and whether they turned it off in the pause popup (and why). Note if anyone plays with the sound on but the music off.
+6. Do they find the challenges? Watch what happens after the first unlock: do they notice the unlock note on the level complete popup and the NEW badge on the menu button, and do they open the list without being told? Ask what they think a challenge is, whether the locked ones made them want to keep playing, and whether the three results under each challenge mean anything to them. Challenges are the same board for everyone, with a ping budget and no retries on the same result, so also note whether a tester understands why a second try does not feel like a new level.
+
 Also note where they stop, which level they lose at, and what they tap that does nothing.
 
 ## Collecting feedback
-No analytics yet (ROK-145 holds the interface). Use a short form with the three questions above, the version shown at the bottom of the menu, and the device.
+The release build records nothing: the event catalog exists (D-037), but only the editor and development builds log it, and no provider is chosen yet. Use a short form with the questions above, the version shown at the bottom of the menu, and the device.
