@@ -65,6 +65,7 @@ namespace EchoCave.Game
         private ISaveService _save;
         private IAudioService _audio;
         private IAnalyticsService _analytics;
+        private AnalyticsRecorder _analyticsRecorder;
         private ProgressRecorder _recorder;
         private SoundCuePlayer _cues;
         private ChallengeSelfCheck _challengeCheck;
@@ -109,7 +110,10 @@ namespace EchoCave.Game
             _audio.SetEnabled(AudioChannel.Sound, _save.SoundOn);
             _audio.SetEnabled(AudioChannel.Music, _save.MusicOn);
 
-            _analytics = new NullAnalyticsService();
+            // No provider yet (D-037): the editor and development builds log the events, a release build counts nothing.
+            _analytics = Application.isEditor || Debug.isDebugBuild
+                ? (IAnalyticsService)new LogAnalyticsService(Debug.Log)
+                : new NullAnalyticsService();
             ServiceLocator.Replace<IAdService>(_ads);
             ServiceLocator.Replace<ISaveService>(_save);
             ServiceLocator.Replace<IAudioService>(_audio);
@@ -137,6 +141,7 @@ namespace EchoCave.Game
             };
             _rewards = new HintRewardService(strategies, _hintStock, _save, EventBus.Global, _clock);
             _recorder = new ProgressRecorder(EventBus.Global, _save, _audio, _levelIds, _rewards);
+            _analyticsRecorder = new AnalyticsRecorder(EventBus.Global, _analytics, _levelIds, Debug.LogException);
             _cues = new SoundCuePlayer(EventBus.Global, _audio);
             if (musicPlayer != null && musicPlayer.Bank != null)
             {
@@ -167,6 +172,8 @@ namespace EchoCave.Game
             boardView.BatRevealed -= OnBatRevealed;
             EventBus.Global.Unsubscribe<LevelStarted>(OnLevelStarted);
             EventBus.Global.Unsubscribe<ChallengeStarted>(OnChallengeStarted);
+            _analyticsRecorder?.Dispose();
+            _analyticsRecorder = null;
             _challengeCheck?.Dispose();
             _challengeCheck = null;
             _challengeRecorder?.Dispose();
